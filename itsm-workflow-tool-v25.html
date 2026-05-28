@@ -15998,34 +15998,26 @@ window.addEventListener('load',()=>{
   </div>
 </div>
 
-<!-- PWA SERVICE WORKER REGISTRATION -->
+<!-- SERVICE WORKER CLEANUP -->
+<!-- SW registration is intentionally disabled — it caused stale HTML to be served after -->
+<!-- every update, requiring Ctrl+Shift+R to see changes. The tool is always used online -->
+<!-- and all data is in localStorage, so offline caching provides no benefit. -->
 <script>
-if('serviceWorker' in navigator &&
-   location.protocol==='https:' &&
-   !location.hostname.includes('claudeusercontent') &&
-   !location.hostname.includes('localhost')){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js', {scope: '/itsm-workflow-intelligence/'})
-      .then(function(reg){
-        console.log('ITSM Tool: offline support active');
-        // Check for updates
-        reg.addEventListener('updatefound', function(){
-          var newWorker = reg.installing;
-          newWorker.addEventListener('statechange', function(){
-            if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
-              // New version available — show toast if function exists
-              if(typeof showToast === 'function'){
-                showToast('Update available — refresh to get the latest version.', 'info', 6000);
-              }
-            }
-          });
-        });
-      })
-      .catch(function(err){
-        // SW registration failed — tool still works, just without offline support
-        console.log('ITSM Tool: offline support not available', err);
+if('serviceWorker' in navigator){
+  // Unregister any previously registered service workers and clear their caches
+  navigator.serviceWorker.getRegistrations().then(function(registrations){
+    registrations.forEach(function(registration){
+      registration.unregister().then(function(){
+        console.log('ITSM Tool: stale service worker unregistered');
       });
+    });
   });
+  // Also clear any SW-managed caches
+  if('caches' in window){
+    caches.keys().then(function(names){
+      names.forEach(function(name){ caches.delete(name); });
+    });
+  }
 }
 </script>
 </body>
