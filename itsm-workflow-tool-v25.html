@@ -7588,6 +7588,9 @@ const obSteps=[
   {target:'#kiNavBtn',arrow:'arrow-top',pos:'below',
     title:'Known Issues — persistent badge count',
     body:'The KI button shows a red badge when you have active known issues on record. Tap it to search by service name and see if your current incident matches a known pattern before you start a new investigation from scratch.'},
+  {target:'#regNavBtn',arrow:'arrow-top',pos:'below',
+    title:'Regulatory & Content — always current',
+    body:'The \u{1F4CB} Reg button shows your regulatory guidance status at a glance. A blue dot appears when the automated weekly monitor detects a new FCA, DORA or ICO publication — click to see what changed and verify at source. Guidance is sourced from FCA, EBA, ICO and AXELOS and kept current automatically. Full settings and organisation content URL in the Organisation panel.'},
   {target:'#nav-change',arrow:'arrow-top',pos:'below',
     title:'Standalone Change Request',
     body:'Raise a Change Request independently of the incident workflow. Standard, Normal or Emergency — ITIL definitions shown alongside your organisation'+"'"+'s override. Six-factor risk scoring, step-builder for implementation and rollback plans, ECAB approval chain, change freeze detection. Generates a full ServiceNow CHG record.'},
@@ -16959,7 +16962,7 @@ window.addEventListener('load',()=>{
     <div style="font-size:40px;margin-bottom:12px">⚡</div>
     <div class="welcome-title">ITSM Workflow Intelligence Tool</div>
     <div class="welcome-sub">Structured guidance from first alert to service board. Paste-ready outputs for ServiceNow, Jira and Confluence. ITIL 4 aligned. FCA and PRA ready.</div>
-    <div style="display:flex;gap:14px;justify-content:center;margin:10px 0 14px;font-size:11px;color:var(--text3);flex-wrap:wrap;"><span>⚡ P1 bridge pack in 90s</span><span>📋 8 structured outputs</span><span>🔍 35 pattern checks</span><span>📖 130+ glossary terms</span><span>🔔 Live SLA countdown</span><span>📦 Shift handover pack</span></div>
+    <div style="display:flex;gap:14px;justify-content:center;margin:10px 0 14px;font-size:11px;color:var(--text3);flex-wrap:wrap;"><span>⚡ P1 bridge pack in 90s</span><span>📋 8 structured outputs</span><span>🔍 35 pattern checks</span><span>📖 130+ glossary terms</span><span>🔔 Live SLA countdown</span><span>📦 Shift handover pack</span><span>🤖 Pre-flight AI review</span><span>📋 Always-current regulatory guidance</span></div>
     <div class="welcome-choice-grid">
       <div class="welcome-choice" onclick="welcomeChoice('incident')">
         <div class="welcome-choice-icon">🚨</div>
@@ -17050,7 +17053,7 @@ window.addEventListener('load',()=>{
 <div id="obOverlay" style="display:none;position:fixed;inset:0;z-index:9998;pointer-events:none;">
   <div class="ob-highlight" id="obHighlight"></div>
   <div class="ob-tip" id="obTip" style="pointer-events:all;">
-    <div class="ob-step"><span id="obStepLabel">Step 1 of 9</span>
+    <div class="ob-step"><span id="obStepLabel">Step 1 of 10</span>
       <div class="ob-dots" style="display:flex;gap:4px;margin-left:auto;">
         <div class="ob-dot" id="obDot0"></div>
         <div class="ob-dot" id="obDot1"></div>
@@ -17061,6 +17064,7 @@ window.addEventListener('load',()=>{
         <div class="ob-dot" id="obDot6"></div>
         <div class="ob-dot" id="obDot7"></div>
         <div class="ob-dot" id="obDot8"></div>
+        <div class="ob-dot" id="obDot9"></div>
       </div>
     </div>
     <div class="ob-title" id="obTitle"></div>
