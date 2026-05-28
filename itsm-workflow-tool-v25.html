@@ -1411,23 +1411,25 @@ body{line-height:1.75;}
 .app-header-version{cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
 .app-header-version:hover{color:var(--text2);}
 
-/* P1: TOC panel */
-#tocPanel{position:fixed;top:var(--nav-h,96px);left:0;z-index:3000;background:var(--surface);
-  border:1px solid var(--border);border-right-color:var(--border2);border-radius:0 10px 10px 0;
+/* P1: TOC panel — positioned below full header+nav area (calc(--nav-h + 44px) = 96px) */
+#tocPanel{position:fixed;top:calc(var(--nav-h) + 44px);left:0;z-index:490;background:var(--surface);
+  border:1px solid var(--border);border-right-color:var(--border2);border-radius:0 8px 8px 0;
   min-width:210px;max-width:250px;box-shadow:4px 0 24px rgba(0,0,0,0.3);
   transform:translateX(calc(-100% - 1px));transition:transform 0.22s cubic-bezier(0.4,0,0.2,1);}
 #tocPanel.open{transform:translateX(0);}
-#tocToggleBtn{position:fixed;top:calc(var(--nav-h,96px) + 10px);left:0;z-index:3001;
+#tocToggleBtn{position:fixed;top:calc(var(--nav-h) + 44px + 10px);left:0;z-index:490;
   background:var(--accent);color:#fff;border:none;border-radius:0 6px 6px 0;
   padding:6px 5px 6px 4px;cursor:pointer;font-size:10px;writing-mode:vertical-rl;
   text-orientation:mixed;letter-spacing:0.05em;font-family:var(--mono);font-weight:600;
   transition:opacity 0.15s;line-height:1.2;}
 #tocToggleBtn:hover{opacity:0.85;}
+/* Hide TOC button when TOC is open — the × close button takes over */
+#tocPanel.open ~ #tocToggleBtn{display:none;}
 .toc-header{display:flex;align-items:center;justify-content:space-between;
   padding:10px 13px 8px;border-bottom:1px solid var(--border);font-size:10px;
   font-weight:600;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.1em;}
 .toc-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0;}
-.toc-list{padding:6px 0;max-height:calc(100vh - var(--nav-h,96px) - 70px);overflow-y:auto;}
+.toc-list{padding:6px 0;max-height:calc(100vh - var(--nav-h) - 44px - 70px);overflow-y:auto;}
 .toc-item{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;
   font-size:12px;color:var(--text2);border:none;background:none;width:100%;text-align:left;
   transition:background 0.1s,color 0.1s;font-family:var(--sans);}
@@ -15506,33 +15508,41 @@ function togglePrivacyModal(){
 }
 
 // P1: TOC panel toggle
+var _tocOutsideListener=null;
 function toggleTOC(){
   var p=document.getElementById('tocPanel');
   if(!p)return;
+  var opening=!p.classList.contains('open');
   p.classList.toggle('open');
   var btn=document.getElementById('tocToggleBtn');
-  if(btn)btn.textContent=p.classList.contains('open')?'× TOC':'☰ TOC';
-  // Update active item
-  if(p.classList.contains('open'))updateTOCActiveItem();
-  // Close on outside click
-  if(p.classList.contains('open')){
-    setTimeout(function(){
-      document.addEventListener('click',closeTOCOnOutside,{once:true,capture:true});
-    },50);
+  if(btn)btn.textContent=opening?'× TOC':'☰ TOC';
+  if(opening){
+    // Add outside-click listener (not capture, not once — manually managed)
+    if(_tocOutsideListener)document.removeEventListener('click',_tocOutsideListener);
+    _tocOutsideListener=function(e){
+      var panel=document.getElementById('tocPanel');
+      var toggle=document.getElementById('tocToggleBtn');
+      if(panel&&panel.classList.contains('open')&&
+         !panel.contains(e.target)&&
+         toggle&&!toggle.contains(e.target)){
+        panel.classList.remove('open');
+        toggle.textContent='☰ TOC';
+        document.removeEventListener('click',_tocOutsideListener);
+        _tocOutsideListener=null;
+      }
+    };
+    // Delay so the opening click doesn't immediately close the panel
+    setTimeout(function(){document.addEventListener('click',_tocOutsideListener);},200);
+  } else {
+    if(_tocOutsideListener){document.removeEventListener('click',_tocOutsideListener);_tocOutsideListener=null;}
   }
 }
-function closeTOCOnOutside(e){
+function closeTOC(){
   var p=document.getElementById('tocPanel');
+  if(p)p.classList.remove('open');
   var btn=document.getElementById('tocToggleBtn');
-  if(p&&!p.contains(e.target)&&btn&&!btn.contains(e.target)){
-    p.classList.remove('open');
-    if(btn)btn.textContent='☰ TOC';
-  }
-}
-function updateTOCActiveItem(){
-  document.querySelectorAll('.toc-item').forEach(function(item){
-    item.classList.remove('toc-active');
-  });
+  if(btn)btn.textContent='☰ TOC';
+  if(_tocOutsideListener){document.removeEventListener('click',_tocOutsideListener);_tocOutsideListener=null;}
 }
 
 // P2: Regulatory fields toggle
@@ -15927,21 +15937,21 @@ style="display:none">
     <button class="toc-close" onclick="toggleTOC()" aria-label="Close contents">×</button>
   </div>
   <div class="toc-list">
-    <button class="toc-item" onclick="navTo('incident');toggleTOC()"><span class="toc-item-icon">🚨</span>Incident Workflow</button>
-    <button class="toc-item" onclick="navTo('customer');toggleTOC()"><span class="toc-item-icon">📞</span>Customer Report</button>
-    <button class="toc-item" onclick="navTo('pickup');toggleTOC()"><span class="toc-item-icon">📥</span>Pick Up Incident</button>
-    <button class="toc-item" onclick="navTo('fasttrack');toggleTOC()"><span class="toc-item-icon">⚡</span>P1 Fast Track</button>
-    <button class="toc-item" onclick="openTrainingMode();toggleTOC()"><span class="toc-item-icon">🎓</span>Practice Run</button>
+    <button class="toc-item" onclick="navTo('incident');closeTOC()"><span class="toc-item-icon">🚨</span>Incident Workflow</button>
+    <button class="toc-item" onclick="navTo('customer');closeTOC()"><span class="toc-item-icon">📞</span>Customer Report</button>
+    <button class="toc-item" onclick="navTo('pickup');closeTOC()"><span class="toc-item-icon">📥</span>Pick Up Incident</button>
+    <button class="toc-item" onclick="navTo('fasttrack');closeTOC()"><span class="toc-item-icon">⚡</span>P1 Fast Track</button>
+    <button class="toc-item" onclick="openTrainingMode();closeTOC()"><span class="toc-item-icon">🎓</span>Practice Run</button>
     <div class="toc-divider"></div>
-    <button class="toc-item" onclick="navTo('problem');toggleTOC()"><span class="toc-item-icon">🔎</span>Problem Record</button>
-    <button class="toc-item" onclick="navTo('retro');toggleTOC()"><span class="toc-item-icon">📋</span>Retrospective</button>
-    <button class="toc-item" onclick="navTo('reporting');toggleTOC()"><span class="toc-item-icon">📊</span>Reporting</button>
-    <button class="toc-item" onclick="navTo('integration');toggleTOC()"><span class="toc-item-icon">🔌</span>Integration</button>
+    <button class="toc-item" onclick="navTo('problem');closeTOC()"><span class="toc-item-icon">🔎</span>Problem Record</button>
+    <button class="toc-item" onclick="navTo('retro');closeTOC()"><span class="toc-item-icon">📋</span>Retrospective</button>
+    <button class="toc-item" onclick="navTo('reporting');closeTOC()"><span class="toc-item-icon">📊</span>Reporting</button>
+    <button class="toc-item" onclick="navTo('integration');closeTOC()"><span class="toc-item-icon">🔌</span>Integration</button>
     <div class="toc-divider"></div>
-    <button class="toc-item" onclick="navTo('change');toggleTOC()"><span class="toc-item-icon">🔄</span>Change Request</button>
-    <button class="toc-item" onclick="navTo('glossary');toggleTOC()"><span class="toc-item-icon">📖</span>Glossary</button>
+    <button class="toc-item" onclick="navTo('change');closeTOC()"><span class="toc-item-icon">🔄</span>Change Request</button>
+    <button class="toc-item" onclick="navTo('glossary');closeTOC()"><span class="toc-item-icon">📖</span>Glossary</button>
     <div class="toc-divider"></div>
-    <button class="toc-item" onclick="togglePrivacyModal();toggleTOC()"><span class="toc-item-icon">🔒</span>Data &amp; Privacy</button>
+    <button class="toc-item" onclick="togglePrivacyModal();closeTOC()"><span class="toc-item-icon">🔒</span>Data &amp; Privacy</button>
   </div>
 </div>
 
