@@ -17,7 +17,7 @@ A production-grade operational co-pilot for incident management, service review 
 
 The tool solves a specific, real problem: incident managers under pressure have to simultaneously log structured records, communicate to multiple audiences, make compliance assessments, coordinate escalation, and document decisions — often at 3am, alone, with no institutional memory to draw on.
 
-This tool acts as an experienced colleague sitting next to them. It structures the thinking, generates the outputs, surfaces the regulatory obligations and never sends anything without a human confirming it first.
+This tool acts as an experienced colleague sitting next to them. It structures the thinking, generates the outputs, surfaces the regulatory obligations, and never sends anything without a human confirming it first.
 
 ### Core capabilities
 
@@ -95,7 +95,7 @@ Organisations can host their own `content.json` for jurisdiction-specific guidan
 
 ## About this project
 
-This tool was designed and built as a demonstration of applied AI collaboration, senior ITSM domain expertise and product thinking. It was built iteratively with Claude (Anthropic) — architecture, implementation, testing and refinement — across an extended development process.
+This tool was designed and built as a demonstration of applied AI collaboration, senior ITSM domain expertise, and product thinking. It was built iteratively with Claude (Anthropic) — architecture, implementation, testing and refinement — across an extended development process.
 
 **Domain expertise demonstrated**
 - Incident management lifecycle (ITIL 4)
