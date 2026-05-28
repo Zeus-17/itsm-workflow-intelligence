@@ -143,4 +143,4 @@ Regulatory guidance is informational only. Not legal or compliance advice. Alway
 ---
 
 *Built with [Claude (Anthropic)](https://claude.ai)*  
-*Connect on [LinkedIn](https://www.linkedin.com/in/james-holford/)*
+*Connect on [LinkedIn](https://www.linkedin.com/in/james-holford-z17/)*
