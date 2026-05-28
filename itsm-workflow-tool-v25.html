@@ -1455,6 +1455,34 @@ textarea{resize:vertical;min-height:80px;}
 .sanitise-bar input[type=checkbox]{accent-color:var(--purple);width:13px;height:13px;}
 .sanitise-active-note{font-size:10px;color:var(--purple);font-family:var(--mono);}
 
+/* ═══ REG NAV BUTTON + PANEL ═══ */
+#regNavBtn{position:relative;}
+.reg-nav-dot{position:absolute;top:-4px;right:-4px;width:8px;height:8px;border-radius:50%;
+  background:var(--accent);display:none;animation:pulse-blink 2s infinite;
+  border:2px solid var(--surface2);}
+.reg-nav-dot.show{display:block;}
+#regPanel{position:fixed;top:calc(var(--nav-h) + 44px + 8px);right:8px;z-index:2000;
+  width:300px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);display:none;}
+#regPanel.show{display:block;}
+.reg-panel-header{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px 10px;border-bottom:1px solid var(--border);}
+.reg-panel-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;
+  letter-spacing:0.08em;font-family:var(--mono);display:flex;align-items:center;gap:7px;}
+.reg-panel-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;}
+.reg-panel-body{padding:12px 14px;}
+.reg-panel-status{display:flex;align-items:center;gap:7px;margin-bottom:10px;font-size:11px;color:var(--text2);}
+.reg-panel-notice{background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);
+  border-radius:7px;padding:9px 11px;margin-bottom:10px;font-size:11px;color:var(--text2);line-height:1.6;}
+.reg-panel-notice-title{font-weight:600;color:var(--text);margin-bottom:3px;font-size:12px;}
+.reg-panel-notice-link{color:var(--accent);font-size:10px;font-family:var(--mono);text-decoration:none;}
+.reg-panel-notice-link:hover{text-decoration:underline;}
+.reg-panel-notice-dismiss{float:right;background:none;border:none;color:var(--text3);
+  cursor:pointer;font-size:13px;line-height:1;margin-left:8px;}
+.reg-panel-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.reg-panel-footer{padding:8px 14px;border-top:1px solid var(--border);font-size:10px;
+  color:var(--text3);line-height:1.5;}
+
 /* ═══ REGULATORY ATTRIBUTION ═══ */
 /* Calm, professional attribution — builds confidence, not anxiety */
 .reg-attribution{display:flex;align-items:center;gap:8px;padding:6px 10px;
@@ -1757,6 +1785,7 @@ body{line-height:1.75;}
   <div class="nav-rail-right">
     <button class="nav-action-btn" id="kiNavBtn" onclick="toggleKIPanel()" title="Known Issues">⚠ KI<span class="ki-dot-badge" id="kiBadge"></span></button>
     <button class="nav-action-btn" id="pulseBtnNav" onclick="togglePulsePanel()" title="War Room Pulse — live incident state">⬛ Pulse</button>
+    <button class="nav-action-btn" id="regNavBtn" onclick="toggleRegPanel()" title="Regulatory &amp; Content — guidance status and updates">📋 Reg<span class="reg-nav-dot" id="regNavDot"></span></button>
     <button class="nav-action-btn" onclick="openTemplatePicker()" title="Incident templates — pre-fill common incident types">📋</button>
     <button class="nav-action-btn" onclick="runCodeAudit()" title="Audit">🔍</button>
     <button class="nav-action-btn" onclick="obRestart()" title="Tour">?</button>
@@ -1857,6 +1886,39 @@ body{line-height:1.75;}
       <div id="customFieldsList"></div>
       <button class="btn-session" onclick="addCustomField()" style="margin-top:6px" id="addCustomFieldBtn">+ Add field</button>
     </div>
+
+    <!-- REGULATORY & CONTENT — at the bottom of Organisation settings -->
+    <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+        📋 Regulatory &amp; Content
+        <span class="content-freshness" id="contentFreshness" style="font-weight:400;text-transform:none;letter-spacing:0;">
+          <span class="content-freshness-dot fresh" id="freshnessDot"></span>
+          <span id="freshnessText">Checking…</span>
+        </span>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.6;">
+        Regulatory guidance sourced from FCA, EBA, ICO and AXELOS — monitored automatically each week. For compliance decisions specific to your organisation, always engage your compliance team.
+      </div>
+      <div class="reg-notice-bar" id="regNoticeBar">
+        <span class="reg-notice-bar-icon">📋</span>
+        <div class="reg-notice-bar-body">
+          <div class="reg-notice-bar-title" id="regNoticeTitle"></div>
+          <div id="regNoticeText"></div>
+        </div>
+        <button class="reg-notice-dismiss" onclick="dismissRegNotice()" title="Dismiss">×</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+        <button class="btn btn-secondary btn-sm" onclick="fetchContentUpdate(true)">↺ Check for updates</button>
+        <button class="btn btn-secondary btn-sm" onclick="showContentChangelog()">View changelog</button>
+        <button class="btn btn-secondary btn-sm" onclick="resetToBuiltInContent()">↩ Reset to defaults</button>
+      </div>
+      <div id="contentChangelog" class="content-changelog" style="display:none;margin-bottom:8px;"></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:5px;">Organisation content URL <span style="opacity:0.7">— optional. Point to your own hosted guidance for org-specific field names or jurisdiction.</span></div>
+      <div class="content-org-url-row">
+        <input id="contentOrgUrl" placeholder="https://your-intranet/itsm-content.json" oninput="autosave()" style="font-size:11px;">
+        <button class="btn btn-secondary btn-sm" onclick="applyOrgContentUrl()">Apply</button>
+      </div>
+    </div>
   </div>
 
   <!-- SLA CONFIGURATION PANEL -->
@@ -1897,6 +1959,7 @@ body{line-height:1.75;}
         <div style="font-size:10px;color:var(--text3);margin-top:8px;">Up to 20 custom rules. Rules persist across sessions.</div>
       </div>
     </div>
+
   </div>
 
   </div>
@@ -2092,45 +2155,7 @@ body{line-height:1.75;}
       </div>
     </div>
 
-    <!-- REGULATORY & CONTENT -->
-    <div class="content-update-section">
-      <div class="content-update-header">📋 Regulatory &amp; Content</div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.6;">
-        Regulatory guidance is sourced from FCA, EBA (DORA), ICO and AXELOS and monitored
-        automatically. For compliance decisions specific to your organisation, always engage
-        your compliance team.
-      </div>
-      <!-- Reg notice — only shows when monitoring detects a publication change -->
-      <div class="reg-notice-bar" id="regNoticeBar">
-        <span class="reg-notice-bar-icon">📋</span>
-        <div class="reg-notice-bar-body">
-          <div class="reg-notice-bar-title" id="regNoticeTitle"></div>
-          <div id="regNoticeText"></div>
-        </div>
-        <button class="reg-notice-dismiss" onclick="dismissRegNotice()" title="Dismiss">×</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
-        <span class="content-freshness" id="contentFreshness">
-          <span class="content-freshness-dot fresh" id="freshnessDot"></span>
-          <span id="freshnessText">Checking…</span>
-        </span>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-secondary btn-sm" onclick="fetchContentUpdate(true)">↺ Check now</button>
-          <button class="btn btn-secondary btn-sm" onclick="showContentChangelog()">View changelog</button>
-        </div>
-      </div>
-      <div id="contentChangelog" class="content-changelog" style="display:none"></div>
-      <div class="content-org-section">
-        <div class="content-org-label" style="font-size:11px;color:var(--text3);margin-bottom:6px;">
-          Organisation content URL <span style="opacity:0.7">— optional. Point to your own hosted guidance for organisation-specific field names or jurisdiction.</span>
-        </div>
-        <div class="content-org-url-row">
-          <input id="contentOrgUrl" placeholder="https://your-intranet/itsm-content.json" oninput="autosave()">
-          <button class="btn btn-secondary btn-sm" onclick="applyOrgContentUrl()">Apply</button>
-        </div>
-        <div style="margin-top:6px"><button class="btn btn-secondary btn-sm" onclick="resetToBuiltInContent()">↩ Reset to built-in defaults</button></div>
-      </div>
-    </div>
+    <!-- Regulatory & Content section moved to Organisation panel for better discoverability -->
   </div>
 </div>
 <div class="container">
@@ -15933,9 +15958,10 @@ function showContentWarnings(warnings){
       (w.applies_to&&w.applies_to[0]?
         ' <a class="reg-notice-bar-link" href="https://www.eba.europa.eu/regulation-and-policy/dora" target="_blank" rel="noopener">View latest at source ↗</a>':'');
     bar.classList.add('show');
-    // Store that this notice is showing
     sessionStorage.setItem('itsm_active_notice_id',w.id);
   }
+  // Always light up the nav dot when a notice is active
+  if(typeof setRegNavDot==='function')setRegNavDot(true);
 }
 
 function dismissRegNotice(){
@@ -15988,6 +16014,88 @@ function applyOrgContentUrl(){
   try{localStorage.setItem('itsm_content_url',url);}catch(e){}
   showToast('Organisation content URL saved. Fetching…','info',2000);
   fetchContentUpdate(true);
+}
+
+// ── REG PANEL ────────────────────────────────────────────────
+var _regPanelOutsideListener=null;
+function toggleRegPanel(){
+  var p=document.getElementById('regPanel');
+  if(!p)return;
+  var opening=!p.classList.contains('show');
+  p.classList.toggle('show',opening);
+  if(opening){
+    updateRegPanel();
+    setTimeout(function(){
+      _regPanelOutsideListener=function(e){
+        var panel=document.getElementById('regPanel');
+        var btn=document.getElementById('regNavBtn');
+        if(panel&&panel.classList.contains('show')&&!panel.contains(e.target)&&btn&&!btn.contains(e.target)){
+          panel.classList.remove('show');
+          document.removeEventListener('click',_regPanelOutsideListener);
+          _regPanelOutsideListener=null;
+        }
+      };
+      document.addEventListener('click',_regPanelOutsideListener);
+    },150);
+  } else {
+    if(_regPanelOutsideListener){document.removeEventListener('click',_regPanelOutsideListener);_regPanelOutsideListener=null;}
+  }
+}
+function closeRegPanel(){
+  var p=document.getElementById('regPanel');
+  if(p)p.classList.remove('show');
+  if(_regPanelOutsideListener){document.removeEventListener('click',_regPanelOutsideListener);_regPanelOutsideListener=null;}
+}
+function updateRegPanel(){
+  var dot=document.getElementById('regPanelDot');
+  var status=document.getElementById('regPanelStatus');
+  var notice=document.getElementById('regPanelNotice');
+  if(!dot||!status)return;
+  if(_contentLayer&&_contentLayer.meta){
+    status.textContent='Guidance current · Verified '+(_contentLayer.meta.content_version||'—');
+    dot.className='content-freshness-dot fresh';
+  } else {
+    status.textContent='Built-in guidance · Verified Jan 2026';
+    dot.className='content-freshness-dot fresh';
+  }
+  // Show active notice if any
+  var dismissed=[];
+  try{dismissed=JSON.parse(sessionStorage.getItem('itsm_dismissed_notices')||'[]');}catch(e){}
+  var warnings=_contentLayer&&_contentLayer.content_warnings||[];
+  var now=new Date();
+  var activeNotice=warnings.find(function(w){
+    if(dismissed.indexOf(w.id)>-1)return false;
+    var expires=w.expires?new Date(w.expires):null;
+    return !expires||expires>now;
+  });
+  if(activeNotice&&notice){
+    var t=document.getElementById('regPanelNoticeTitle');
+    var tx=document.getElementById('regPanelNoticeText');
+    var lk=document.getElementById('regPanelNoticeLink');
+    if(t)t.textContent=activeNotice.title||'Regulatory update';
+    if(tx)tx.textContent=activeNotice.text||'';
+    if(lk&&activeNotice.authority)lk.href=activeNotice.authority;
+    notice.style.display='block';
+    status.textContent='Update detected — see below';
+    dot.className='content-freshness-dot notice';
+  } else if(notice){
+    notice.style.display='none';
+  }
+}
+function setRegNavDot(show){
+  var dot=document.getElementById('regNavDot');
+  if(dot)dot.classList.toggle('show',show);
+}
+function dismissRegNoticeFromPanel(){
+  dismissRegNotice(); // reuse existing dismiss logic
+  var notice=document.getElementById('regPanelNotice');
+  if(notice)notice.style.display='none';
+  var dot=document.getElementById('regPanelDot');
+  if(dot)dot.className='content-freshness-dot fresh';
+  var status=document.getElementById('regPanelStatus');
+  if(status&&_contentLayer&&_contentLayer.meta)
+    status.textContent='Guidance current · Verified '+(_contentLayer.meta.content_version||'—');
+  setRegNavDot(false);
 }
 
 function getContentValue(path,defaultValue){
@@ -16697,7 +16805,7 @@ window.addEventListener('load',function(){
   ['shareModal','trainingModal','welcomeOverlay','browserWarn',
    'templatePickerPanel','obOverlay','kbShortcutPanel',
    'changelogModal','privacyModal','tocPanel','tocToggleBtn','appFooter',
-   'pulsePanel','afterActionModal','preflightModal'].forEach(function(id){
+   'pulsePanel','afterActionModal','preflightModal','regPanel'].forEach(function(id){
     var el=document.getElementById(id);
     if(el&&el.parentElement!==document.body)document.body.appendChild(el);
   });
@@ -17016,6 +17124,35 @@ window.addEventListener('load',()=>{
     <button class="a11y-toggle" id="a11yHCBtn" onclick="toggleHighContrast()">Off — click to enable</button>
   </div>
   <div class="a11y-footer">Settings persist across sessions.<br>Keyboard: Alt+A to open/close this panel.</div>
+</div>
+
+<!-- REGULATORY & CONTENT PANEL -->
+<div id="regPanel" role="complementary" aria-label="Regulatory and Content status">
+  <div class="reg-panel-header">
+    <div class="reg-panel-title">📋 Regulatory &amp; Content</div>
+    <button class="reg-panel-close" onclick="toggleRegPanel()" aria-label="Close">×</button>
+  </div>
+  <div class="reg-panel-body">
+    <div class="reg-panel-status">
+      <span class="content-freshness-dot fresh" id="regPanelDot"></span>
+      <span id="regPanelStatus">Guidance current</span>
+    </div>
+    <div id="regPanelNotice" style="display:none" class="reg-panel-notice">
+      <button class="reg-panel-notice-dismiss" onclick="dismissRegNoticeFromPanel()" title="Dismiss">×</button>
+      <div class="reg-panel-notice-title" id="regPanelNoticeTitle"></div>
+      <div id="regPanelNoticeText"></div>
+      <a class="reg-panel-notice-link" id="regPanelNoticeLink" href="#" target="_blank" rel="noopener">Verify at source ↗</a>
+    </div>
+    <div class="reg-panel-btns">
+      <button class="btn btn-secondary btn-sm" onclick="fetchContentUpdate(true);closeRegPanel()">↺ Check for updates</button>
+      <button class="btn btn-secondary btn-sm" onclick="showContentChangelog();closeRegPanel()">View changelog</button>
+    </div>
+  </div>
+  <div class="reg-panel-footer">
+    Sourced from FCA · EBA · ICO · AXELOS · Monitored weekly<br>
+    Informational only — engage your compliance team for decisions specific to your organisation.<br>
+    <span style="cursor:pointer;text-decoration:underline;color:var(--text3);" onclick="toggleOrgPanel();closeRegPanel()">Full settings in Organisation ↗</span>
+  </div>
 </div>
 
 <!-- WAR ROOM PULSE PANEL -->
