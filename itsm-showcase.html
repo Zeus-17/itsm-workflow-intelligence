@@ -92,6 +92,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 #tab12:checked ~ .sc-main .sc-content #slide-12 { display:block; }
 #tab13:checked ~ .sc-main .sc-content #slide-13 { display:block; }
 #tab14:checked ~ .sc-main .sc-content #slide-14 { display:block; }
+#tab15:checked ~ .sc-main .sc-content #slide-15 { display:block; }
 #tab0:checked ~ .sc-main .sc-sidebar #nav-0 { background:rgba(59,130,246,0.12);color:var(--accent);border-left:2px solid var(--accent); }
 #tab1:checked ~ .sc-main .sc-sidebar #nav-1 { background:rgba(59,130,246,0.12);color:var(--accent);border-left:2px solid var(--accent); }
 #tab2:checked ~ .sc-main .sc-sidebar #nav-2 { background:rgba(59,130,246,0.12);color:var(--accent);border-left:2px solid var(--accent); }
@@ -107,6 +108,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 #tab12:checked ~ .sc-main .sc-sidebar #nav-12 { background:rgba(59,130,246,0.12);color:var(--accent);border-left:2px solid var(--accent); }
 #tab13:checked ~ .sc-main .sc-sidebar #nav-13 { background:rgba(59,130,246,0.12);color:var(--accent);border-left:2px solid var(--accent); }
 #tab14:checked ~ .sc-main .sc-sidebar #nav-14 { background:rgba(59,130,246,0.12);color:var(--accent);border-left:2px solid var(--accent); }
+#tab15:checked ~ .sc-main .sc-sidebar #nav-15 { background:rgba(59,130,246,0.12);color:var(--accent);border-left:2px solid var(--accent); }
 .sc-footer-nav-item { display:none; }
 #tab0:checked ~ .sc-footer #footer-0 { display:flex; }
 #tab1:checked ~ .sc-footer #footer-1 { display:flex; }
@@ -123,6 +125,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 #tab12:checked ~ .sc-footer #footer-12 { display:flex; }
 #tab13:checked ~ .sc-footer #footer-13 { display:flex; }
 #tab14:checked ~ .sc-footer #footer-14 { display:flex; }
+#tab15:checked ~ .sc-footer #footer-15 { display:flex; }
 
 
 /* ── RESPONSIVE ── */
@@ -155,6 +158,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 <input type="radio" class="tab-radio" name="sc-tab" id="tab12">
 <input type="radio" class="tab-radio" name="sc-tab" id="tab13">
 <input type="radio" class="tab-radio" name="sc-tab" id="tab14">
+<input type="radio" class="tab-radio" name="sc-tab" id="tab15">
 
 <!-- HEADER -->
 <div class="sc-header">
@@ -297,6 +301,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
         </div>
         <div class="sc-nav-badge">NEW</div>
       </label>
+      <label class="sc-nav-item" id="nav-15" for="tab15">
+        <div class="sc-nav-icon">🤖</div>
+        <div class="sc-nav-text">
+          <div class="sc-nav-name">Agentic Intelligence</div>
+          <div class="sc-nav-desc">Pre-flight agent, pulse, pattern detection</div>
+        </div>
+        <div class="sc-nav-badge">NEW</div>
+      </label>
     </div>
   </div>
 
@@ -306,7 +318,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   <div class="slide-hero" style="padding:16px 0 22px;">
     <div class="slide-hero-badge">⚡ v25 · Production Ready · Single HTML file</div>
     <div class="slide-hero-title" style="font-size:22px;">ITSM Workflow Intelligence Tool</div>
-    <div class="slide-hero-sub">Your operational co-pilot for every stage of an incident. Structured guidance from first alert to service review — incident, problem, change, RCA, retrospective and service review reporting in a single HTML file. Zero dependencies. Works offline.</div>
+    <div class="slide-hero-sub">Your operational co-pilot for every stage of an incident. Structured guidance from first alert to service review — incident, problem, change, RCA, retrospective and service review reporting in a single HTML file. Zero dependencies. Works offline. New in v25: a rules-based Pre-flight Review Agent reviews your incident data before outputs are generated, and the War Room Pulse panel keeps every live metric visible at a glance.</div>
   </div>
   <div class="feature-grid">
     <div class="feature-card">
@@ -909,6 +921,51 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
       <div class="feature-title">Service Cluster View</div>
       <div class="feature-body">The Reporting period history tab groups all saved incidents by service name and component. Bar charts show relative incident volume per service. Click any service to expand its full incident history — identify repeat offenders and systemic patterns immediately.</div>
     </div>
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <div class="feature-title">Pre-flight Review Agent</div>
+      <div class="feature-body">Before generating outputs, a rules-based AI agent reviews your incident data — blocking issues, regulatory flags, severity mismatches, incomplete fields. Each finding is dismissable. Human in the loop — you confirm before outputs are generated.</div>
+    </div>
+  </div>
+</div>
+
+<div class="sc-slide" id="slide-15">
+  <div class="slide-hero" style="padding:16px 0 22px;">
+    <div class="slide-hero-badge">🤖 Agentic Intelligence</div>
+    <div class="slide-hero-title" style="font-size:22px;">Human in the Loop — AI That Earns Trust</div>
+    <div class="slide-hero-sub">The tool's intelligence is rules-based and deterministic — not a black box. Every finding can be explained, dismissed or overridden. In FCA/DORA regulated environments, this is more appropriate than generative AI.</div>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🤖</div>
+      <div class="feature-title">Pre-flight Review Agent</div>
+      <div class="feature-body">Before output generation, a rules-based agent analyses your incident data and surfaces findings — blocking issues, warnings, information flags and confirmations. A data completeness score (0–100%) shows how much is present. Every finding is dismissable. You confirm before outputs are generated.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-title">Output Confidence Scoring</div>
+      <div class="feature-body">After generating, each output gets a hover-able readiness chip — for example "82% ServiceNow". Hover to see the specific gaps that reduced the score: missing fields, short descriptions, unresolved flags. Helps prioritise what to complete before pasting.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⬛</div>
+      <div class="feature-title">War Room Pulse</div>
+      <div class="feature-body">A fixed live cockpit panel accessible from the ⬛ Pulse button in the nav. Shows in real time: severity, elapsed time, SLA remaining, last comms sent, next update due, open decisions, MIM name and bridge link. Everything visible at once during a major incident.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title">After-Action Capture</div>
+      <div class="feature-body">A 5-question guided modal fires when the resolution timestamp is set. Research shows retention drops 70% after 2 hours — this captures what matters while the incident is still fresh. Answers feed directly into the PIR and handover pack.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔍</div>
+      <div class="feature-title">Pattern Detection</div>
+      <div class="feature-body">As the service name is typed in Stage 1, the tool scans localStorage sessions for matching service names. If previous incidents are found, an inline hint surfaces: "⚠ Pattern detected: 2 previous incidents for this service". Recurring issues are visible before the investigation begins.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🚨</div>
+      <div class="feature-title">Escalation Sequencer</div>
+      <div class="feature-body">For P1/P2 incidents with an org profile populated, Stage 2 shows a numbered action card: "Right now — in this order: 1. Engage MIM, 2. Primary escalation, 3. Open bridge call..." Eliminates the cognitive overhead of knowing what to do first under pressure.</div>
+    </div>
   </div>
 </div>
   </div>
@@ -919,78 +976,83 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 <div class="sc-footer">
   <div style="display:contents;">
   <div class="sc-footer-nav-item" id="footer-0">
-    <label for="tab14" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">1 / 15</span>
+    <label for="tab15" class="sc-btn secondary">‹ Previous</label>
+    <span style="font-size:11px;color:var(--text3);">1 / 16</span>
     <label for="tab1" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-1">
     <label for="tab0" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">2 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">2 / 16</span>
     <label for="tab2" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-2">
     <label for="tab1" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">3 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">3 / 16</span>
     <label for="tab3" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-3">
     <label for="tab2" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">4 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">4 / 16</span>
     <label for="tab4" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-4">
     <label for="tab3" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">5 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">5 / 16</span>
     <label for="tab5" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-5">
     <label for="tab4" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">6 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">6 / 16</span>
     <label for="tab6" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-6">
     <label for="tab5" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">7 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">7 / 16</span>
     <label for="tab7" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-7">
     <label for="tab6" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">8 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">8 / 16</span>
     <label for="tab8" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-8">
     <label for="tab7" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">9 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">9 / 16</span>
     <label for="tab9" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-9">
     <label for="tab8" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">10 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">10 / 16</span>
     <label for="tab10" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-10">
     <label for="tab9" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">11 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">11 / 16</span>
     <label for="tab11" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-11">
     <label for="tab10" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">12 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">12 / 16</span>
     <label for="tab12" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-12">
     <label for="tab11" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">13 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">13 / 16</span>
     <label for="tab13" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-13">
     <label for="tab12" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">14 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">14 / 16</span>
     <label for="tab14" class="sc-btn primary">Next ›</label>
   </div>
   <div class="sc-footer-nav-item" id="footer-14">
     <label for="tab13" class="sc-btn secondary">‹ Previous</label>
-    <span style="font-size:11px;color:var(--text3);">15 / 15</span>
+    <span style="font-size:11px;color:var(--text3);">15 / 16</span>
+    <label for="tab15" class="sc-btn primary">Next ›</label>
+  </div>
+  <div class="sc-footer-nav-item" id="footer-15">
+    <label for="tab14" class="sc-btn secondary">‹ Previous</label>
+    <span style="font-size:11px;color:var(--text3);">16 / 16</span>
     <label for="tab0" class="sc-btn primary">Next ›</label>
   </div>
   </div>

@@ -1451,6 +1451,99 @@ textarea{resize:vertical;min-height:80px;}
 .sanitise-bar input[type=checkbox]{accent-color:var(--purple);width:13px;height:13px;}
 .sanitise-active-note{font-size:10px;color:var(--purple);font-family:var(--mono);}
 
+/* ═══ EXTRAORDINARY FEATURES ═══ */
+
+/* Output confidence scoring */
+.confidence-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);}
+.confidence-row-label{font-size:10px;color:var(--text3);font-family:var(--mono);width:100%;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.08em;}
+.conf-chip{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:5px;font-size:10px;font-family:var(--mono);font-weight:600;cursor:pointer;position:relative;}
+.conf-chip.conf-high{background:rgba(16,185,129,0.12);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+.conf-chip.conf-mid{background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.3);}
+.conf-chip.conf-low{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.3);}
+.conf-chip-tooltip{display:none;position:absolute;top:100%;left:0;margin-top:6px;background:var(--surface);border:1px solid var(--border2);border-radius:7px;padding:8px 10px;font-size:11px;color:var(--text2);z-index:500;min-width:200px;max-width:260px;line-height:1.55;font-weight:400;white-space:normal;}
+.conf-chip:hover .conf-chip-tooltip{display:block;}
+
+/* War Room Pulse */
+#pulsePanel{position:fixed;top:calc(var(--nav-h) + 44px + 8px);right:8px;z-index:2000;
+  width:270px;background:var(--surface);border:1px solid var(--border2);border-radius:10px;
+  padding:14px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:none;}
+#pulsePanel.show{display:block;}
+.pulse-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.pulse-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);display:flex;align-items:center;gap:7px;}
+.pulse-live{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse-blink 1.5s infinite;}
+@keyframes pulse-blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.pulse-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1;}
+.pulse-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border);}
+.pulse-row:last-child{border-bottom:none;}
+.pulse-key{font-size:10px;color:var(--text3);font-family:var(--mono);min-width:86px;padding-top:1px;}
+.pulse-val{font-size:11px;color:var(--text);flex:1;font-weight:500;word-break:break-word;}
+.pulse-val.sev-p1{color:var(--red);font-weight:700;}
+.pulse-val.sev-p2{color:var(--amber);font-weight:700;}
+.pulse-val.sev-p3{color:var(--green);}
+
+/* After-action capture */
+#afterActionModal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;}
+#afterActionModal.show{display:flex;}
+.aa-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;max-width:560px;width:94%;max-height:88vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,0.6);}
+.aa-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.aa-sub{font-size:12px;color:var(--text3);margin-bottom:18px;line-height:1.6;}
+.aa-q{margin-bottom:14px;}
+.aa-q-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;display:flex;gap:9px;align-items:flex-start;line-height:1.4;}
+.aa-q-num{width:20px;height:20px;min-width:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--mono);}
+.aa-q textarea{width:100%;font-size:12px;padding:8px 10px;background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);resize:vertical;min-height:50px;font-family:var(--sans);line-height:1.5;}
+.aa-q textarea:focus{border-color:var(--accent);outline:none;}
+.aa-actions{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;align-items:center;}
+.aa-skip{font-size:11px;color:var(--text3);cursor:pointer;background:none;border:none;text-decoration:underline;font-family:var(--sans);}
+
+/* Cross-session pattern match */
+.pattern-hint{background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:7px;padding:8px 12px;margin-top:8px;font-size:11px;color:var(--text2);display:none;line-height:1.6;}
+.pattern-hint.show{display:block;}
+.pattern-hint-title{font-weight:600;color:var(--accent);margin-bottom:3px;}
+
+/* Escalation sequencer */
+.esc-sequencer{background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:14px;margin-bottom:14px;display:none;}
+.esc-sequencer.show{display:block;}
+.esc-seq-title{font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.esc-seq-step{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:0.5px solid rgba(239,68,68,0.1);}
+.esc-seq-step:last-child{border-bottom:none;}
+.esc-seq-num{width:20px;height:20px;min-width:20px;border-radius:50%;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--mono);}
+.esc-seq-body{flex:1;font-size:12px;color:var(--text);line-height:1.5;}
+.esc-seq-meta{font-size:10px;color:var(--text3);font-family:var(--mono);}
+
+/* Pre-flight Review Agent */
+#preflightModal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;}
+#preflightModal.show{display:flex;}
+.pf-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;max-width:610px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,0.6);}
+.pf-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1;}
+.pf-title{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:9px;margin-bottom:3px;}
+.pf-agent-badge{font-size:9px;font-family:var(--mono);background:rgba(139,92,246,0.15);color:var(--purple);border:1px solid rgba(139,92,246,0.3);padding:2px 7px;border-radius:3px;font-weight:600;letter-spacing:0.06em;}
+.pf-sub{font-size:11px;color:var(--text3);line-height:1.55;}
+.pf-score-section{padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.pf-score-row{display:flex;align-items:center;gap:10px;}
+.pf-score-label{font-size:11px;color:var(--text3);font-family:var(--mono);min-width:130px;}
+.pf-score-track{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.pf-score-fill{height:100%;border-radius:4px;transition:width 0.5s ease;}
+.pf-score-fill.score-high{background:var(--green);}
+.pf-score-fill.score-mid{background:var(--amber);}
+.pf-score-fill.score-low{background:var(--red);}
+.pf-score-pct{font-size:13px;font-weight:700;font-family:var(--mono);min-width:36px;text-align:right;}
+.pf-findings{padding:14px 20px;}
+.pf-finding{display:flex;gap:11px;padding:10px 12px;border-radius:8px;margin-bottom:8px;background:var(--surface2);border:1px solid var(--border);transition:opacity 0.25s,transform 0.2s;}
+.pf-finding.dismissed{opacity:0.28;transform:scale(0.98);}
+.pf-finding.pf-block{border-left:3px solid var(--red);}
+.pf-finding.pf-warn{border-left:3px solid var(--amber);}
+.pf-finding.pf-info{border-left:3px solid var(--accent);}
+.pf-finding.pf-good{border-left:3px solid var(--green);}
+.pf-finding-icon{font-size:16px;flex-shrink:0;padding-top:1px;}
+.pf-finding-body{flex:1;min-width:0;}
+.pf-finding-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.pf-finding-desc{font-size:11px;color:var(--text2);line-height:1.55;}
+.pf-dismiss{font-size:13px;color:var(--text3);cursor:pointer;background:none;border:none;flex-shrink:0;padding:2px 5px;line-height:1;}
+.pf-dismiss:hover{color:var(--text);}
+.pf-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;position:sticky;bottom:0;background:var(--surface);}
+.pf-finding-count{font-size:11px;color:var(--text3);flex:1;font-family:var(--mono);}
+.pf-empty{padding:20px;text-align:center;font-size:12px;color:var(--text3);font-style:italic;}
+
 /* ═══ STRUCTURED IMPROVEMENTS ═══ */
 
 /* P6: Visual hierarchy — line-height, form spacing, headings, card accent border */
@@ -1611,6 +1704,7 @@ body{line-height:1.75;}
   <button class="nav-scroll-btn right" id="navScrollRight" onclick="scrollNavRight()">›</button>
   <div class="nav-rail-right">
     <button class="nav-action-btn" id="kiNavBtn" onclick="toggleKIPanel()" title="Known Issues">⚠ KI<span class="ki-dot-badge" id="kiBadge"></span></button>
+    <button class="nav-action-btn" id="pulseBtnNav" onclick="togglePulsePanel()" title="War Room Pulse — live incident state">⬛ Pulse</button>
     <button class="nav-action-btn" onclick="openTemplatePicker()" title="Incident templates — pre-fill common incident types">📋</button>
     <button class="nav-action-btn" onclick="runCodeAudit()" title="Audit">🔍</button>
     <button class="nav-action-btn" onclick="obRestart()" title="Tour">?</button>
@@ -3605,8 +3699,9 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
       </div>
       <div class="form-group">
         <label>Affected Service / Application <span class="req">*</span></label>
-        <input id="t1_service" placeholder="e.g. Mobile Banking App, Payment Gateway" oninput="autosave()">
+        <input id="t1_service" placeholder="e.g. Mobile Banking App, Payment Gateway" oninput="autosave();checkServicePattern(this.value)">
         <div class="field-error-msg" id="err_svc">Please name the affected service</div>
+        <div class="pattern-hint" id="servicePatternHint"></div>
       </div>
     </div>
   </div>
@@ -3731,6 +3826,12 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
     <div class="stage-badge badge-incident">Stage 2 — Incident Record</div>
     <div class="stage-title">Incident Record</div>
     <div class="stage-desc">Complete the incident record. All fields map to ServiceNow and Jira field IDs. The SLA clock is active for P1 and P2 incidents.</div>
+  </div>
+
+  <!-- ESCALATION SEQUENCER — shown for P1/P2 when org profile has contacts -->
+  <div class="esc-sequencer" id="escSequencer">
+    <div class="esc-seq-title">🚨 Right now — in this order</div>
+    <div id="escSteps"></div>
   </div>
 
   <!-- REASSIGNMENT TRACKER -->
@@ -3882,7 +3983,7 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
       </div>
       <div class="form-group">
         <label>Time Resolved (leave blank if ongoing)</label>
-        <input type="datetime-local" id="i_resolved" onchange="calcMTTR();autosave()">
+        <input type="datetime-local" id="i_resolved" onchange="calcMTTR();autosave();triggerAfterAction()">
       </div>
       <div class="form-group">
         <label>Resolution Summary <span style="font-size:10px;color:var(--text3)">[ServiceNow: close_notes]</span></label>
@@ -5067,6 +5168,11 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
 
   <div id="metricsPanel" class="metrics-row"></div>
 
+  <!-- OUTPUT CONFIDENCE SCORES -->
+  <div id="confidenceRow" style="display:none" class="confidence-row">
+    <div class="confidence-row-label">Output readiness — hover for gaps</div>
+  </div>
+
   <!-- COPY ALL OUTPUTS -->
   <div class="copy-all-bar">
     <span class="copy-all-label">Copy all outputs as a single structured document</span>
@@ -5227,14 +5333,28 @@ function goToStage(n){
   if(n===6){prefillCRFields();}
   if(n===7){
     setTimeout(updateObsDashboard,50);
-    generateAllOutputs();
-    generateStatusPageOutput();
-    generateCROutput();
-    applyOrgMemory();
-    setTimeout(expandAllOutputs,100);
-    setTimeout(generatePostIncidentChecklist,150);
-    setTimeout(function(){if(typeof highlightOutputBlocks==='function')highlightOutputBlocks();},300);
-    setTimeout(function(){if(hasActiveIncidentData())addTimelineEvent('Outputs generated — incident documentation complete','resolved');},400);
+    // Run pre-flight review agent before generating — user confirms or dismisses findings
+    if(typeof runPreflightReview==='function'){
+      runPreflightReview(function(){
+        generateAllOutputs();
+        generateStatusPageOutput();
+        generateCROutput();
+        applyOrgMemory();
+        setTimeout(expandAllOutputs,100);
+        setTimeout(generatePostIncidentChecklist,150);
+        setTimeout(function(){if(typeof highlightOutputBlocks==='function')highlightOutputBlocks();},300);
+        setTimeout(function(){if(typeof renderConfidenceRow==='function')renderConfidenceRow();},350);
+        setTimeout(function(){if(hasActiveIncidentData())addTimelineEvent('Outputs generated — incident documentation complete','resolved');},400);
+      });
+    } else {
+      generateAllOutputs();
+      generateStatusPageOutput();
+      generateCROutput();
+      applyOrgMemory();
+      setTimeout(expandAllOutputs,100);
+      setTimeout(generatePostIncidentChecklist,150);
+      setTimeout(function(){if(typeof highlightOutputBlocks==='function')highlightOutputBlocks();},300);
+    }
   }
   window.scrollTo({top:0,behavior:'smooth'});
   if(typeof updateNavRail==='function'){currentNav='incident';updateNavRail('incident');updateNavIncidentSub();updateLocationCrumb('incident');}
@@ -5345,6 +5465,7 @@ function setSev(sev){
   if(typeof updateNavSevDot==='function')updateNavSevDot();
   if(typeof updateTabTitle==='function')updateTabTitle();
   if(typeof requestSLANotificationPermission==='function')requestSLANotificationPermission();
+  if(typeof buildEscalationSequencer==='function')buildEscalationSequencer();
   autosave();
 }
 
@@ -6240,7 +6361,7 @@ Problem Record: PRB[NUMBER]
 Change Request: CHG[NUMBER]
 Jira Bug: [LINK]
 Jira Remediation Story: [LINK]
-${typeof getDecisionLogBlock==='function'&&getDecisionLogBlock()?getDecisionLogBlock():''}
+${typeof getDecisionLogBlock==='function'&&getDecisionLogBlock()?getDecisionLogBlock():''}${typeof getAfterActionBlock==='function'&&getAfterActionBlock()?getAfterActionBlock():''}
 ---
 Generated by ITSM Workflow Intelligence Tool v25 — https://zeus-17.github.io/itsm-workflow-intelligence/`);
 
@@ -15592,6 +15713,430 @@ function showSkeletonInContainer(containerId){
   el.innerHTML='<div class="skeleton-block"><div class="skeleton-header"></div><div class="skeleton-line w90"></div><div class="skeleton-line w70"></div><div class="skeleton-line w50"></div><div class="skeleton-line w90"></div><div class="skeleton-line w35"></div></div>';
 }
 
+// ── EXTRAORDINARY FEATURES ───────────────────────────────────
+
+// ─── 1. OUTPUT CONFIDENCE SCORING ────────────────────────────
+var _confDefinitions={
+  sn_out:{label:'ServiceNow',fields:[
+    {id:'i_shortdesc',alt:'t1_observation',label:'short description',weight:15},
+    {id:'t1_service',label:'service name',weight:10},
+    {id:'i_category',label:'category',weight:8},
+    {id:'i_ci',label:'CI',weight:8},
+    {id:'i_assigngroup',label:'assignment group',weight:8},
+    {id:'i_diagnosis',label:'diagnosis',weight:12},
+    {id:'i_started',label:'start time',weight:10},
+    {id:'i_resolution',label:'resolution notes',weight:10},
+    {id:'i_close_code',label:'close code',weight:5},
+    {id:'i_usersnum',label:'users affected',weight:6}
+  ]},
+  jira_bug_out:{label:'Jira Bug',fields:[
+    {id:'i_shortdesc',alt:'t1_observation',label:'summary',weight:20},
+    {id:'t1_service',label:'component',weight:15},
+    {id:'i_diagnosis',label:'technical description',weight:20},
+    {id:'i_started',label:'detected at',weight:10},
+    {id:'i_workaround',label:'workaround',weight:10}
+  ]},
+  conf_out:{label:'Confluence PIR',fields:[
+    {id:'i_shortdesc',alt:'t1_observation',label:'incident title',weight:10},
+    {id:'i_started',label:'start time',weight:10},
+    {id:'i_resolved',label:'resolution time',weight:10},
+    {id:'rca_rootcause',label:'root cause',weight:20},
+    {id:'rca_fix',label:'permanent fix',weight:15},
+    {id:'rca_good',label:'what went well',weight:10},
+    {id:'rca_improve',label:'what to improve',weight:10}
+  ]},
+  prob_out:{label:'Problem Record',fields:[
+    {id:'pr_statement',label:'problem statement',weight:25},
+    {id:'pr_owner',label:'problem owner',weight:15},
+    {id:'rca_rootcause',label:'root cause',weight:25},
+    {id:'pr_targetdate',label:'target date',weight:10}
+  ]},
+  cr_out:{label:'Change Request',fields:[
+    {id:'cr_shortdesc',label:'description',weight:20},
+    {id:'cr_type',label:'change type',weight:10},
+    {id:'cr_lead',label:'change lead',weight:15},
+    {id:'cr_window',label:'change window',weight:15},
+    {id:'cr_impl',label:'implementation plan',weight:20}
+  ]}
+};
+
+function scoreOutput(id){
+  var def=_confDefinitions[id];
+  if(!def)return null;
+  var el=document.getElementById(id);
+  if(!el||!el.textContent||el.textContent==='Generating...')return null;
+  var totalWeight=0,earnedWeight=0,gaps=[];
+  def.fields.forEach(function(f){
+    totalWeight+=f.weight;
+    var val=g(f.id)||(f.alt?g(f.alt):'');
+    var hasValue=val&&val.trim().length>3;
+    if(hasValue){earnedWeight+=f.weight;}
+    else{gaps.push(f.label);}
+  });
+  var pct=totalWeight>0?Math.round((earnedWeight/totalWeight)*100):0;
+  return{pct:pct,gaps:gaps.slice(0,3),label:def.label};
+}
+
+function renderConfidenceRow(){
+  var row=document.getElementById('confidenceRow');
+  if(!row)return;
+  var ids=['sn_out','jira_bug_out','conf_out','prob_out','cr_out'];
+  var chips='<div class="confidence-row-label">Output readiness — hover for gaps</div>';
+  var anyGenerated=false;
+  ids.forEach(function(id){
+    var s=scoreOutput(id);
+    if(!s)return;
+    anyGenerated=true;
+    var cls=s.pct>=80?'conf-high':s.pct>=50?'conf-mid':'conf-low';
+    var gapText=s.gaps.length?'Missing: '+s.gaps.join(', '):'All key fields present ✓';
+    chips+='<div class="conf-chip '+cls+'">'
+      +s.pct+'% '+s.label
+      +'<span class="conf-chip-tooltip">'+s.label+': '+s.pct+'% ready<br>'+gapText+'</span>'
+      +'</div>';
+  });
+  if(anyGenerated){row.style.display='flex';row.innerHTML=chips;}
+  else{row.style.display='none';}
+}
+
+// ─── 2. WAR ROOM PULSE ───────────────────────────────────────
+var _pulseInterval=null;
+function togglePulsePanel(){
+  var p=document.getElementById('pulsePanel');
+  if(!p)return;
+  var show=!p.classList.contains('show');
+  p.classList.toggle('show',show);
+  if(show){
+    updatePulsePanel();
+    if(_pulseInterval)clearInterval(_pulseInterval);
+    _pulseInterval=setInterval(updatePulsePanel,30000);
+    // Close on outside click
+    setTimeout(function(){
+      document.addEventListener('click',function closePulse(e){
+        if(!p.contains(e.target)&&e.target.id!=='pulseBtnNav'){
+          p.classList.remove('show');
+          clearInterval(_pulseInterval);
+          document.removeEventListener('click',closePulse);
+        }
+      });
+    },100);
+  } else {
+    clearInterval(_pulseInterval);
+  }
+}
+function updatePulsePanel(){
+  var sev=selectedSev||'—';
+  var sevEl=document.getElementById('pulseSev');
+  if(sevEl){
+    sevEl.textContent=sev;
+    sevEl.className='pulse-val'+(sev==='P1'?' sev-p1':sev==='P2'?' sev-p2':sev==='P3'?' sev-p3':'');
+  }
+  // Elapsed
+  var started=g('i_started');
+  var elapsedEl=document.getElementById('pulseElapsed');
+  if(elapsedEl&&started){
+    var mins=Math.round((new Date()-new Date(started))/60000);
+    var h=Math.floor(mins/60);var m=mins%60;
+    elapsedEl.textContent=h>0?h+'h '+m+'m':m+'m';
+  } else if(elapsedEl){elapsedEl.textContent='Start time not set';}
+  // SLA
+  var slaEl=document.getElementById('slaTime');
+  var pulseSLA=document.getElementById('pulseSLA');
+  if(pulseSLA&&slaEl){pulseSLA.textContent=slaEl.textContent||'—';}
+  // Last comms — find most recent timeline event with 'comms' or 'update' or 'bridge'
+  var lastCommsEl=document.getElementById('pulseLastComms');
+  if(lastCommsEl&&typeof timelineEvents!=='undefined'){
+    var commsEvents=timelineEvents.filter(function(e){return /comms|update|bridge|send|stakeholder/i.test(e.text);});
+    lastCommsEl.textContent=commsEvents.length?commsEvents[commsEvents.length-1].time+' — '+commsEvents[commsEvents.length-1].text.slice(0,40)+'…':'Not sent';
+  }
+  // Next update — based on MI cadence setting
+  var nextEl=document.getElementById('pulseNextUpdate');
+  if(nextEl){
+    var freq=g('mi_frequency');
+    if(freq&&started){
+      var freqMins=parseInt(freq)||30;
+      var tlEvents=typeof timelineEvents!=='undefined'?timelineEvents:[];
+      var lastUpdate=tlEvents.filter(function(e){return /update|comms/i.test(e.text);});
+      var baseTime=lastUpdate.length?new Date(lastUpdate[lastUpdate.length-1].ts):new Date(started);
+      var nextTime=new Date(baseTime.getTime()+freqMins*60000);
+      var remaining=Math.round((nextTime-new Date())/60000);
+      nextEl.textContent=remaining>0?'in '+remaining+'m':'Overdue';
+    } else {nextEl.textContent='Set MI cadence to activate';}
+  }
+  // Decisions
+  var decEl=document.getElementById('pulseDecisions');
+  if(decEl&&typeof decisionLog!=='undefined'){decEl.textContent=decisionLog.length+' logged';}
+  // MIM
+  var mimEl=document.getElementById('pulseMIM');
+  if(mimEl){mimEl.textContent=g('mi_manager')||g('orgMIM')||'Not assigned';}
+  // Bridge
+  var bridgeEl=document.getElementById('pulseBridge');
+  if(bridgeEl){bridgeEl.textContent=g('mi_bridge')||'—';}
+}
+
+// ─── 3. AFTER-ACTION CAPTURE ────────────────────────────────
+var _afterActionShown=false;
+var _afterActionData={};
+function triggerAfterAction(){
+  if(_afterActionShown)return;
+  var resolved=document.getElementById('i_resolved');
+  if(!resolved||!resolved.value)return;
+  // Only show if we have enough incident data
+  if(!g('i_shortdesc')&&!g('t1_observation'))return;
+  _afterActionShown=true;
+  setTimeout(function(){
+    var m=document.getElementById('afterActionModal');
+    if(m)m.style.display='flex';
+  },800);
+}
+function skipAfterAction(){
+  var m=document.getElementById('afterActionModal');
+  if(m)m.style.display='none';
+}
+function submitAfterAction(){
+  _afterActionData={
+    q1:document.getElementById('aa_q1')?document.getElementById('aa_q1').value:'',
+    q2:document.getElementById('aa_q2')?document.getElementById('aa_q2').value:'',
+    q3:document.getElementById('aa_q3')?document.getElementById('aa_q3').value:'',
+    q4:document.getElementById('aa_q4')?document.getElementById('aa_q4').value:'',
+    q5:document.getElementById('aa_q5')?document.getElementById('aa_q5').value:'',
+    ts:new Date().toISOString()
+  };
+  try{localStorage.setItem('itsm_afteraction',JSON.stringify(_afterActionData));}catch(e){}
+  skipAfterAction();
+  showToast('After-action answers saved — they will appear in your PIR output.','success',3500);
+  if(typeof addTimelineEvent==='function')addTimelineEvent('After-action review completed','auto');
+}
+function getAfterActionBlock(){
+  var d=_afterActionData;
+  if(!d||!d.q1&&!d.q2&&!d.q3&&!d.q4&&!d.q5)return'';
+  var NL=String.fromCharCode(10);
+  var lines=[NL+'AFTER-ACTION REVIEW — CAPTURED AT RESOLUTION','-'.repeat(44)];
+  var qs=['What first worked:','Almost missed:','Wrong assumption:','Runbook gap:','Change at detection:'];
+  ['q1','q2','q3','q4','q5'].forEach(function(k,i){if(d[k]&&d[k].trim())lines.push(qs[i]+NL+d[k].trim());});
+  return lines.join(NL)+NL;
+}
+
+// ─── 4. CROSS-SESSION PATTERN SURFACING ──────────────────────
+var _patternDebounce=null;
+function checkServicePattern(val){
+  clearTimeout(_patternDebounce);
+  var hint=document.getElementById('servicePatternHint');
+  if(!hint)return;
+  if(!val||val.trim().length<3){hint.classList.remove('show');return;}
+  _patternDebounce=setTimeout(function(){
+    var term=val.trim().toLowerCase();
+    var matches=[];
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(!k||!k.startsWith('itsm_session_'))continue;
+      try{
+        var d=JSON.parse(localStorage.getItem(k));
+        var svc=(d&&d.incidentData&&d.incidentData.t1_service)||'';
+        if(svc&&svc.toLowerCase().indexOf(term)>-1){
+          matches.push({name:k.replace('itsm_session_',''),sev:(d.incidentData&&d.incidentData.sev)||'',svc:svc});
+        }
+      }catch(e){}
+    }
+    if(matches.length){
+      var p1s=matches.filter(function(m){return m.sev==='P1';}).length;
+      hint.innerHTML='<div class="pattern-hint-title">⚠ Pattern detected: '+matches.length+' previous incident'+(matches.length>1?'s':'')+' for this service</div>'
+        +(p1s?'<strong>'+p1s+' P1</strong> — a Problem Record may already exist. '+'\n':'')
+        +'Sessions: '+matches.slice(0,3).map(function(m){return m.name+(m.sev?' ('+m.sev+')':'');}).join(', ')+(matches.length>3?' +more':'');
+      hint.classList.add('show');
+    } else {
+      hint.classList.remove('show');
+    }
+  },600);
+}
+
+// ─── 5. ESCALATION SEQUENCER ────────────────────────────────
+function buildEscalationSequencer(){
+  var sev=selectedSev;
+  var esc=document.getElementById('escSequencer');
+  var steps=document.getElementById('escSteps');
+  if(!esc||!steps)return;
+  if(sev!=='P1'&&sev!=='P2'){esc.classList.remove('show');return;}
+  var stepList=[];
+  var p1p=g('esc_p1_primary')||g('esc_p2_primary');
+  var p1s=g('esc_p1_secondary')||g('esc_p2_secondary');
+  var p1e=g('esc_p1_exec');
+  var mim=g('mi_manager')||g('orgMIM');
+  var bridge=g('mi_bridge');
+  if(mim)stepList.push({who:'Engage MIM',detail:mim,meta:'Major Incident Manager — owns the process, not the fix'});
+  if(p1p)stepList.push({who:'Primary escalation',detail:p1p,meta:'First technical contact for '+sev});
+  if(bridge)stepList.push({who:'Open bridge call',detail:bridge,meta:'Paste bridge link in Slack/Teams — all responders to join'});
+  if(p1s)stepList.push({who:'Secondary escalation',detail:p1s,meta:'If primary unavailable or unresponsive after 10 minutes'});
+  if(!stepList.length){esc.classList.remove('show');return;}
+  // Always add: send stakeholder update
+  stepList.push({who:'Send stakeholder update',detail:'Use the exec update template (Stage 3)',meta:'Within 15 minutes of declaring '+sev});
+  if(p1e)stepList.push({who:'Notify exec',detail:p1e,meta:'If unresolved within 30 minutes — '+sev+' executive notification'});
+  steps.innerHTML=stepList.map(function(s,i){
+    return '<div class="esc-seq-step">'
+      +'<div class="esc-seq-num">'+(i+1)+'</div>'
+      +'<div class="esc-seq-body"><strong>'+s.who+'</strong>'+(s.detail?' — '+s.detail:'')
+      +'<div class="esc-seq-meta">'+s.meta+'</div></div></div>';
+  }).join('');
+  esc.classList.add('show');
+}
+
+// ─── 6. PRE-FLIGHT REVIEW AGENT ─────────────────────────────
+var _preflightCallback=null;
+var _preflightFindings=[];
+
+function runPreflightReview(onConfirm){
+  _preflightCallback=onConfirm;
+  _preflightFindings=generatePreflightFindings();
+  var modal=document.getElementById('preflightModal');
+  if(!modal)return;
+  // Calculate score
+  var required=[
+    {id:'i_shortdesc',alt:'t1_observation',label:'Short description',weight:20},
+    {id:'t1_service',label:'Service name',weight:15},
+    {id:'i_started',label:'Start time',weight:15},
+    {id:'i_diagnosis',label:'Initial diagnosis',weight:15},
+    {id:'i_assigngroup',label:'Assignment group',weight:10},
+    {id:'i_ci',label:'Configuration item',weight:10},
+    {id:'i_category',label:'Category',weight:5},
+    {id:'rca_rootcause',label:'Root cause',weight:10}
+  ];
+  var totalW=0,earnedW=0;
+  required.forEach(function(f){
+    totalW+=f.weight;
+    var v=g(f.id)||(f.alt?g(f.alt):'');
+    if(v&&v.trim().length>3)earnedW+=f.weight;
+  });
+  var scorePct=Math.round((earnedW/totalW)*100);
+  var fill=document.getElementById('pfScoreFill');
+  var pctEl=document.getElementById('pfScorePct');
+  if(fill){
+    fill.style.width=scorePct+'%';
+    fill.className='pf-score-fill '+(scorePct>=80?'score-high':scorePct>=50?'score-mid':'score-low');
+  }
+  if(pctEl){pctEl.textContent=scorePct+'%';pctEl.style.color=scorePct>=80?'var(--green)':scorePct>=50?'var(--amber)':'var(--red)';}
+  renderPreflightFindings();
+  modal.style.display='flex';
+}
+
+function generatePreflightFindings(){
+  var findings=[];
+  var id=0;
+  function f(type,icon,title,desc,dismissed){
+    return{id:id++,type:type,icon:icon,title:title,desc:desc,dismissed:dismissed||false};
+  }
+  var obs=g('i_shortdesc')||g('t1_observation')||'';
+  var svc=g('t1_service')||'';
+  var diag=g('i_diagnosis')||'';
+  var ci=g('i_ci')||'';
+  var assignGroup=g('i_assigngroup')||'';
+  var started=g('i_started')||'';
+  var resolution=g('i_resolution')||'';
+  var rcaRoot=g('rca_rootcause')||'';
+  var rcaFix=g('rca_fix')||'';
+  var sev=selectedSev||'';
+  var tlCount=typeof timelineEvents!=='undefined'?timelineEvents.length:0;
+  var decCount=typeof decisionLog!=='undefined'?decisionLog.length:0;
+  var score=typeof calcScore==='function'?calcScore():0;
+
+  // BLOCKING — things that will create broken outputs
+  if(!obs||obs.trim().length<10)
+    findings.push(f('pf-block','🔴','Short description is missing or too brief','ServiceNow and all outputs require a clear description. Outputs will contain placeholder text — reviewers will reject the record.'));
+  if(!svc)
+    findings.push(f('pf-block','🔴','No service name entered','Service name populates 6 fields across 4 outputs. Without it, every generated record will show [Service].'));
+  if(!started)
+    findings.push(f('pf-warn','⚠️','Start time not set — SLA and MTTR will be incorrect','Without a start time, SLA calculations cannot run and MTTR will not appear in the ServiceNow record.'));
+
+  // WARNINGS — likely quality issues
+  if(diag&&diag.trim().length<20)
+    findings.push(f('pf-warn','⚠️','Diagnosis is very brief ('+diag.trim().length+' characters)','A one-line diagnosis is insufficient for a structured incident record. Engineering and PIR reviewers need enough context to understand what was investigated.'));
+  if(!ci)
+    findings.push(f('pf-warn','⚠️','Configuration item (CI) not specified','CI is a required field in ServiceNow. Without it, the incident cannot be linked to your CMDB. 4 output fields will show [CI].'));
+  if(!assignGroup)
+    findings.push(f('pf-warn','⚠️','Assignment group not set','The ServiceNow record will route incorrectly. The engineering team will not receive automatic notification.'));
+  if(sev&&score>0){
+    var suggested=score>=17?'P1':score>=11?'P2':score>=6?'P3':'P4';
+    if(sev!==suggested)
+      findings.push(f('pf-warn','⚠️','Severity override: score suggests '+suggested+', you selected '+sev,'Your triage score ('+score+'/24) points to '+suggested+'. This is recorded in the timeline — ensure you can justify the override if questioned during the PIR.'));
+  }
+  // Payment/regulatory
+  var paymentKeywords=/payment|transaction|banking|card|pci|checkout|purchase|fund/i;
+  var slaReg=document.getElementById('sla_regulatory');
+  if(paymentKeywords.test(obs+' '+svc)&&(!slaReg||!slaReg.checked))
+    findings.push(f('pf-warn','⚠️','Payment keyword detected — regulatory flag not set','This incident description contains payment-related terms. If FCA/PRA-regulated, a notification obligation assessment is required. Consider enabling the regulatory flag.'));
+  var piiKeywords=/personal data|pii|gdpr|customer data|data breach|email address|account number/i;
+  if(piiKeywords.test(obs+' '+svc)&&(!slaReg||!slaReg.checked))
+    findings.push(f('pf-warn','⚠️','Possible data incident — regulatory flag not set','The description may indicate a personal data incident. ICO 72-hour notification window and DPO engagement may be required under UK GDPR.'));
+  // P1/P2 specific
+  if((sev==='P1'||sev==='P2')&&(!rcaRoot||rcaRoot.trim().length<10))
+    findings.push(f('pf-warn','⚠️','Root cause not completed for '+sev+' incident','PIR and Problem Record outputs will have significant placeholder text. Complete root cause analysis for a credible post-incident record.'));
+  if((sev==='P1'||sev==='P2')&&(!rcaFix||rcaFix.trim().length<10))
+    findings.push(f('pf-warn','⚠️','Permanent fix not documented','Without a permanent fix, the Jira Remediation Story and Problem Record will be incomplete. This is typically required before closing a '+sev+' Problem Record.'));
+
+  // INFORMATIONAL — quality improvements
+  if(tlCount===0)
+    findings.push(f('pf-info','ℹ️','Incident timeline is empty','The PIR and Confluence output will lack chronology. Add timeline entries manually or they will be captured from autosave events.'));
+  if(decCount===0&&(sev==='P1'||sev==='P2'))
+    findings.push(f('pf-info','ℹ️','No decisions logged in the Decision Log',''+sev+' incidents typically involve multiple decision points. The audit trail will be incomplete — consider logging key decisions made during the incident.'));
+  if(g('i_resolved')&&!resolution)
+    findings.push(f('pf-info','ℹ️','Resolution time is set but resolution notes are empty','The ServiceNow close notes field will contain [Pending]. Complete resolution notes before pasting.'));
+
+  // POSITIVE — things that are well done
+  if(tlCount>3)
+    findings.push(f('pf-good','✅','Strong incident timeline ('+tlCount+' entries)','Chronological record is complete. PIR and handover pack will have excellent traceability.'));
+  if(decCount>0)
+    findings.push(f('pf-good','✅','Decision log populated ('+decCount+' entries)','Audit trail captured. These feed directly into the PIR.'));
+  if(obs&&obs.trim().length>30&&svc&&started)
+    findings.push(f('pf-good','✅','Core fields complete — outputs will be paste-ready','Short description, service and start time are all populated. Outputs will be structurally complete.'));
+
+  return findings;
+}
+
+function renderPreflightFindings(){
+  var container=document.getElementById('pfFindings');
+  var countEl=document.getElementById('pfFindingCount');
+  if(!container)return;
+  var active=_preflightFindings.filter(function(f){return !f.dismissed;});
+  var blocks=_preflightFindings.filter(function(f){return f.type==='pf-block'&&!f.dismissed;});
+  var warns=_preflightFindings.filter(function(f){return f.type==='pf-warn'&&!f.dismissed;});
+  if(countEl){
+    countEl.textContent=(blocks.length?blocks.length+' blocking  ':'')+(warns.length?warns.length+' warnings  ':'')+active.length+' total';
+  }
+  if(!_preflightFindings.length){
+    container.innerHTML='<div class="pf-empty">No findings — your incident data looks complete. Ready to generate.</div>';
+    return;
+  }
+  container.innerHTML=_preflightFindings.map(function(finding){
+    return '<div class="pf-finding '+finding.type+(finding.dismissed?' dismissed':'')+'" id="pff_'+finding.id+'">'
+      +'<span class="pf-finding-icon">'+finding.icon+'</span>'
+      +'<div class="pf-finding-body">'
+        +'<div class="pf-finding-title">'+finding.title+'</div>'
+        +'<div class="pf-finding-desc">'+finding.desc+'</div>'
+      +'</div>'
+      +'<button class="pf-dismiss" onclick="dismissPreflightFinding('+finding.id+')" title="Dismiss this finding">×</button>'
+    +'</div>';
+  }).join('');
+}
+function dismissPreflightFinding(id){
+  var f=_preflightFindings.find(function(f){return f.id===id;});
+  if(f)f.dismissed=true;
+  var el=document.getElementById('pff_'+id);
+  if(el)el.classList.add('dismissed');
+  var countEl=document.getElementById('pfFindingCount');
+  var active=_preflightFindings.filter(function(f){return !f.dismissed;});
+  var blocks=_preflightFindings.filter(function(f){return f.type==='pf-block'&&!f.dismissed;});
+  var warns=_preflightFindings.filter(function(f){return f.type==='pf-warn'&&!f.dismissed;});
+  if(countEl)countEl.textContent=(blocks.length?blocks.length+' blocking  ':'')+(warns.length?warns.length+' warnings  ':'')+active.length+' total';
+}
+function dismissAllPreflightFindings(){
+  _preflightFindings.forEach(function(f){f.dismissed=true;});
+  renderPreflightFindings();
+}
+function confirmPreflightAndGenerate(){
+  var modal=document.getElementById('preflightModal');
+  if(modal)modal.style.display='none';
+  if(typeof _preflightCallback==='function')_preflightCallback();
+  _preflightCallback=null;
+}
+
 // ── REVIEW IMPROVEMENTS — NEW FUNCTIONS ─────────────────────
 
 // 1. SLA Health Bar — update the colored progress bar inside the SLA clock
@@ -15866,7 +16411,8 @@ function dismissQuickstart(e){
 window.addEventListener('load',function(){
   ['shareModal','trainingModal','welcomeOverlay','browserWarn',
    'templatePickerPanel','obOverlay','kbShortcutPanel',
-   'changelogModal','privacyModal','tocPanel','tocToggleBtn','appFooter'].forEach(function(id){
+   'changelogModal','privacyModal','tocPanel','tocToggleBtn','appFooter',
+   'pulsePanel','afterActionModal','preflightModal'].forEach(function(id){
     var el=document.getElementById(id);
     if(el&&el.parentElement!==document.body)document.body.appendChild(el);
   });
@@ -16183,6 +16729,78 @@ window.addEventListener('load',()=>{
     <button class="a11y-toggle" id="a11yHCBtn" onclick="toggleHighContrast()">Off — click to enable</button>
   </div>
   <div class="a11y-footer">Settings persist across sessions.<br>Keyboard: Alt+A to open/close this panel.</div>
+</div>
+
+<!-- WAR ROOM PULSE PANEL -->
+<div id="pulsePanel" role="complementary" aria-label="War Room Pulse">
+  <div class="pulse-header">
+    <div class="pulse-title"><span class="pulse-live"></span>War Room Pulse</div>
+    <button class="pulse-close" onclick="togglePulsePanel()" aria-label="Close pulse panel">×</button>
+  </div>
+  <div class="pulse-row"><span class="pulse-key">Severity</span><span class="pulse-val" id="pulseSev">—</span></div>
+  <div class="pulse-row"><span class="pulse-key">Elapsed</span><span class="pulse-val" id="pulseElapsed">—</span></div>
+  <div class="pulse-row"><span class="pulse-key">SLA remaining</span><span class="pulse-val" id="pulseSLA">—</span></div>
+  <div class="pulse-row"><span class="pulse-key">Last comms</span><span class="pulse-val" id="pulseLastComms">Not sent</span></div>
+  <div class="pulse-row"><span class="pulse-key">Next update</span><span class="pulse-val" id="pulseNextUpdate">—</span></div>
+  <div class="pulse-row"><span class="pulse-key">Open decisions</span><span class="pulse-val" id="pulseDecisions">0</span></div>
+  <div class="pulse-row"><span class="pulse-key">MIM</span><span class="pulse-val" id="pulseMIM">Not assigned</span></div>
+  <div class="pulse-row"><span class="pulse-key">Bridge</span><span class="pulse-val" id="pulseBridge">—</span></div>
+  <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono)">Updates every 30s · click Pulse to refresh</div>
+</div>
+
+<!-- AFTER-ACTION CAPTURE MODAL -->
+<div id="afterActionModal" role="dialog" aria-modal="true" aria-label="After-action capture">
+  <div class="aa-box">
+    <div class="aa-title">⚡ After-Action Capture — 3 minutes while it's fresh</div>
+    <div class="aa-sub">Incident resolved. Research shows lesson retention drops 70% after 2 hours. Five questions — answers feed directly into your PIR and handover pack. Skip any you cannot answer right now.</div>
+    <div class="aa-q">
+      <div class="aa-q-label"><span class="aa-q-num">1</span>What was the first intervention that actually worked?</div>
+      <textarea id="aa_q1" placeholder="e.g. Restarting the connection pool released the deadlock — all other attempts made things worse"></textarea>
+    </div>
+    <div class="aa-q">
+      <div class="aa-q-label"><span class="aa-q-num">2</span>What did we almost miss that would have extended the incident?</div>
+      <textarea id="aa_q2" placeholder="e.g. Nearly overlooked the read replica being 4 hours behind — caught it when we checked the DB dashboard"></textarea>
+    </div>
+    <div class="aa-q">
+      <div class="aa-q-label"><span class="aa-q-num">3</span>What assumption turned out to be wrong?</div>
+      <textarea id="aa_q3" placeholder="e.g. Assumed the CDN was healthy because the status page was green — it wasn't"></textarea>
+    </div>
+    <div class="aa-q">
+      <div class="aa-q-label"><span class="aa-q-num">4</span>What should be in the runbook that isn't there now?</div>
+      <textarea id="aa_q4" placeholder="e.g. No guidance on how to safely drain the queue without losing messages — had to improvise"></textarea>
+    </div>
+    <div class="aa-q">
+      <div class="aa-q-label"><span class="aa-q-num">5</span>What would you change at the point of first detection?</div>
+      <textarea id="aa_q5" placeholder="e.g. Alert threshold too high — by the time it fired we were already at 40% error rate. Should be 5%."></textarea>
+    </div>
+    <div class="aa-actions">
+      <button class="aa-skip" onclick="skipAfterAction()">Skip — I'll complete the PIR manually</button>
+      <button class="btn btn-primary" onclick="submitAfterAction()">Save to PIR →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRE-FLIGHT REVIEW AGENT MODAL -->
+<div id="preflightModal" role="dialog" aria-modal="true" aria-label="Pre-flight review">
+  <div class="pf-box">
+    <div class="pf-header">
+      <div class="pf-title">🤖 Pre-flight Review <span class="pf-agent-badge">AGENT</span></div>
+      <div class="pf-sub">Reviewing your incident data before generating outputs. Review each finding — dismiss what doesn't apply, act on what does. Human in the loop.</div>
+    </div>
+    <div class="pf-score-section">
+      <div class="pf-score-row">
+        <span class="pf-score-label">Data completeness</span>
+        <div class="pf-score-track"><div class="pf-score-fill" id="pfScoreFill" style="width:0%"></div></div>
+        <span class="pf-score-pct" id="pfScorePct">—</span>
+      </div>
+    </div>
+    <div class="pf-findings" id="pfFindings"><div class="pf-empty">Analysing incident data…</div></div>
+    <div class="pf-footer">
+      <span class="pf-finding-count" id="pfFindingCount"></span>
+      <button class="btn btn-secondary btn-sm" onclick="dismissAllPreflightFindings()">Dismiss all</button>
+      <button class="btn btn-primary" onclick="confirmPreflightAndGenerate()">Generate outputs →</button>
+    </div>
+  </div>
 </div>
 
 <!-- APP FOOTER -->

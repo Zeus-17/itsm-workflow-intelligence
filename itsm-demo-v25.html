@@ -528,8 +528,61 @@ body{overflow-x:hidden;}
 .ia-tag-teal{background:rgba(20,184,166,0.10);color:var(--teal);border:1px solid rgba(20,184,166,0.3);}
 .ia-tag-green{background:rgba(16,185,129,0.10);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
 
-/* ─── SCENE 10: CLOSE ────────────────────────────────────────── */
+/* ─── SCENE 10: PRE-FLIGHT REVIEW AGENT ────────────────────── */
 #s10{
+  background:radial-gradient(ellipse at 50% 20%,rgba(59,130,246,0.12) 0%,transparent 55%),
+             var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:50px 80px;
+}
+.pf-eyebrow{font-size:11px;font-family:var(--mono);color:var(--accent);
+  text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;text-align:center;
+  opacity:0;animation:fadeUp 0.6s 0.2s both;}
+.pf-title{font-size:34px;font-weight:700;color:white;margin-bottom:10px;text-align:center;
+  opacity:0;animation:fadeUp 0.6s 0.4s both;}
+.pf-sub{font-size:14px;color:var(--text2);max-width:640px;text-align:center;
+  margin-bottom:36px;line-height:1.65;
+  opacity:0;animation:fadeUp 0.6s 0.6s both;}
+.pf-modal{
+  background:var(--surface);border:1px solid rgba(59,130,246,0.3);
+  border-radius:14px;width:100%;max-width:680px;overflow:hidden;
+  box-shadow:0 0 60px rgba(59,130,246,0.12);
+  opacity:0;animation:popIn 0.6s 0.8s both;
+}
+.pf-modal-header{
+  background:rgba(59,130,246,0.08);border-bottom:1px solid rgba(59,130,246,0.2);
+  padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+}
+.pf-modal-title{font-size:14px;font-weight:600;color:var(--accent);display:flex;align-items:center;gap:8px;}
+.pf-score{font-size:11px;font-family:var(--mono);color:var(--text2);
+  background:var(--surface2);border:1px solid var(--border);border-radius:5px;
+  padding:3px 10px;}
+.pf-score strong{color:var(--green);}
+.pf-modal-body{padding:18px;display:flex;flex-direction:column;gap:10px;}
+.pf-finding{
+  border-radius:8px;padding:12px 14px;border-left:3px solid;
+  display:flex;flex-direction:column;gap:4px;
+}
+.pf-finding.warn{background:rgba(245,158,11,0.07);border-color:var(--amber);}
+.pf-finding.info{background:rgba(59,130,246,0.07);border-color:var(--accent);}
+.pf-finding.good{background:rgba(16,185,129,0.07);border-color:var(--green);}
+.pf-finding-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.pf-finding-text{font-size:13px;color:var(--text);line-height:1.5;}
+.pf-dismiss{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:3px;
+  background:rgba(255,255,255,0.05);border:1px solid var(--border2);color:var(--text3);
+  cursor:pointer;flex-shrink:0;align-self:flex-start;}
+.pf-modal-footer{
+  border-top:1px solid var(--border);padding:12px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.pf-footer-note{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.pf-generate-btn{
+  padding:9px 18px;background:var(--accent);color:white;border:none;
+  border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;
+}
+
+/* ─── SCENE 11: CLOSE ────────────────────────────────────────── */
+#s11{
   background:radial-gradient(ellipse at 40% 60%,rgba(59,130,246,0.2) 0%,transparent 55%),
              radial-gradient(ellipse at 70% 20%,rgba(20,184,166,0.12) 0%,transparent 45%),
              var(--bg);
@@ -631,8 +684,13 @@ body{overflow-x:hidden;}
   .ia-title{font-size:26px!important;}
   .ia-cards{grid-template-columns:1fr!important;}
 
-  /* Closing */
+  /* Pre-flight agent */
   #s10{padding:40px 24px;}
+  .pf-title{font-size:22px!important;}
+  .pf-modal{max-width:100%!important;}
+
+  /* Closing */
+  #s11{padding:40px 24px;}
   .close-h1{font-size:28px!important;}
   .close-stats{gap:24px!important;}
   .close-stat-num{font-size:26px!important;}
@@ -677,6 +735,9 @@ body{overflow-x:hidden;}
       <span class="pill pill-b">📊 SLA health bar — Green → Amber → Red</span>
       <span class="pill pill-g">📋 Live checklist progress tracking</span>
       <span class="pill pill-p">Routing Intelligence</span>
+      <span class="pill pill-b">🤖 Pre-flight AI review agent</span>
+      <span class="pill pill-g">⬛ War Room Pulse</span>
+      <span class="pill pill-t">🔍 Cross-session pattern detection</span>
     </div>
   </div>
 </div>
@@ -1160,14 +1221,57 @@ body{overflow-x:hidden;}
       <div class="ia-card-body">The Post-Incident Action Checklist shows a live progress bar and completion percentage. Green when all items are done.</div>
       <span class="ia-card-tag ia-tag-green">Live progress bar</span>
     </div>
+    <div class="ia-card" style="animation:popIn 0.5s 1.3s both;border-color:rgba(59,130,246,0.3);">
+      <div class="ia-card-icon">🤖</div>
+      <div class="ia-card-title">Pre-flight Review Agent</div>
+      <div class="ia-card-body">Rules-based AI surfaces blocking issues, regulatory flags and quality gaps before outputs are generated. Human in the loop — every finding is dismissable.</div>
+      <span class="ia-card-tag" style="background:rgba(59,130,246,0.12);color:var(--accent);border:1px solid rgba(59,130,246,0.3);">Before output generation</span>
+    </div>
   </div>
 </div>
 
-<!-- SCENE 10: CLOSE -->
+<!-- SCENE 10: PRE-FLIGHT REVIEW AGENT -->
 <div class="scene" id="s10">
+  <div class="pf-eyebrow">Human in the Loop · Rules-Based AI</div>
+  <div class="pf-title">🤖 Pre-flight Review Agent</div>
+  <div class="pf-sub">The tool reviews your incident data before generating outputs — not generative AI, but a deterministic rules engine. Every finding explained, every finding dismissible.</div>
+  <div class="pf-modal">
+    <div class="pf-modal-header">
+      <div class="pf-modal-title">🤖 Pre-flight Review — 3 findings</div>
+      <div class="pf-score">Data completeness: <strong>78%</strong></div>
+    </div>
+    <div class="pf-modal-body">
+      <div class="pf-finding warn" style="opacity:0;animation:slideRight 0.5s 1.0s both">
+        <div class="pf-finding-row">
+          <div class="pf-finding-text">⚠ <strong>Warning:</strong> Payment keyword detected — regulatory flag not set</div>
+          <span class="pf-dismiss">Dismiss</span>
+        </div>
+      </div>
+      <div class="pf-finding info" style="opacity:0;animation:slideRight 0.5s 1.3s both">
+        <div class="pf-finding-row">
+          <div class="pf-finding-text">ℹ️ <strong>Info:</strong> Diagnosis is 14 characters — too brief for a structured record</div>
+          <span class="pf-dismiss">Dismiss</span>
+        </div>
+      </div>
+      <div class="pf-finding good" style="opacity:0;animation:slideRight 0.5s 1.6s both">
+        <div class="pf-finding-row">
+          <div class="pf-finding-text">✅ <strong>Good:</strong> Decision log populated (3 entries) — audit trail complete</div>
+          <span class="pf-dismiss">Dismiss</span>
+        </div>
+      </div>
+    </div>
+    <div class="pf-modal-footer" style="opacity:0;animation:fadeUp 0.5s 1.9s both">
+      <div class="pf-footer-note">Human in the loop: review findings, then click Generate outputs →</div>
+      <button class="pf-generate-btn">Generate outputs →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 11: CLOSE -->
+<div class="scene" id="s11">
   <div class="close-eyebrow">Open Source · Free to Use</div>
   <div class="close-h1">Practitioner-built. Production<br>grade. <span>Completely free.</span></div>
-  <div class="close-sub">From first alert to service review — with decision logs, SLA health bars, sanitise export and live checklist progress. Incident, problem, change, RCA, reporting and integration in one place. Single HTML file. Nothing to install.</div>
+  <div class="close-sub">From first alert to service review — with a rules-based pre-flight review agent, decision logs, SLA health bars, War Room Pulse and live checklist progress. Incident, problem, change, RCA, reporting and integration in one place. Single HTML file. Nothing to install.</div>
   <div class="close-stats">
     <div class="close-stat"><div class="close-stat-num">7</div><div class="close-stat-lbl">Workflow stages</div></div>
     <div class="close-stat"><div class="close-stat-num">7</div><div class="close-stat-lbl">Practice scenarios</div></div>
@@ -1190,8 +1294,8 @@ body{overflow-x:hidden;}
 <div id="progressBar"></div>
 
 <script>
-const SCENES=11;
-const TIMINGS=[8000,8000,8000,8000,8000,8000,8000,8000,8000,8000,9000]; // ms per scene
+const SCENES=12;
+const TIMINGS=[8000,8000,8000,8000,8000,8000,8000,8000,8000,8000,10000,9000]; // ms per scene
 let current=0;
 let elapsed=0;
 let animFrame;
