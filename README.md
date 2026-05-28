@@ -95,7 +95,7 @@ Organisations can host their own `content.json` for jurisdiction-specific guidan
 
 ## About this project
 
-This tool was designed and built as a demonstration of applied AI collaboration, senior ITSM domain expertise, and product thinking. It was built iteratively with Claude (Anthropic) — architecture, implementation, testing and refinement — across an extended development process.
+This tool was designed and built as a demonstration of applied AI collaboration, senior ITSM domain expertise and product thinking. It was built iteratively with Claude (Anthropic) — architecture, implementation, testing and refinement — across an extended development process.
 
 **Domain expertise demonstrated**
 - Incident management lifecycle (ITIL 4)
