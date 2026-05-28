@@ -3,130 +3,685 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ITSM Workflow Intelligence v25 — Demo</title>
+<title>ITSM Workflow Intelligence v25 — Interactive Demo</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --bg:#0d1117;--surface:#161b22;--surface2:#1c2333;--border:#30363d;
+  --bg:#0d1117;--surface:#161b22;--surface2:#1c2333;--border:#30363d;--border2:#3d4a5c;
   --text:#e2e8f0;--text2:#94a3b8;--text3:#475569;
   --accent:#3b82f6;--green:#10b981;--amber:#f59e0b;--red:#ef4444;
   --teal:#14b8a6;--purple:#8b5cf6;
-  --mono:'Courier New',monospace;
+  --mono:'JetBrains Mono','Fira Code','Courier New',monospace;
   --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
 }
-html,body{width:100%;min-height:100vh;background:#000;font-family:var(--sans);color:var(--text);}
-.scene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity 0.7s ease;min-height:100vh;}
+html,body{width:100%;min-height:100vh;background:#000;
+  font-family:var(--sans);color:var(--text);}
+body{overflow-x:hidden;}
+/* Fixed container for desktop recording */
+.showcase-wrap{width:100%;min-height:100vh;position:relative;}
+
+/* ─── SCENE ENGINE ─────────────────────────────────────────── */
+.scene{position:absolute;inset:0;opacity:0;pointer-events:none;
+  transition:opacity 0.7s ease;min-height:100vh;}
+.scene.active{min-height:100vh;}
 .scene.active{opacity:1;pointer-events:all;}
-#progressBar{position:fixed;bottom:0;left:0;height:3px;background:var(--accent);z-index:999;}
-#dots{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:999;}
-.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2);transition:all 0.3s;}
+
+/* ─── PROGRESS BAR ─────────────────────────────────────────── */
+#progressBar{position:fixed;bottom:0;left:0;height:3px;
+  background:var(--accent);z-index:999;transition:width 0.1s linear;}
+
+/* ─── SCENE DOTS ───────────────────────────────────────────── */
+#dots{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:6px;z-index:999;}
+.dot{width:6px;height:6px;border-radius:50%;
+  background:rgba(255,255,255,0.2);transition:all 0.3s;}
 .dot.active{background:var(--accent);transform:scale(1.4);}
 .dot.done{background:rgba(59,130,246,0.35);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
-@keyframes popIn{from{opacity:0;transform:scale(0.85);}to{opacity:1;transform:scale(1);}}
-@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.4);}50%{box-shadow:0 0 0 12px rgba(59,130,246,0);}}
-@keyframes slideLeft{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
-@keyframes slideUp{from{opacity:0;transform:translateY(40px);}to{opacity:1;transform:translateY(0);}}
-@keyframes countUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-@keyframes ragFlash{0%{opacity:0;transform:scale(0.7);}60%{transform:scale(1.05);}100%{opacity:1;transform:scale(1);}}
 
-/* SCENE 0 */
-#s0{background:radial-gradient(ellipse at 30% 50%,rgba(59,130,246,0.15),transparent 60%),var(--bg);display:flex;align-items:center;justify-content:center;}
+/* ─── ANIMS ────────────────────────────────────────────────── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes slideRight{
+  from{opacity:0;transform:translateX(-30px);}
+  to{opacity:1;transform:translateX(0);}
+}
+@keyframes slideLeft{
+  from{opacity:0;transform:translateX(30px);}
+  to{opacity:1;transform:translateX(0);}
+}
+@keyframes popIn{
+  from{opacity:0;transform:scale(0.85);}
+  to{opacity:1;transform:scale(1);}
+}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.4);}
+  50%{box-shadow:0 0 0 12px rgba(59,130,246,0);}
+}
+@keyframes float{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-10px);}
+}
+@keyframes typewriter{
+  from{width:0;}to{width:100%;}
+}
+@keyframes blink{
+  0%,100%{border-color:var(--accent);}
+  50%{border-color:transparent;}
+}
+@keyframes countUp{
+  from{transform:translateY(20px);opacity:0;}
+  to{transform:translateY(0);opacity:1;}
+}
+@keyframes shimmer{
+  0%{background-position:-200% 0;}
+  100%{background-position:200% 0;}
+}
+@keyframes ragFlash{
+  0%{opacity:0;transform:scale(0.7);}
+  60%{transform:scale(1.05);}
+  100%{opacity:1;transform:scale(1);}
+}
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(40px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* delay helpers */
+.d1{animation-delay:0.2s!important;}
+.d2{animation-delay:0.5s!important;}
+.d3{animation-delay:0.8s!important;}
+.d4{animation-delay:1.1s!important;}
+.d5{animation-delay:1.4s!important;}
+.d6{animation-delay:1.7s!important;}
+.d7{animation-delay:2.0s!important;}
+.d8{animation-delay:2.3s!important;}
+
+/* ─── SCENE 0: TITLE CARD ───────────────────────────────────── */
+#s0{
+  background:radial-gradient(ellipse at 30% 50%,rgba(59,130,246,0.15) 0%,transparent 60%),
+             radial-gradient(ellipse at 75% 80%,rgba(20,184,166,0.1) 0%,transparent 50%),
+             var(--bg);
+  display:flex;align-items:center;justify-content:center;
+}
 .title-wrap{text-align:center;}
-.title-logo{width:72px;height:72px;background:var(--accent);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;animation:float 3s ease-in-out infinite;box-shadow:0 0 40px rgba(59,130,246,0.4);}
+.title-logo{
+  width:72px;height:72px;background:var(--accent);border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 24px;animation:float 3s ease-in-out infinite;
+  box-shadow:0 0 40px rgba(59,130,246,0.4);
+}
 .title-logo svg{width:40px;height:40px;stroke:white;fill:none;stroke-width:2.5;}
-.title-eyebrow{font-size:12px;font-family:var(--mono);color:var(--accent);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:16px;opacity:0;animation:fadeUp 0.7s 0.3s ease both;}
-.title-h1{font-size:52px;font-weight:700;color:white;line-height:1.1;margin-bottom:16px;opacity:0;animation:fadeUp 0.7s 0.6s ease both;}
+.title-eyebrow{
+  font-size:12px;font-family:var(--mono);color:var(--accent);
+  text-transform:uppercase;letter-spacing:0.2em;margin-bottom:16px;
+  opacity:0;animation:fadeUp 0.7s 0.3s ease both;
+}
+.title-h1{
+  font-size:52px;font-weight:700;color:white;line-height:1.1;
+  margin-bottom:16px;
+  opacity:0;animation:fadeUp 0.7s 0.6s ease both;
+}
 .title-h1 span{color:var(--accent);}
-.title-sub{font-size:18px;color:var(--text2);max-width:580px;margin:0 auto 32px;opacity:0;animation:fadeUp 0.7s 0.9s ease both;}
-.title-pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp 0.7s 1.2s ease both;}
-.pill{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:500;font-family:var(--mono);border:1px solid;}
+.title-sub{
+  font-size:18px;color:var(--text2);line-height:1.6;max-width:580px;
+  margin:0 auto 32px;
+  opacity:0;animation:fadeUp 0.7s 0.9s ease both;
+}
+.title-pills{
+  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+  opacity:0;animation:fadeUp 0.7s 1.2s ease both;
+}
+.pill{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:500;
+  font-family:var(--mono);border:1px solid;}
 .pill-b{background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.35);color:var(--accent);}
 .pill-g{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:var(--green);}
 .pill-a{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:var(--amber);}
+.pill-p{background:rgba(139,92,246,0.1);border-color:rgba(139,92,246,0.3);color:var(--purple);}
+.pill-t{background:rgba(20,184,166,0.1);border-color:rgba(20,184,166,0.3);color:var(--teal);}
 
-/* SCENE 1 */
-#s1{background:var(--bg);display:grid;grid-template-columns:1fr 1fr;}
-.s1-left{padding:80px 60px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);}
-.s1-eyebrow{font-size:11px;font-family:var(--mono);color:var(--amber);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:14px;opacity:0;animation:fadeUp 0.7s 0.2s both;}
-.s1-h2{font-size:34px;font-weight:700;color:white;line-height:1.25;margin-bottom:18px;opacity:0;animation:fadeUp 0.7s 0.5s both;}
-.s1-body{font-size:14px;color:var(--text2);line-height:1.8;opacity:0;animation:fadeUp 0.7s 0.8s both;}
+/* ─── SCENE 1: PROBLEM STATEMENT ───────────────────────────── */
+#s1{
+  background:var(--bg);
+  display:grid;grid-template-columns:1fr 1fr;
+}
+.s1-left{
+  padding:80px 60px;display:flex;flex-direction:column;justify-content:center;
+  border-right:1px solid var(--border);
+}
+.s1-eyebrow{font-size:11px;font-family:var(--mono);color:var(--amber);
+  text-transform:uppercase;letter-spacing:0.14em;margin-bottom:14px;
+  opacity:0;animation:fadeUp 0.7s 0.2s both;}
+.s1-h2{font-size:34px;font-weight:700;color:white;line-height:1.25;
+  margin-bottom:18px;
+  opacity:0;animation:fadeUp 0.7s 0.5s both;}
+.s1-body{font-size:14px;color:var(--text2);line-height:1.8;
+  opacity:0;animation:fadeUp 0.7s 0.8s both;}
 .s1-right{padding:60px 50px;display:flex;align-items:center;justify-content:center;}
 .pain-list{display:flex;flex-direction:column;gap:14px;width:100%;}
-.pain-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.pain-item{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+}
 .pain-icon{font-size:20px;flex-shrink:0;}
 .pain-text{font-size:13px;color:var(--text2);line-height:1.5;}
 .pain-text strong{color:var(--text);}
 
-/* SCENE 3 */
-#s3{background:radial-gradient(ellipse at 50% 0%,rgba(239,68,68,0.12),transparent 60%),var(--bg);display:grid;grid-template-columns:1fr 1fr;}
-.s3-left{padding:70px 60px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);}
-.ft-eyebrow{font-size:11px;font-family:var(--mono);color:var(--red);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;opacity:0;animation:fadeUp 0.6s 0.2s both;}
-.ft-h2{font-size:36px;font-weight:700;color:white;line-height:1.2;margin-bottom:16px;opacity:0;animation:fadeUp 0.6s 0.4s both;}
+/* ─── SCENE 2: NAVIGATION ──────────────────────────────────── */
+#s2{background:var(--bg);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:60px;}
+.s2-title{font-size:36px;font-weight:700;color:white;margin-bottom:10px;text-align:center;
+  opacity:0;animation:fadeUp 0.6s 0.2s both;}
+.s2-sub{font-size:15px;color:var(--text2);margin-bottom:40px;text-align:center;
+  opacity:0;animation:fadeUp 0.6s 0.4s both;}
+
+.nav-mock{
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;width:100%;max-width:1100px;
+  opacity:0;animation:popIn 0.6s 0.6s both;
+}
+.nav-header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:10px 20px;display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{display:flex;align-items:center;gap:8px;}
+.nav-logo{width:24px;height:24px;background:var(--accent);border-radius:5px;
+  display:flex;align-items:center;justify-content:center;font-size:12px;}
+.nav-title{font-size:13px;font-weight:600;}
+.nav-ver{font-size:9px;color:var(--text3);font-family:var(--mono);}
+.nav-right{display:flex;gap:8px;align-items:center;}
+.mode-toggle{background:var(--surface2);border:1px solid var(--border2);
+  border-radius:16px;padding:2px;display:flex;}
+.mode-btn{padding:3px 12px;border-radius:14px;font-size:11px;font-weight:500;}
+.mode-btn.on{background:var(--accent);color:white;}
+.mode-btn.off{color:var(--text3);}
+.save-badge{font-size:10px;font-family:var(--mono);color:var(--green);
+  background:rgba(16,185,129,0.1);padding:3px 8px;border-radius:4px;}
+.nav-rail{
+  background:var(--bg);border-bottom:1px solid var(--border);
+  padding:0 16px;display:flex;align-items:center;gap:0;
+}
+.nav-btn{
+  padding:10px 14px;font-size:11px;font-weight:500;color:var(--text3);
+  border-bottom:2px solid transparent;display:flex;flex-direction:column;
+  align-items:center;gap:2px;white-space:nowrap;
+}
+.nav-btn.act{color:var(--accent);border-bottom-color:var(--accent);}
+.nav-btn-icon{font-size:13px;}
+.nav-btn-sub{font-size:8px;font-family:var(--mono);color:var(--accent);opacity:0.7;}
+.nav-sep{width:1px;height:20px;background:var(--border);margin:0 4px;align-self:center;}
+.nav-util{margin-left:auto;display:flex;gap:6px;}
+.nav-util-btn{padding:3px 8px;border:1px solid var(--border2);border-radius:4px;
+  font-size:10px;color:var(--text2);font-family:var(--sans);}
+.nav-content-preview{padding:20px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.nav-entry-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:14px;cursor:pointer;transition:all 0.2s;
+}
+.nav-entry-icon{font-size:22px;margin-bottom:8px;}
+.nav-entry-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.nav-entry-sub{font-size:10px;color:var(--text2);line-height:1.5;}
+.nav-entry-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9px;
+  font-family:var(--mono);margin-top:6px;}
+.neb-green{background:rgba(16,185,129,0.12);color:var(--green);}
+.neb-blue{background:rgba(59,130,246,0.12);color:var(--accent);}
+
+/* ─── SCENE 3: P1 FAST TRACK ───────────────────────────────── */
+#s3{
+  background:radial-gradient(ellipse at 50% 0%,rgba(239,68,68,0.12) 0%,transparent 60%),
+             var(--bg);
+  display:grid;grid-template-columns:1fr 1fr;
+}
+.s3-left{padding:70px 60px;display:flex;flex-direction:column;justify-content:center;
+  border-right:1px solid var(--border);}
+.ft-eyebrow{font-size:11px;font-family:var(--mono);color:var(--red);
+  text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;
+  opacity:0;animation:fadeUp 0.6s 0.2s both;}
+.ft-h2{font-size:36px;font-weight:700;color:white;line-height:1.2;margin-bottom:16px;
+  opacity:0;animation:fadeUp 0.6s 0.4s both;}
 .ft-h2 span{color:var(--red);}
-.ft-body{font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:20px;opacity:0;animation:fadeUp 0.6s 0.6s both;}
-.ft-stat{display:flex;gap:24px;opacity:0;animation:fadeUp 0.6s 0.8s both;}
+.ft-body{font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:20px;
+  opacity:0;animation:fadeUp 0.6s 0.6s both;}
+.ft-stat{display:flex;gap:24px;
+  opacity:0;animation:fadeUp 0.6s 0.8s both;}
 .ft-stat-item{text-align:center;}
 .ft-stat-num{font-size:28px;font-weight:700;color:var(--red);font-family:var(--mono);}
 .ft-stat-lbl{font-size:10px;color:var(--text3);margin-top:2px;}
+
 .s3-right{padding:50px;display:flex;align-items:center;justify-content:center;}
-.ft-card{background:var(--surface);border:1px solid rgba(239,68,68,0.3);border-radius:12px;width:100%;max-width:480px;overflow:hidden;opacity:0;animation:popIn 0.6s 0.5s both;}
-.ft-card-header{background:rgba(239,68,68,0.1);border-bottom:1px solid rgba(239,68,68,0.2);padding:12px 16px;display:flex;align-items:center;gap:8px;}
+.ft-card{
+  background:var(--surface);border:1px solid rgba(239,68,68,0.3);
+  border-radius:12px;width:100%;max-width:480px;overflow:hidden;
+  opacity:0;animation:popIn 0.6s 0.5s both;
+  box-shadow:0 0 40px rgba(239,68,68,0.1);
+}
+.ft-card-header{
+  background:rgba(239,68,68,0.1);border-bottom:1px solid rgba(239,68,68,0.2);
+  padding:12px 16px;display:flex;align-items:center;gap:8px;
+}
+.ft-card-icon{font-size:18px;}
 .ft-card-title{font-size:13px;font-weight:600;color:var(--red);}
 .ft-card-body{padding:16px;}
 .ft-field{margin-bottom:10px;}
-.ft-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);margin-bottom:4px;}
-.ft-input{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:8px 10px;font-size:12px;color:var(--text);width:100%;}
+.ft-label{font-size:9px;color:var(--text3);text-transform:uppercase;
+  letter-spacing:0.08em;font-family:var(--mono);margin-bottom:4px;}
+.ft-input{
+  background:var(--surface2);border:1px solid var(--border);border-radius:5px;
+  padding:8px 10px;font-size:12px;color:var(--text);width:100%;
+}
 .ft-input.active{border-color:var(--red);}
-.sla-clock{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:12px;margin-top:12px;text-align:center;}
-.sla-clock-label{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:4px;}
-.sla-clock-time{font-size:32px;font-weight:700;color:var(--red);font-family:var(--mono);}
-.ft-generate-btn{margin-top:12px;padding:10px;width:100%;background:var(--red);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;animation:pulse 2s 1.5s infinite;}
+.sla-clock{
+  background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);
+  border-radius:8px;padding:12px;margin-top:12px;
+}
+.sla-clock-label{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;text-align:center;}
+.sla-clock-time{font-size:32px;font-weight:700;color:var(--red);font-family:var(--mono);text-align:center;margin-bottom:8px;}
+.sla-bar-track{height:8px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;margin-bottom:5px;}
+.sla-bar-fill{height:100%;border-radius:4px;width:35%;background:var(--red);}
+.sla-bar-meta{display:flex;justify-content:space-between;font-size:9px;font-family:var(--mono);color:var(--text3);}
+.ft-generate-btn{
+  margin-top:12px;padding:10px;width:100%;background:var(--red);color:white;
+  border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;
+  animation:pulse 2s 1.5s infinite;
+}
 
-/* SCENE 4 */
-#s4{background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 80px;}
-.stage-circle{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:var(--mono);margin-bottom:12px;flex-shrink:0;}
+/* ─── SCENE 4: WORKFLOW STAGES ──────────────────────────────── */
+#s4{background:var(--bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:50px 80px;}
+.s4-title{font-size:36px;font-weight:700;color:white;margin-bottom:8px;text-align:center;
+  opacity:0;animation:fadeUp 0.6s 0.2s both;}
+.s4-sub{font-size:14px;color:var(--text2);margin-bottom:44px;text-align:center;
+  opacity:0;animation:fadeUp 0.6s 0.4s both;}
+.stages-row{display:flex;align-items:flex-start;gap:0;width:100%;}
+.stage-block{flex:1;display:flex;flex-direction:column;align-items:center;}
+.stage-circle{
+  width:52px;height:52px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:700;font-family:var(--mono);
+  margin-bottom:12px;flex-shrink:0;
+}
+.stage-connector{width:100%;height:2px;margin-top:25px;flex:1;}
 .stage-wrap{flex:1;display:flex;flex-direction:column;align-items:center;}
 .sc-done{background:var(--green);color:white;}
 .sc-active{background:var(--accent);color:white;animation:pulse 2s infinite;}
-.sc-pend{background:var(--surface2);border:1px solid var(--border);color:var(--text3);}
-.output-chip{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 12px;text-align:center;opacity:0;}
+.sc-pend{background:var(--surface2);border:1px solid var(--border2);color:var(--text3);}
+.conn-done{background:var(--green);}
+.conn-act{background:linear-gradient(to right,var(--green),var(--accent));}
+.conn-pend{background:var(--border);}
+.stage-name{font-size:11px;font-weight:600;color:var(--text);text-align:center;margin-bottom:4px;}
+.stage-detail{font-size:9px;color:var(--text3);text-align:center;line-height:1.5;max-width:100px;}
+.stages-outputs{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+  width:100%;margin-top:40px;
+}
+.output-chip{
+  background:var(--surface);border:1px solid var(--border);border-radius:6px;
+  padding:10px 12px;text-align:center;
+  opacity:0;
+}
+.oc-icon{font-size:16px;margin-bottom:4px;}
 .oc-name{font-size:10px;font-weight:500;color:var(--text);}
+.oc-dest{font-size:9px;color:var(--text3);font-family:var(--mono);}
 
-/* SCENE 7 */
-#s7{background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 80px;}
+/* ─── SCENE 5: REASSIGNMENT TRACKER ────────────────────────── */
+#s5{background:var(--bg);display:grid;grid-template-columns:1fr 1fr;}
+.s5-left{padding:70px 60px;display:flex;flex-direction:column;justify-content:center;
+  border-right:1px solid var(--border);}
+.ra-eyebrow{font-size:11px;font-family:var(--mono);color:var(--teal);
+  text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;
+  opacity:0;animation:fadeUp 0.6s 0.2s both;}
+.ra-h2{font-size:34px;font-weight:700;color:white;line-height:1.25;margin-bottom:14px;
+  opacity:0;animation:fadeUp 0.6s 0.4s both;}
+.ra-body{font-size:14px;color:var(--text2);line-height:1.75;
+  opacity:0;animation:fadeUp 0.6s 0.6s both;}
+.s5-right{padding:50px;display:flex;align-items:center;justify-content:center;}
+.ra-chain{width:100%;max-width:480px;
+  opacity:0;animation:slideLeft 0.6s 0.4s both;}
+.ra-item{display:flex;gap:12px;margin-bottom:0;position:relative;}
+.ra-item::before{
+  content:'';position:absolute;left:13px;top:32px;bottom:-14px;
+  width:2px;background:var(--border);z-index:0;
+}
+.ra-item:last-child::before{display:none;}
+.ra-dot{
+  width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;font-family:var(--mono);
+  flex-shrink:0;margin-top:4px;z-index:1;position:relative;
+}
+.ra-dot-origin{background:rgba(16,185,129,0.15);border:2px solid var(--green);color:var(--green);}
+.ra-dot-mid{background:rgba(245,158,11,0.1);border:2px solid var(--border2);color:var(--text3);}
+.ra-dot-current{
+  background:rgba(59,130,246,0.15);border:2px solid var(--accent);color:var(--accent);
+  box-shadow:0 0 0 4px rgba(59,130,246,0.12);
+}
+.ra-content{
+  background:var(--surface);border:1px solid var(--border);border-radius:7px;
+  padding:10px 12px;margin-bottom:14px;flex:1;
+}
+.ra-team{font-size:12px;font-weight:500;color:var(--text);}
+.ra-badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;
+  font-family:var(--mono);margin-top:4px;}
+.rab-r{background:rgba(59,130,246,0.1);color:var(--accent);}
+.rab-c{background:rgba(16,185,129,0.1);color:var(--green);}
+.rab-e{background:rgba(239,68,68,0.1);color:var(--red);}
+.ra-note{font-size:10px;color:var(--text2);margin-top:5px;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.ra-handoff{
+  font-size:10px;color:var(--teal);margin-top:5px;
+  padding:4px 7px;background:rgba(20,184,166,0.07);border-radius:3px;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
 
-/* SCENE 9 */
-#s9{background:radial-gradient(ellipse at 40% 60%,rgba(59,130,246,0.2),transparent 55%),var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:60px;}
-.close-eyebrow{font-size:12px;font-family:var(--mono);color:var(--teal);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:16px;opacity:0;animation:fadeUp 0.7s 0.2s both;}
-.close-h1{font-size:44px;font-weight:700;color:white;line-height:1.15;margin-bottom:18px;opacity:0;animation:fadeUp 0.7s 0.5s both;}
+/* ─── SCENE 6: PICK UP INCIDENT ────────────────────────────── */
+#s6{
+  background:radial-gradient(ellipse at 70% 30%,rgba(59,130,246,0.1) 0%,transparent 55%),
+             var(--bg);
+  display:grid;grid-template-columns:1fr 1fr;
+}
+.s6-left{padding:70px 60px;display:flex;flex-direction:column;justify-content:center;
+  border-right:1px solid var(--border);}
+.pu-eyebrow{font-size:11px;font-family:var(--mono);color:var(--accent);
+  text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;
+  opacity:0;animation:fadeUp 0.6s 0.2s both;}
+.pu-h2{font-size:34px;font-weight:700;color:white;line-height:1.25;margin-bottom:14px;
+  opacity:0;animation:fadeUp 0.6s 0.4s both;}
+.pu-body{font-size:14px;color:var(--text2);line-height:1.75;
+  opacity:0;animation:fadeUp 0.6s 0.6s both;}
+.s6-right{padding:50px;display:flex;align-items:center;justify-content:center;}
+.pu-form{
+  background:var(--surface);border:1px solid rgba(59,130,246,0.25);
+  border-radius:12px;width:100%;max-width:480px;overflow:hidden;
+  opacity:0;animation:popIn 0.6s 0.5s both;
+}
+.pu-form-header{
+  background:rgba(59,130,246,0.08);border-bottom:1px solid rgba(59,130,246,0.2);
+  padding:12px 16px;display:flex;align-items:center;gap:8px;
+}
+.pu-form-title{font-size:13px;font-weight:600;color:var(--accent);}
+.pu-form-body{padding:16px;}
+.pu-field{margin-bottom:10px;}
+.pu-label{font-size:9px;color:var(--text3);text-transform:uppercase;
+  letter-spacing:0.08em;font-family:var(--mono);margin-bottom:4px;}
+.pu-input{
+  background:var(--surface2);border:1px solid var(--border);border-radius:5px;
+  padding:8px 10px;font-size:12px;color:var(--text);width:100%;
+}
+.pu-input.hi{border-color:var(--accent);}
+.pu-textarea{
+  background:var(--surface2);border:1px solid var(--border);border-radius:5px;
+  padding:8px 10px;font-size:11px;color:var(--text2);width:100%;
+  height:62px;line-height:1.5;resize:none;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+  word-break:break-word;
+}
+.pu-btn{
+  margin-top:12px;padding:10px;width:100%;background:var(--accent);color:white;
+  border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;
+}
+
+/* ─── SCENE 7: REPORTING ────────────────────────────────────── */
+#s7{background:var(--bg);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:50px 80px;}
+.rep-title{font-size:36px;font-weight:700;color:white;margin-bottom:8px;text-align:center;
+  opacity:0;animation:fadeUp 0.6s 0.2s both;}
+.rep-sub{font-size:14px;color:var(--text2);margin-bottom:36px;text-align:center;
+  opacity:0;animation:fadeUp 0.6s 0.4s both;}
+.rag-summary{display:flex;gap:16px;justify-content:center;margin-bottom:28px;
+  opacity:0;animation:fadeUp 0.6s 0.6s both;}
+.rag-pill{padding:12px 24px;border-radius:10px;text-align:center;min-width:120px;}
+.rag-g{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);}
+.rag-a{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);}
+.rag-r{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);}
+.rag-pill-num{font-size:28px;font-weight:700;font-family:var(--mono);}
+.rag-g .rag-pill-num{color:var(--green);}
+.rag-a .rag-pill-num{color:var(--amber);}
+.rag-r .rag-pill-num{color:var(--red);}
+.rag-pill-lbl{font-size:10px;color:var(--text3);margin-top:2px;}
+.rag-table{
+  width:100%;border-collapse:collapse;background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  opacity:0;animation:slideUp 0.6s 0.8s both;
+}
+.rag-table th{
+  padding:8px 14px;font-size:9px;font-weight:600;text-transform:uppercase;
+  letter-spacing:0.07em;color:var(--text3);font-family:var(--mono);
+  background:var(--surface2);border-bottom:1px solid var(--border);text-align:left;
+}
+.rag-table td{padding:9px 14px;font-size:12px;color:var(--text);
+  border-bottom:0.5px solid var(--border);}
+.rag-table tr:last-child td{border-bottom:none;}
+.rag-cell{display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:18px;border-radius:3px;font-size:10px;font-weight:700;}
+.rc-g{background:rgba(16,185,129,0.15);color:var(--green);}
+.rc-a{background:rgba(245,158,11,0.15);color:var(--amber);}
+.rc-r{background:rgba(239,68,68,0.15);color:var(--red);}
+.trend-up{color:var(--green);font-size:11px;}
+.trend-dn{color:var(--red);font-size:11px;}
+
+/* ─── SCENE 8: INTEGRATION HUB ─────────────────────────────── */
+#s8{background:var(--bg);display:grid;grid-template-columns:1fr 1fr;}
+.s8-left{padding:70px 60px;display:flex;flex-direction:column;justify-content:center;
+  border-right:1px solid var(--border);}
+.ih-eyebrow{font-size:11px;font-family:var(--mono);color:var(--teal);
+  text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;
+  opacity:0;animation:fadeUp 0.6s 0.2s both;}
+.ih-h2{font-size:34px;font-weight:700;color:white;line-height:1.25;margin-bottom:14px;
+  opacity:0;animation:fadeUp 0.6s 0.4s both;}
+.ih-body{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:20px;
+  opacity:0;animation:fadeUp 0.6s 0.6s both;}
+.platform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  opacity:0;animation:fadeUp 0.6s 0.8s both;}
+.plat-chip{
+  background:var(--surface);border:1px solid var(--border);border-radius:6px;
+  padding:8px 10px;text-align:center;font-size:10px;color:var(--text2);
+}
+.s8-right{padding:40px;display:flex;align-items:center;justify-content:center;}
+.code-block{
+  background:var(--bg);border:1px solid var(--border);border-radius:10px;
+  width:100%;max-width:500px;overflow:hidden;
+  opacity:0;animation:popIn 0.6s 0.5s both;
+}
+.code-header{
+  background:var(--surface2);border-bottom:1px solid var(--border);
+  padding:10px 14px;display:flex;align-items:center;gap:8px;
+}
+.code-dots{display:flex;gap:5px;}
+.code-dot{width:10px;height:10px;border-radius:50%;}
+.cd-r{background:#ff5f57;} .cd-a{background:#febc2e;} .cd-g{background:#28c840;}
+.code-tab{font-size:10px;font-family:var(--mono);color:var(--teal);margin-left:8px;}
+.code-body{padding:16px;font-family:var(--mono);font-size:11px;line-height:1.8;}
+.c-comment{color:var(--text3);}
+.c-keyword{color:var(--purple);}
+.c-fn{color:var(--accent);}
+.c-str{color:var(--green);}
+.c-obj{color:var(--amber);}
+.c-val{color:var(--text);}
+
+/* ─── SCENE 9: INTELLIGENCE & AUDIT TRAIL ──────────────────── */
+#s9{
+  background:radial-gradient(ellipse at 30% 40%,rgba(139,92,246,0.12) 0%,transparent 55%),
+             radial-gradient(ellipse at 75% 70%,rgba(20,184,166,0.08) 0%,transparent 45%),
+             var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 80px;
+}
+.ia-eyebrow{font-size:11px;font-family:var(--mono);color:var(--purple);
+  text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;text-align:center;
+  opacity:0;animation:fadeUp 0.6s 0.2s both;}
+.ia-title{font-size:36px;font-weight:700;color:white;margin-bottom:10px;text-align:center;
+  opacity:0;animation:fadeUp 0.6s 0.4s both;}
+.ia-sub{font-size:15px;color:var(--text2);max-width:640px;text-align:center;
+  margin-bottom:40px;line-height:1.6;
+  opacity:0;animation:fadeUp 0.6s 0.6s both;}
+.ia-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;width:100%;max-width:1000px;}
+.ia-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:24px;display:flex;flex-direction:column;gap:12px;
+  opacity:0;
+}
+.ia-card-icon{font-size:28px;}
+.ia-card-title{font-size:15px;font-weight:700;color:white;line-height:1.3;}
+.ia-card-body{font-size:13px;color:var(--text2);line-height:1.7;flex:1;}
+.ia-card-tag{display:inline-block;padding:3px 10px;border-radius:4px;
+  font-size:10px;font-family:var(--mono);font-weight:500;align-self:flex-start;}
+.ia-tag-purple{background:rgba(139,92,246,0.12);color:var(--purple);border:1px solid rgba(139,92,246,0.3);}
+.ia-tag-teal{background:rgba(20,184,166,0.10);color:var(--teal);border:1px solid rgba(20,184,166,0.3);}
+.ia-tag-green{background:rgba(16,185,129,0.10);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+
+/* ─── SCENE 10: CLOSE ────────────────────────────────────────── */
+#s10{
+  background:radial-gradient(ellipse at 40% 60%,rgba(59,130,246,0.2) 0%,transparent 55%),
+             radial-gradient(ellipse at 70% 20%,rgba(20,184,166,0.12) 0%,transparent 45%),
+             var(--bg);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  text-align:center;padding:60px;
+}
+.close-eyebrow{font-size:12px;font-family:var(--mono);color:var(--teal);
+  text-transform:uppercase;letter-spacing:0.18em;margin-bottom:16px;
+  opacity:0;animation:fadeUp 0.7s 0.2s both;}
+.close-h1{font-size:44px;font-weight:700;color:white;line-height:1.15;
+  margin-bottom:18px;opacity:0;animation:fadeUp 0.7s 0.5s both;}
 .close-h1 span{color:var(--accent);}
-.close-sub{font-size:16px;color:var(--text2);max-width:560px;line-height:1.7;margin-bottom:36px;opacity:0;animation:fadeUp 0.7s 0.8s both;}
-.close-stats{display:flex;gap:48px;justify-content:center;margin-bottom:36px;opacity:0;animation:fadeUp 0.7s 1.0s both;}
+.close-sub{font-size:16px;color:var(--text2);max-width:600px;line-height:1.7;
+  margin-bottom:36px;opacity:0;animation:fadeUp 0.7s 0.8s both;}
+.close-stats{display:flex;gap:48px;justify-content:center;margin-bottom:36px;
+  opacity:0;animation:fadeUp 0.7s 1.0s both;}
 .close-stat{text-align:center;}
 .close-stat-num{font-size:36px;font-weight:700;color:var(--accent);font-family:var(--mono);}
 .close-stat-lbl{font-size:11px;color:var(--text3);margin-top:4px;}
-.close-url{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 24px;font-size:14px;font-family:var(--mono);color:var(--teal);opacity:0;animation:fadeUp 0.7s 1.2s both;display:flex;align-items:center;gap:10px;}
-.close-author{margin-top:20px;font-size:12px;color:var(--text3);opacity:0;animation:fadeUp 0.7s 1.4s both;}
+.close-url{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:12px 24px;font-size:14px;font-family:var(--mono);color:var(--teal);
+  opacity:0;animation:fadeUp 0.7s 1.2s both;
+  display:flex;align-items:center;gap:10px;
+}
+.close-url-icon{font-size:18px;}
+.close-author{
+  margin-top:20px;font-size:12px;color:var(--text3);
+  opacity:0;animation:fadeUp 0.7s 1.4s both;
+}
+
+/* ─── RESPONSIVE LAYOUT ─────────────────────────────────────── */
+@media (max-width:768px){
+  /* All two-column scenes become single column */
+  #s1,#s3,#s5,#s6,#s8{grid-template-columns:1fr!important;height:auto!important;min-height:100vh;}
+  #s1 .s1-left,#s3 .s3-left,#s5 .s5-left,#s6 .s6-left,#s8 .s8-left{
+    padding:40px 24px 20px!important;border-right:none!important;border-bottom:1px solid var(--border);}
+  #s1 .s1-right,#s3 .s3-right,#s5 .s5-right,#s6 .s6-right,#s8 .s8-right{
+    padding:20px 24px 40px!important;}
+
+  /* Title scene */
+  #s0{padding:40px 24px;align-items:flex-start;padding-top:60px;}
+  .title-logo{width:52px;height:52px;border-radius:12px;margin-bottom:16px;}
+  .title-h1{font-size:32px!important;}
+  .title-sub{font-size:14px!important;}
+  .title-pills{gap:6px;}
+  .pill{font-size:10px;padding:4px 10px;}
+
+  /* Scene 1 pain items */
+  .pain-list{gap:10px;}
+  .pain-item{padding:10px 12px;}
+  .pain-text{font-size:12px;}
+
+  /* Nav scene */
+  #s2{padding:30px 16px!important;}
+  .s2-title{font-size:24px!important;}
+  .s2-sub{font-size:13px!important;margin-bottom:20px!important;}
+  .nav-content-preview{grid-template-columns:1fr 1fr!important;gap:8px;}
+  .nav-rail{overflow-x:auto;}
+  .nav-btn{padding:8px 10px;font-size:10px;}
+
+  /* P1 fast track */
+  .ft-h2{font-size:26px!important;}
+  .ft-card{max-width:100%!important;}
+  .ft-stat{gap:16px;}
+  .ft-stat-num{font-size:22px;}
+
+  /* Stage flow */
+  #s4{padding:30px 16px!important;}
+  .s4-title{font-size:22px!important;}
+  .stages-row>div{flex-direction:column;align-items:flex-start!important;gap:8px!important;}
+  .stages-row .stage-wrap{flex-direction:row;align-items:center;gap:10px;width:100%;}
+  .stages-row>div>div[style*="height:2px"]{display:none!important;}
+  .stage-circle{width:36px;height:36px;font-size:12px;flex-shrink:0;}
+  .stage-name{font-size:12px;text-align:left!important;margin-bottom:0!important;}
+  .stage-detail{display:none;}
+  .stages-outputs{grid-template-columns:repeat(2,1fr)!important;}
+  .output-chip{padding:8px!important;}
+  .oc-icon{font-size:14px!important;}
+  .oc-name{font-size:9px!important;}
+  .oc-dest{display:none;}
+
+  /* Reassignment */
+  .ra-chain{max-width:100%!important;}
+  .ra-h2{font-size:24px!important;}
+
+  /* Reporting */
+  #s7>div{grid-template-columns:1fr!important;}
+  #s7>div>div:first-child{border-right:none!important;border-bottom:1px solid var(--border);padding:32px 20px 20px!important;}
+  #s7>div>div:last-child{padding:20px!important;}
+
+  /* Integration */
+  .code-block{max-width:100%!important;}
+  .code-body{font-size:9px!important;}
+  .platform-grid{grid-template-columns:repeat(2,1fr)!important;}
+
+  /* Intelligence & Audit Trail */
+  #s9{padding:40px 24px;}
+  .ia-title{font-size:26px!important;}
+  .ia-cards{grid-template-columns:1fr!important;}
+
+  /* Closing */
+  #s10{padding:40px 24px;}
+  .close-h1{font-size:28px!important;}
+  .close-stats{gap:24px!important;}
+  .close-stat-num{font-size:26px!important;}
+  .close-url{font-size:12px!important;}
+
+  /* Progress and dots */
+  #dots{bottom:8px;}
+  #progressBar{height:2px;}
+}
+
+@media (max-width:480px){
+  .title-h1{font-size:26px!important;}
+  .s1-h2,.ft-h2,.ra-h2,.pu-h2,.ih-h2{font-size:22px!important;}
+  .s2-title,.s4-title,.rep-title{font-size:20px!important;}
+  .nav-content-preview{grid-template-columns:1fr!important;}
+  .stages-outputs{grid-template-columns:1fr 1fr!important;}
+  .ft-stat{gap:12px;}
+  .ft-stat-num{font-size:20px;}
+  .close-h1{font-size:22px!important;}
+  .close-stats{flex-wrap:wrap;gap:16px!important;}
+  .close-url{font-size:10px!important;word-break:break-all;}
+}
 </style>
 </head>
 <body>
 
+<!-- SCENE 0: TITLE -->
 <div class="scene active" id="s0">
   <div class="title-wrap">
-    <div class="title-logo"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+    <div class="title-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
     <div class="title-eyebrow">Open Source · No Server · No Setup</div>
     <div class="title-h1">ITSM Workflow<br><span>Intelligence Tool</span></div>
-    <div class="title-sub">Structured guidance from first alert to service review. Paste-ready outputs for ServiceNow, Jira and Confluence.</div>
+    <div class="title-sub">Structured guidance from first alert to service review. Paste-ready outputs for ServiceNow, Jira and Confluence. No setup, no server, no licence.</div>
     <div class="title-pills">
       <span class="pill pill-b">ITIL 4 Aligned</span>
       <span class="pill pill-g">FCA / PRA Ready</span>
-      <span class="pill pill-a">DORA Article 9 &amp; 17</span>
+      <span class="pill pill-a">DORA Article 9</span>
+      <span class="pill pill-p">🧠 Decision log with audit trail</span>
+      <span class="pill pill-t">🔒 Sanitise outputs for external sharing</span>
+      <span class="pill pill-b">📊 SLA health bar — Green → Amber → Red</span>
+      <span class="pill pill-g">📋 Live checklist progress tracking</span>
+      <span class="pill pill-p">Routing Intelligence</span>
     </div>
   </div>
 </div>
 
+<!-- SCENE 1: THE PROBLEM -->
 <div class="scene" id="s1">
   <div class="s1-left">
     <div class="s1-eyebrow">The Problem</div>
@@ -135,46 +690,103 @@ html,body{width:100%;min-height:100vh;background:#000;font-family:var(--sans);co
   </div>
   <div class="s1-right">
     <div class="pain-list">
-      <div class="pain-item" style="opacity:0;animation:slideLeft 0.5s 0.3s both"><div class="pain-icon">🔄</div><div class="pain-text"><strong>Context lost on every handoff.</strong> The next team starts from scratch.</div></div>
-      <div class="pain-item" style="opacity:0;animation:slideLeft 0.5s 0.6s both"><div class="pain-icon">⏰</div><div class="pain-text"><strong>Monthly service pack takes three days.</strong> Manually assembling RAG status from six teams.</div></div>
-      <div class="pain-item" style="opacity:0;animation:slideLeft 0.5s 0.9s both"><div class="pain-icon">📋</div><div class="pain-text"><strong>ServiceNow records are incomplete.</strong> Root cause blank, close code missing.</div></div>
-      <div class="pain-item" style="opacity:0;animation:slideLeft 0.5s 1.2s both"><div class="pain-icon">🏦</div><div class="pain-text"><strong>Regulatory exposure.</strong> FCA/PRA expects complete records. Gaps found in review.</div></div>
+      <div class="pain-item" style="opacity:0;animation:slideLeft 0.5s 0.3s both">
+        <div class="pain-icon">🔄</div>
+        <div class="pain-text"><strong>Context lost on every handoff.</strong> The next team starts from scratch. Same things investigated twice.</div>
+      </div>
+      <div class="pain-item" style="opacity:0;animation:slideLeft 0.5s 0.6s both">
+        <div class="pain-icon">⏰</div>
+        <div class="pain-text"><strong>Monthly service pack takes three days.</strong> Chasing updates from six teams, manually assembling the RAG status.</div>
+      </div>
+      <div class="pain-item" style="opacity:0;animation:slideLeft 0.5s 0.9s both">
+        <div class="pain-icon">📋</div>
+        <div class="pain-text"><strong>ServiceNow records are incomplete.</strong> MTTA/MTTR wrong, root cause blank, close code missing.</div>
+      </div>
+      <div class="pain-item" style="opacity:0;animation:slideLeft 0.5s 1.2s both">
+        <div class="pain-icon">🏦</div>
+        <div class="pain-text"><strong>Regulatory exposure.</strong> FCA/PRA expects complete and accurate incident records. Gaps found in review.</div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- SCENE 2: NAVIGATION -->
 <div class="scene" id="s2">
-  <div style="background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;min-height:100vh;">
-    <div style="font-size:36px;font-weight:700;color:white;margin-bottom:10px;text-align:center;opacity:0;animation:fadeUp 0.6s 0.2s both">Always One Click Away</div>
-    <div style="font-size:15px;color:var(--text2);margin-bottom:40px;text-align:center;opacity:0;animation:fadeUp 0.6s 0.4s both">Persistent navigation rail. Every workspace visible at all times.</div>
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;width:100%;max-width:1000px;opacity:0;animation:popIn 0.6s 0.6s both">
-      <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:8px;"><span style="background:var(--accent);border-radius:5px;padding:3px 8px;font-size:12px;color:white;font-weight:600">⚡</span><span style="font-size:13px;font-weight:600;">ITSM Workflow Intelligence v25</span></div>
-        <div style="display:flex;gap:8px;align-items:center;"><span style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:2px 12px;font-size:11px;color:var(--accent)">⊕ Full</span><span style="font-size:10px;font-family:var(--mono);color:var(--green);background:rgba(16,185,129,0.1);padding:3px 8px;border-radius:4px">Saved 14:32</span></div>
+  <div class="s2-title">Always One Click Away</div>
+  <div class="s2-sub">Persistent navigation rail. Every workspace visible at all times. Full Mode or Lite Mode. No menus.</div>
+  <div class="nav-mock">
+    <div class="nav-header">
+      <div class="nav-brand">
+        <div class="nav-logo">⚡</div>
+        <span class="nav-title">ITSM Workflow Intelligence</span>
+        <span class="nav-ver">v25</span>
       </div>
-      <div style="background:var(--bg);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;gap:0;overflow:hidden;">
-        <div style="padding:10px 14px;font-size:11px;color:var(--accent);border-bottom:2px solid var(--accent);">&#128680; Incident</div>
-        <div style="padding:10px 14px;font-size:11px;color:var(--text3);">&#9889; P1 Fast Track</div>
-        <div style="padding:10px 14px;font-size:11px;color:var(--text3);">&#128229; Pick Up</div>
-        <div style="padding:10px 14px;font-size:11px;color:var(--text3);">&#127891; Practice Run</div>
-        <div style="padding:10px 14px;font-size:11px;color:var(--text3);">&#128260; Change Request</div>
-        <div style="padding:10px 14px;font-size:11px;color:var(--text3);">&#128202; Reporting</div>
-        <div style="padding:10px 14px;font-size:11px;color:var(--text3);">&#128214; Glossary</div>
+      <div class="nav-right">
+        <div class="mode-toggle">
+          <span class="mode-btn on">⊞ Full</span>
+          <span class="mode-btn off">⊟ Lite</span>
+        </div>
+        <span class="save-badge">Saved 14:32</span>
       </div>
-      <div style="padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
-        <div style="background:var(--surface);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:14px;opacity:0;animation:popIn 0.4s 0.8s both"><div style="font-size:22px;margin-bottom:8px">⚡</div><div style="font-size:12px;font-weight:600;color:var(--text)">P1 Fast Track</div><div style="font-size:10px;color:var(--text2);margin-top:4px">Bridge pack in 90 seconds. SLA clock starts immediately.</div></div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;opacity:0;animation:popIn 0.4s 1.0s both"><div style="font-size:22px;margin-bottom:8px">🔄</div><div style="font-size:12px;font-weight:600;color:var(--text)">Change Request</div><div style="font-size:10px;color:var(--text2);margin-top:4px">Rollback decision tree. Step builder. Freeze window detection.</div></div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;opacity:0;animation:popIn 0.4s 1.2s both"><div style="font-size:22px;margin-bottom:8px">🔍</div><div style="font-size:12px;font-weight:600;color:var(--text)">Pattern Analysis</div><div style="font-size:10px;color:var(--text2);margin-top:4px">35 checks. Probable cause and recommended action for each finding.</div></div>
+    </div>
+    <div class="nav-rail">
+      <div class="nav-btn act">
+        <div class="nav-btn-icon">🚨</div>Incident
+        <div class="nav-btn-sub">Stage 2</div>
+      </div>
+      <div class="nav-btn"><div class="nav-btn-icon">📞</div>Customer Report</div>
+      <div class="nav-btn"><div class="nav-btn-icon">⚡</div>P1 Fast Track</div>
+      <div class="nav-btn"><div class="nav-btn-icon">📥</div>Pick Up Incident</div>
+      <div class="nav-btn"><div class="nav-btn-icon">🎓</div>Practice Run</div>
+      <div class="nav-sep"></div>
+      <div class="nav-btn"><div class="nav-btn-icon">📋</div>Retrospective</div>
+      <div class="nav-btn"><div class="nav-btn-icon">📊</div>Reporting</div>
+      <div class="nav-btn"><div class="nav-btn-icon">🔌</div>Integration</div>
+      <div class="nav-sep"></div>
+      <div class="nav-btn"><div class="nav-btn-icon">🔎</div>Problem Record</div>
+      <div class="nav-btn"><div class="nav-btn-icon">🔄</div>Change Request</div>
+      <div class="nav-btn"><div class="nav-btn-icon">📖</div>Glossary</div>
+      <div class="nav-util">
+        <span class="nav-util-btn">⚠ KI</span>
+        <span class="nav-util-btn">🔍</span>
+        <span class="nav-util-btn">?</span>
+      </div>
+    </div>
+    <div class="nav-content-preview">
+      <div class="nav-entry-card" style="border-color:rgba(239,68,68,0.3);opacity:0;animation:popIn 0.4s 0.8s both">
+        <div class="nav-entry-icon">⚡</div>
+        <div class="nav-entry-title">P1 Fast Track</div>
+        <div class="nav-entry-sub">Bridge pack in 90 seconds. SLA clock with pause and hold.</div>
+        <span class="nav-entry-badge neb-green">Critical incident</span>
+      </div>
+      <div class="nav-entry-card" style="opacity:0;animation:popIn 0.4s 1.0s both">
+        <div class="nav-entry-icon">🔄</div>
+        <div class="nav-entry-title">Change Request</div>
+        <div class="nav-entry-sub">Standalone CHG record. Rollback decision tree. Step builder. Freeze window detection.</div>
+        <span class="nav-entry-badge neb-blue">Updated v25</span>
+      </div>
+      <div class="nav-entry-card" style="opacity:0;animation:popIn 0.4s 1.2s both">
+        <div class="nav-entry-icon">💡</div>
+        <div class="nav-entry-title">Routing Intelligence</div>
+        <div class="nav-entry-sub">Assignment group suggested as you type the observation. Applies to first-line quick capture and full workflow.</div>
+        <span class="nav-entry-badge neb-blue">New in v25</span>
+      </div>
+      <div class="nav-entry-card" style="opacity:0;animation:popIn 0.4s 1.4s both">
+        <div class="nav-entry-icon">🔍</div>
+        <div class="nav-entry-title">Pattern Analysis Engine</div>
+        <div class="nav-entry-sub">35 checks. Probable cause, interpretation and recommended action for each. Runs automatically from entered data.</div>
+        <span class="nav-entry-badge neb-blue">New in v25</span>
       </div>
     </div>
   </div>
 </div>
 
+<!-- SCENE 3: P1 FAST TRACK -->
 <div class="scene" id="s3">
   <div class="s3-left">
     <div class="ft-eyebrow">P1 Fast Track</div>
     <div class="ft-h2">Bridge pack ready.<br><span>90 seconds.</span></div>
-    <div class="ft-body">Five fields. One click. Bridge pack ready, SLA clock running, full incident record pre-populated in the background.</div>
+    <div class="ft-body">When the payment gateway is down at 2am, there is no time for a 7-stage workflow. Five fields. One click. Bridge pack ready, SLA clock running, full incident record pre-populated in the background. Complete the detail when the pressure eases.</div>
     <div class="ft-stat">
       <div class="ft-stat-item"><div class="ft-stat-num">5</div><div class="ft-stat-lbl">fields</div></div>
       <div class="ft-stat-item"><div class="ft-stat-num">90s</div><div class="ft-stat-lbl">to bridge pack</div></div>
@@ -183,194 +795,456 @@ html,body{width:100%;min-height:100vh;background:#000;font-family:var(--sans);co
   </div>
   <div class="s3-right">
     <div class="ft-card">
-      <div class="ft-card-header"><span style="font-size:18px">⚡</span><span class="ft-card-title">P1 Fast Track</span></div>
+      <div class="ft-card-header">
+        <span class="ft-card-icon">⚡</span>
+        <span class="ft-card-title">P1 Fast Track: Critical Incident Response</span>
+      </div>
       <div class="ft-card-body">
-        <div class="ft-field"><div class="ft-label">What is down?</div><div class="ft-input active">Payment Gateway / PAY-GW-PROD-01</div></div>
-        <div class="ft-field"><div class="ft-label">Major Incident Manager</div><div class="ft-input">Sarah Chen, Platform Engineering</div></div>
-        <div class="ft-field"><div class="ft-label">Initial diagnosis</div><div class="ft-input">DB connection pool exhaustion</div></div>
-        <div class="sla-clock"><div class="sla-clock-label">P1 SLA Countdown</div><div class="sla-clock-time">00:47:23</div></div>
+        <div class="ft-field"><div class="ft-label">What is down?</div>
+          <div class="ft-input active">Payment Gateway / PAY-GW-PROD-01</div></div>
+        <div class="ft-field"><div class="ft-label">Major Incident Manager</div>
+          <div class="ft-input">Sarah Chen, Platform Engineering</div></div>
+        <div class="ft-field"><div class="ft-label">Bridge / Call details</div>
+          <div class="ft-input">MS Teams bridge. Link pinned in #incidents.</div></div>
+        <div class="ft-field"><div class="ft-label">Initial diagnosis</div>
+          <div class="ft-input">DB connection pool exhaustion / PAY-DB-PROD-02</div></div>
+        <div class="sla-clock">
+          <div class="sla-clock-label">P1 SLA Countdown — mm:ss in the final hour</div>
+          <div class="sla-clock-time">00:47:23</div>
+          <div class="sla-bar-track">
+            <div class="sla-bar-fill"></div>
+          </div>
+          <div class="sla-bar-meta">
+            <span>Green → Amber → Red</span>
+            <span>35% consumed</span>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:8px;padding:6px 8px;background:rgba(245,158,11,0.06);border-radius:4px;border-left:2px solid var(--amber);">
+          Desktop notification fires at ≤10 minutes remaining
+        </div>
         <button class="ft-generate-btn">⚡ Generate Bridge Pack</button>
       </div>
     </div>
   </div>
 </div>
 
+<!-- SCENE 4: 7 STAGES + OUTPUTS -->
 <div class="scene" id="s4">
-  <div style="background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 80px;min-height:100vh;">
-    <div style="font-size:36px;font-weight:700;color:white;margin-bottom:8px;text-align:center;opacity:0;animation:fadeUp 0.6s 0.2s both">7 Stages. 8 Outputs. Everything Connected.</div>
-    <div style="font-size:14px;color:var(--text2);margin-bottom:44px;text-align:center;opacity:0;animation:fadeUp 0.6s 0.4s both">Every stage feeds the next. Every stage generates structured paste-ready outputs.</div>
-    <div style="display:flex;align-items:flex-start;width:100%;">
-      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 0.3s both"><div class="stage-circle sc-done">1</div><div style="font-size:11px;font-weight:600;color:var(--text);text-align:center">Triage</div></div>
+  <div class="s4-title">7 Stages. 8 Outputs. Everything Connected.</div>
+  <div class="s4-sub">Every stage feeds the next. Every stage generates structured paste-ready outputs.</div>
+  <div class="stages-row">
+    <div style="display:flex;align-items:flex-start;width:100%;gap:0">
+      <!-- Stage blocks with connectors -->
+      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 0.3s both">
+        <div class="stage-circle sc-done">1</div>
+        <div class="stage-name">Triage</div>
+        <div class="stage-detail">Impact scoring, severity, smart hints</div>
+      </div>
       <div style="flex:1;height:2px;background:var(--green);margin-top:26px"></div>
-      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 0.5s both"><div class="stage-circle sc-done">2</div><div style="font-size:11px;font-weight:600;color:var(--text);text-align:center">Incident</div></div>
+      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 0.5s both">
+        <div class="stage-circle sc-done">2</div>
+        <div class="stage-name">Incident</div>
+        <div class="stage-detail">SLA clock, reassignment tracker, obs context</div>
+      </div>
       <div style="flex:1;height:2px;background:var(--green);margin-top:26px"></div>
-      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 0.7s both"><div class="stage-circle sc-active">3</div><div style="font-size:11px;font-weight:600;color:var(--text);text-align:center">Major Inc</div></div>
+      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 0.7s both">
+        <div class="stage-circle sc-active">3</div>
+        <div class="stage-name">Major Inc</div>
+        <div class="stage-detail">Bridge pack, comms templates, MIM checklist</div>
+      </div>
       <div style="flex:1;height:2px;background:linear-gradient(to right,var(--accent),var(--border));margin-top:26px"></div>
-      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 0.9s both"><div class="stage-circle sc-pend">4</div><div style="font-size:11px;font-weight:600;color:var(--text);text-align:center">Problem</div></div>
+      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 0.9s both">
+        <div class="stage-circle sc-pend">4</div>
+        <div class="stage-name">Problem</div>
+        <div class="stage-detail">Known error, KEDB, problem_state</div>
+      </div>
       <div style="flex:1;height:2px;background:var(--border);margin-top:26px"></div>
-      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 1.1s both"><div class="stage-circle sc-pend">5</div><div style="font-size:11px;font-weight:600;color:var(--text);text-align:center">RCA</div></div>
+      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 1.1s both">
+        <div class="stage-circle sc-pend">5</div>
+        <div class="stage-name">RCA</div>
+        <div class="stage-detail">5 Whys or Fishbone. Both guided.</div>
+      </div>
       <div style="flex:1;height:2px;background:var(--border);margin-top:26px"></div>
-      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 1.3s both"><div class="stage-circle sc-pend">6</div><div style="font-size:11px;font-weight:600;color:var(--text);text-align:center">Change</div></div>
+      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 1.3s both">
+        <div class="stage-circle sc-pend">6</div>
+        <div class="stage-name">Change</div>
+        <div class="stage-detail">Risk score, CAB, lifecycle tracker</div>
+      </div>
       <div style="flex:1;height:2px;background:var(--border);margin-top:26px"></div>
-      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 1.5s both"><div class="stage-circle sc-pend">7</div><div style="font-size:11px;font-weight:600;color:var(--text);text-align:center">Outputs</div></div>
+      <div class="stage-wrap" style="opacity:0;animation:countUp 0.4s 1.5s both">
+        <div class="stage-circle sc-pend">7</div>
+        <div class="stage-name">Outputs</div>
+        <div class="stage-detail">8 structured outputs, paste-ready</div>
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;margin-top:40px;">
-      <div class="output-chip" style="animation:popIn 0.4s 1.8s both"><div style="font-size:16px;margin-bottom:4px">📋</div><div class="oc-name">ServiceNow Incident</div></div>
-      <div class="output-chip" style="animation:popIn 0.4s 2.0s both"><div style="font-size:16px;margin-bottom:4px">🐛</div><div class="oc-name">Jira Bug</div></div>
-      <div class="output-chip" style="animation:popIn 0.4s 2.2s both"><div style="font-size:16px;margin-bottom:4px">📖</div><div class="oc-name">Confluence PIR</div></div>
-      <div class="output-chip" style="animation:popIn 0.4s 2.4s both"><div style="font-size:16px;margin-bottom:4px">🔎</div><div class="oc-name">Problem Record</div></div>
-      <div class="output-chip" style="animation:popIn 0.4s 2.6s both"><div style="font-size:16px;margin-bottom:4px">🔄</div><div class="oc-name">Change Request</div></div>
-      <div class="output-chip" style="animation:popIn 0.4s 2.8s both"><div style="font-size:16px;margin-bottom:4px">🔬</div><div class="oc-name">RCA Report</div></div>
-      <div class="output-chip" style="animation:popIn 0.4s 3.0s both"><div style="font-size:16px;margin-bottom:4px">📡</div><div class="oc-name">Status Page</div></div>
-      <div class="output-chip" style="animation:popIn 0.4s 3.2s both"><div style="font-size:16px;margin-bottom:4px">📜</div><div class="oc-name">Jira Story</div></div>
-    </div>
+  </div>
+  <div class="stages-outputs">
+    <div class="output-chip" style="animation:popIn 0.4s 1.8s both"><div class="oc-icon">📋</div><div class="oc-name">ServiceNow Incident</div><div class="oc-dest">SNow SOW</div></div>
+    <div class="output-chip" style="animation:popIn 0.4s 2.0s both"><div class="oc-icon">🐛</div><div class="oc-name">Jira Bug</div><div class="oc-dest">Jira backlog</div></div>
+    <div class="output-chip" style="animation:popIn 0.4s 2.2s both"><div class="oc-icon">📖</div><div class="oc-name">Confluence PIR</div><div class="oc-dest">Confluence</div></div>
+    <div class="output-chip" style="animation:popIn 0.4s 2.4s both"><div class="oc-icon">🔎</div><div class="oc-name">Problem Record</div><div class="oc-dest">SNow PRB</div></div>
+    <div class="output-chip" style="animation:popIn 0.4s 2.6s both"><div class="oc-icon">🔄</div><div class="oc-name">Change Request</div><div class="oc-dest">SNow CHG</div></div>
+    <div class="output-chip" style="animation:popIn 0.4s 2.8s both"><div class="oc-icon">🔬</div><div class="oc-name">RCA Report</div><div class="oc-dest">Confluence</div></div>
+    <div class="output-chip" style="animation:popIn 0.4s 3.0s both"><div class="oc-icon">📡</div><div class="oc-name">Status Page</div><div class="oc-dest">Public comms</div></div>
+    <div class="output-chip" style="animation:popIn 0.4s 3.2s both"><div class="oc-icon">📜</div><div class="oc-name">Jira Story</div><div class="oc-dest">Improvement tracking</div></div>
   </div>
 </div>
 
+<!-- SCENE 5: REASSIGNMENT TRACKER -->
 <div class="scene" id="s5">
-  <div style="background:var(--bg);display:grid;grid-template-columns:1fr 1fr;min-height:100vh;">
-    <div style="padding:70px 60px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);">
-      <div style="font-size:11px;font-family:var(--mono);color:var(--teal);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;opacity:0;animation:fadeUp 0.6s 0.2s both">Reassignment Tracker</div>
-      <div style="font-size:34px;font-weight:700;color:white;line-height:1.25;margin-bottom:14px;opacity:0;animation:fadeUp 0.6s 0.4s both">Context survives every handoff</div>
-      <div style="font-size:14px;color:var(--text2);line-height:1.75;opacity:0;animation:fadeUp 0.6s 0.6s both">Every team that touches an incident records what they investigated, what they ruled out and a handoff note. Context loss on reassignment is the single biggest cause of SLA breach on complex incidents.</div>
-    </div>
-    <div style="padding:50px;display:flex;align-items:center;justify-content:center;">
-      <div style="width:100%;max-width:480px;opacity:0;animation:slideLeft 0.6s 0.4s both">
-        <div style="display:flex;gap:12px;margin-bottom:14px;position:relative;">
-          <div style="position:absolute;left:13px;top:32px;bottom:-14px;width:2px;background:var(--border);z-index:0"></div>
-          <div style="width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,0.15);border:2px solid var(--green);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:4px;z-index:1">1</div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px 12px;flex:1">
-            <div style="font-size:12px;font-weight:500;color:var(--text)">Service Desk → Platform Engineering</div>
-            <div style="font-size:10px;color:var(--text2);margin-top:5px">Checked app monitoring. All green. Unable to identify. Not our layer.</div>
-            <div style="font-size:10px;color:var(--teal);margin-top:5px;padding:4px 7px;background:rgba(20,184,166,0.07);border-radius:3px">📋 Handoff: Start with DB layer. Latency elevated on PAY-DB-PROD-02</div>
-          </div>
+  <div class="s5-left">
+    <div class="ra-eyebrow">Reassignment Tracker</div>
+    <div class="ra-h2">Context survives every handoff</div>
+    <div class="ra-body">Every team that touches an incident records what they investigated, what they ruled out and a handoff note for the next team. Context loss on reassignment is the single biggest cause of SLA breach on complex incidents. This stops it.</div>
+  </div>
+  <div class="s5-right">
+    <div class="ra-chain">
+      <div class="ra-item">
+        <div class="ra-dot ra-dot-origin">1</div>
+        <div class="ra-content" style="opacity:0;animation:slideLeft 0.4s 0.3s both">
+          <div class="ra-team">Service Desk → Platform Engineering</div>
+          <span class="ra-badge rab-r">Initial routing</span>
+          <div class="ra-note">Checked app monitoring. All green. No alerts. Unable to identify. Not our layer.</div>
+          <div class="ra-handoff">📋 Handoff: Start with DB layer. Latency elevated on PAY-DB-PROD-02</div>
         </div>
-        <div style="display:flex;gap:12px;margin-bottom:14px;position:relative;">
-          <div style="position:absolute;left:13px;top:32px;bottom:-14px;width:2px;background:var(--border);z-index:0"></div>
-          <div style="width:28px;height:28px;border-radius:50%;background:rgba(245,158,11,0.1);border:2px solid var(--border);color:var(--text3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:4px;z-index:1">2</div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px 12px;flex:1">
-            <div style="font-size:12px;font-weight:500;color:var(--text)">Platform Engineering → DBA Team</div>
-            <div style="font-size:10px;color:var(--text2);margin-top:5px">Connection pool exhaustion confirmed. DB issue confirmed.</div>
-            <div style="font-size:10px;color:var(--teal);margin-top:5px;padding:4px 7px;background:rgba(20,184,166,0.07);border-radius:3px">📋 Handoff: Pool 100% since 14:32. DBA on-call: Sarah Chen.</div>
-          </div>
+      </div>
+      <div class="ra-item">
+        <div class="ra-dot ra-dot-mid">2</div>
+        <div class="ra-content" style="opacity:0;animation:slideLeft 0.4s 0.8s both">
+          <div class="ra-team">Platform Engineering → DBA Team</div>
+          <span class="ra-badge rab-c">Investigation complete</span>
+          <div class="ra-note">Confirmed connection pool exhaustion. Application layer is clean. DB issue confirmed.</div>
+          <div class="ra-handoff">📋 Handoff: Connection pool 100% since 14:32. DBA on-call: Sarah Chen. Check replica lag.</div>
         </div>
-        <div style="display:flex;gap:12px;">
-          <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.15);border:2px solid var(--accent);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:4px">3</div>
-          <div style="background:var(--surface);border:1px solid rgba(59,130,246,0.3);border-radius:7px;padding:10px 12px;flex:1">
-            <div style="font-size:12px;font-weight:500;color:var(--text)">DBA Team — Current</div>
-            <div style="font-size:10px;color:var(--text2);margin-top:5px">Root cause: index rebuild consuming all connections. Fix in progress.</div>
-          </div>
+      </div>
+      <div class="ra-item">
+        <div class="ra-dot ra-dot-current">3</div>
+        <div class="ra-content" style="opacity:0;animation:slideLeft 0.4s 1.3s both">
+          <div class="ra-team">DBA Team — <em style="color:var(--accent)">Current</em></div>
+          <span class="ra-badge rab-e">SLA Warning</span>
+          <div class="ra-note">Root cause identified: index rebuild job consuming all connections. Fix in progress.</div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- SCENE 6: PICK UP INCIDENT -->
 <div class="scene" id="s6">
-  <div style="background:var(--bg);display:grid;grid-template-columns:1fr 1fr;min-height:100vh;">
-    <div style="padding:70px 60px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);">
-      <div style="font-size:11px;font-family:var(--mono);color:var(--accent);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;opacity:0;animation:fadeUp 0.6s 0.2s both">Service Review Reporting</div>
-      <div style="font-size:34px;font-weight:700;color:white;line-height:1.25;margin-bottom:14px;opacity:0;animation:fadeUp 0.6s 0.4s both">Quick entry. 35 checks. Executive narrative. One workspace.</div>
-      <div style="font-size:14px;color:var(--text2);line-height:1.75;opacity:0;animation:fadeUp 0.6s 0.6s both">Enter six core fields per team using Quick Entry. The pattern engine runs automatically. Probable cause, interpretation and recommended action for each finding. Four narrative styles. Copy individual sections as Markdown.</div>
-    </div>
-    <div style="padding:32px;display:flex;flex-direction:column;gap:12px;background:var(--surface);">
-      <div style="display:flex;gap:10px;opacity:0;animation:ragFlash 0.5s 0.6s both">
-        <div style="flex:1;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:24px;font-weight:700;color:var(--green);font-family:var(--mono)">5</div><div style="font-size:9px;color:var(--text3)">Green</div></div>
-        <div style="flex:1;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:24px;font-weight:700;color:var(--amber);font-family:var(--mono)">3</div><div style="font-size:9px;color:var(--text3)">Amber</div></div>
-        <div style="flex:1;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:24px;font-weight:700;color:var(--red);font-family:var(--mono)">1</div><div style="font-size:9px;color:var(--text3)">Red</div></div>
+  <div class="s6-left">
+    <div class="pu-eyebrow">New in v25</div>
+    <div class="pu-h2">Pick Up Existing Incident</div>
+    <div class="pu-body">Most teams are not taking customer calls — they are picking up incidents that have been routed to their queue. Enter the INC reference, paste the description from ServiceNow. The tool pre-populates the incident record and creates the first reassignment entry automatically.</div>
+  </div>
+  <div class="s6-right">
+    <div class="pu-form">
+      <div class="pu-form-header">
+        <span style="font-size:18px">📥</span>
+        <span class="pu-form-title">Pick Up Existing Incident</span>
       </div>
-      <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:7px;padding:10px 12px;opacity:0;animation:slideUp 0.5s 0.9s both">
+      <div class="pu-form-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="pu-field"><div class="pu-label">Incident Reference</div>
+            <div class="pu-input hi">INC0047832</div></div>
+          <div class="pu-field"><div class="pu-label">How it reached your team</div>
+            <div class="pu-input">Handed off — L1 routing</div></div>
+        </div>
+        <div class="pu-field"><div class="pu-label">Description (paste from ServiceNow)</div>
+          <div class="pu-textarea">Statement download returning 503, ~340 enterprise customers since 09:23. Service Desk investigated. No alerts on monitoring. Unable to identify cause. Routing to Platform Engineering.</div>
+        </div>
+        <div class="pu-field"><div class="pu-label">What the previous team investigated</div>
+          <div class="pu-textarea">Application health — green. API gateway responding normally. Network ruled out. Not our layer — routing to Platform Engineering.</div>
+        </div>
+        <button class="pu-btn">Continue with this incident ›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 7: SERVICE REPORTING -->
+<div class="scene" id="s7">
+  <div style="display:grid;grid-template-columns:1fr 1fr;height:100%;background:var(--bg);">
+
+    <!-- LEFT: what the workspace covers -->
+    <div style="padding:56px 50px;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;">
+      <div style="font-size:11px;font-family:var(--mono);color:var(--purple);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;opacity:0;animation:fadeUp 0.6s 0.2s both">Service Review Reporting</div>
+      <div style="font-size:32px;font-weight:700;color:white;line-height:1.2;margin-bottom:14px;opacity:0;animation:fadeUp 0.6s 0.4s both">Six tabs. Full picture.<br>One workspace.</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:22px;opacity:0;animation:fadeUp 0.6s 0.6s both">The monthly service pack that normally takes three days. Structured data entry, auto-calculated RAG, executive narrative in one click.</div>
+
+      <!-- Tab list -->
+      <div style="display:flex;flex-direction:column;gap:9px;opacity:0;animation:fadeUp 0.6s 0.8s both">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:14px;flex-shrink:0;margin-top:1px">⚙</span>
+          <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">Configuration</div>
+          <div style="font-size:11px;color:var(--text3)">Unlimited teams, Lab to Platform hierarchy. Per-team RAG thresholds. Custom P1-P5 severity codes.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:14px;flex-shrink:0;margin-top:1px">📊</span>
+          <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">RAG Dashboard</div>
+          <div style="font-size:11px;color:var(--text3)">Auto-calculated from entered data. P1/P2 SLA %, change success rate, rollback rate, MTTR trend. Override available.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:14px;flex-shrink:0;margin-top:1px">🔍</span>
+          <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">Pattern Analysis</div>
+          <div style="font-size:11px;color:var(--text3)">5 auto-detected patterns: multiple teams RED, elevated P1 volume, high rollback rate, overdue problem records, MTTR worsening.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:14px;flex-shrink:0;margin-top:1px">📝</span>
+          <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">Executive Narrative</div>
+          <div style="font-size:11px;color:var(--text3)">Verbatim text. Names teams, calls out patterns, states decisions required. Paste directly into a board pack.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <span style="font-size:14px;flex-shrink:0;margin-top:1px">📅</span>
+          <div><div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">Period History</div>
+          <div style="font-size:11px;color:var(--text3)">Save monthly periods, compare to previous. One-click quarterly rollup built from saved monthly data.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: RAG dashboard + pattern preview -->
+    <div style="padding:32px;display:flex;flex-direction:column;gap:12px;background:var(--surface);overflow:hidden;">
+
+      <!-- RAG summary pills -->
+      <div style="display:flex;gap:10px;opacity:0;animation:ragFlash 0.5s 0.6s both">
+        <div style="flex:1;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:var(--green);font-family:var(--mono)">5</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">Green</div>
+        </div>
+        <div style="flex:1;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:var(--amber);font-family:var(--mono)">3</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">Amber</div>
+        </div>
+        <div style="flex:1;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:var(--red);font-family:var(--mono)">1</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">Red</div>
+        </div>
+        <div style="flex:1;background:rgba(59,130,246,0.06);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:24px;font-weight:700;color:var(--accent);font-family:var(--mono)">Monthly</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">Report mode</div>
+        </div>
+      </div>
+
+      <!-- Mini RAG table -->
+      <table style="width:100%;border-collapse:collapse;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden;font-size:10px;opacity:0;animation:slideUp 0.5s 0.9s both">
+        <thead><tr style="background:var(--bg);">
+          <th style="padding:6px 10px;text-align:left;color:var(--text3);font-family:var(--mono);font-weight:600;font-size:9px;text-transform:uppercase">Team</th>
+          <th style="padding:6px 8px;text-align:center;color:var(--text3);font-size:9px;font-weight:600">RAG</th>
+          <th style="padding:6px 8px;text-align:center;color:var(--text3);font-size:9px;font-weight:600">P1 SLA</th>
+          <th style="padding:6px 8px;text-align:center;color:var(--text3);font-size:9px;font-weight:600">Changes</th>
+          <th style="padding:6px 8px;text-align:center;color:var(--text3);font-size:9px;font-weight:600">Rollbacks</th>
+          <th style="padding:6px 8px;text-align:center;color:var(--text3);font-size:9px;font-weight:600">MTTR</th>
+          <th style="padding:6px 8px;text-align:center;color:var(--text3);font-size:9px;font-weight:600">Trend</th>
+        </tr></thead>
+        <tbody>
+          <tr style="border-top:1px solid var(--border)">
+            <td style="padding:7px 10px;color:var(--text);font-weight:500">Payments Platform</td>
+            <td style="padding:7px 8px;text-align:center"><span style="background:rgba(16,185,129,0.15);color:var(--green);border-radius:3px;padding:1px 6px;font-family:var(--mono);font-size:10px;font-weight:700">G</span></td>
+            <td style="padding:7px 8px;text-align:center;color:var(--text2)">98%</td>
+            <td style="padding:7px 8px;text-align:center"><span style="background:rgba(16,185,129,0.1);color:var(--green);border-radius:3px;padding:1px 5px;font-size:9px">97%</span></td>
+            <td style="padding:7px 8px;text-align:center;color:var(--text2)">1</td>
+            <td style="padding:7px 8px;text-align:center;color:var(--text2)">42m</td>
+            <td style="padding:7px 8px;text-align:center;color:var(--green);font-size:11px">↑</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border)">
+            <td style="padding:7px 10px;color:var(--text);font-weight:500">Digital Channels</td>
+            <td style="padding:7px 8px;text-align:center"><span style="background:rgba(245,158,11,0.15);color:var(--amber);border-radius:3px;padding:1px 6px;font-family:var(--mono);font-size:10px;font-weight:700">A</span></td>
+            <td style="padding:7px 8px;text-align:center;color:var(--text2)">87%</td>
+            <td style="padding:7px 8px;text-align:center"><span style="background:rgba(245,158,11,0.1);color:var(--amber);border-radius:3px;padding:1px 5px;font-size:9px">88%</span></td>
+            <td style="padding:7px 8px;text-align:center;color:var(--text2)">3</td>
+            <td style="padding:7px 8px;text-align:center;color:var(--amber)">78m ↑</td>
+            <td style="padding:7px 8px;text-align:center;color:var(--red);font-size:11px">↓</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border)">
+            <td style="padding:7px 10px;color:var(--text);font-weight:500">Data Engineering</td>
+            <td style="padding:7px 8px;text-align:center"><span style="background:rgba(239,68,68,0.15);color:var(--red);border-radius:3px;padding:1px 6px;font-family:var(--mono);font-size:10px;font-weight:700">R</span></td>
+            <td style="padding:7px 8px;text-align:center;color:var(--red)">74%</td>
+            <td style="padding:7px 8px;text-align:center"><span style="background:rgba(239,68,68,0.1);color:var(--red);border-radius:3px;padding:1px 5px;font-size:9px">71%</span></td>
+            <td style="padding:7px 8px;text-align:center;color:var(--red)">5</td>
+            <td style="padding:7px 8px;text-align:center;color:var(--red)">112m ↑</td>
+            <td style="padding:7px 8px;text-align:center;color:var(--red);font-size:11px">↓</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pattern detection preview -->
+      <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:7px;padding:10px 12px;opacity:0;animation:slideUp 0.5s 1.2s both">
         <div style="font-size:11px;font-weight:600;color:var(--red);margin-bottom:3px">CRITICAL — Data Engineering — Rollback rate: 60%</div>
         <div style="font-size:10px;color:var(--text2);line-height:1.5">Probable cause: Changes reaching production without adequate confidence. Action: Freeze non-critical changes pending review.</div>
       </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 12px;opacity:0;animation:slideUp 0.5s 1.2s both">
-        <div style="font-size:9px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Executive Narrative — Governance Committee</div>
-        <div style="font-size:10px;color:var(--text2);line-height:1.65">⚡ Decisions required: 1. Recovery plan for Data Engineering — team lead to present root cause and remediation timeline before close of this meeting.</div>
-        <div style="font-size:10px;color:var(--accent);margin-top:4px">✂️ Copy section · 📝 Copy as Markdown</div>
+
+      <!-- Executive narrative preview -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px 12px;opacity:0;animation:slideUp 0.5s 1.5s both;flex:1;overflow:hidden">
+        <div style="font-size:9px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Executive Narrative — Governance Committee style</div>
+        <div style="font-size:10px;color:var(--text2);line-height:1.65;overflow:hidden;max-height:80px">⚡ Decisions required: 1. Recovery plan for Data Engineering — team lead to present root cause and remediation timeline before close of this meeting. 2. CAB chair to present change quality findings within 2 weeks.</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:4px;cursor:pointer">Copy narrative · Style: Board / Ops / Briefing →</div>
       </div>
+
     </div>
   </div>
 </div>
 
-<div class="scene" id="s7">
-  <div style="background:var(--bg);display:grid;grid-template-columns:1fr 1fr;min-height:100vh;">
-    <div style="padding:70px 60px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border);">
-      <div style="font-size:11px;font-family:var(--mono);color:var(--teal);text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;opacity:0;animation:fadeUp 0.6s 0.2s both">Integration Hub</div>
-      <div style="font-size:34px;font-weight:700;color:white;line-height:1.25;margin-bottom:14px;opacity:0;animation:fadeUp 0.6s 0.4s both">Live data in. Structured outputs out.</div>
-      <div style="font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:20px;opacity:0;animation:fadeUp 0.6s 0.6s both">JS API and webhook receiver for 9 monitoring platforms. Automation populates the incident record. Engineers review and generate outputs.</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;opacity:0;animation:fadeUp 0.6s 0.8s both">
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;text-align:center;font-size:10px;color:var(--text2)">Dynatrace</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;text-align:center;font-size:10px;color:var(--text2)">Datadog</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;text-align:center;font-size:10px;color:var(--text2)">Grafana</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;text-align:center;font-size:10px;color:var(--text2)">New Relic</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;text-align:center;font-size:10px;color:var(--text2)">PagerDuty</div>
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 10px;text-align:center;font-size:10px;color:var(--text2)">+4 more</div>
-      </div>
-    </div>
-    <div style="padding:40px;display:flex;align-items:center;justify-content:center;">
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;width:100%;max-width:500px;overflow:hidden;opacity:0;animation:popIn 0.6s 0.5s both">
-        <div style="background:var(--surface2);border-bottom:1px solid var(--border);padding:10px 14px;">
-          <span style="font-size:10px;font-family:var(--mono);color:var(--teal)">Integration Hub — JS API</span>
-        </div>
-        <div style="padding:16px;font-family:var(--mono);font-size:11px;line-height:1.8;color:var(--text3)">
-          <span style="color:var(--text3)">// Dynatrace webhook → auto-populate</span><br>
-          <span style="color:var(--purple)">window</span>.<span style="color:var(--accent)">ITSMTool</span>.<span style="color:var(--accent)">loadWebhookPayload</span>({<br>
-          &nbsp;&nbsp;<span style="color:var(--green)">&quot;ProblemTitle&quot;</span>: <span style="color:var(--green)">&quot;Response time degradation&quot;</span>,<br>
-          &nbsp;&nbsp;<span style="color:var(--green)">&quot;ProblemSeverity&quot;</span>: <span style="color:var(--green)">&quot;PERFORMANCE&quot;</span><br>
-          }, <span style="color:var(--green)">'dynatrace'</span>);<br><br>
-          <span style="color:var(--text3)">// Read outputs</span><br>
-          <span style="color:var(--purple)">const</span> <span style="color:var(--text)">outputs</span> = <span style="color:var(--purple)">window</span>.<span style="color:var(--accent)">ITSMTool</span>.<span style="color:var(--accent)">getOutputs</span>();
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
+<!-- SCENE 8: INTEGRATION HUB -->
 <div class="scene" id="s8">
-  <div style="background:radial-gradient(ellipse at 40% 60%,rgba(59,130,246,0.15),transparent 55%),var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:60px;min-height:100vh;">
-    <div style="font-size:12px;font-family:var(--mono);color:var(--teal);text-transform:uppercase;letter-spacing:0.18em;margin-bottom:16px;opacity:0;animation:fadeUp 0.7s 0.2s both">7 Practice Scenarios Built In</div>
-    <div style="font-size:40px;font-weight:700;color:white;line-height:1.15;margin-bottom:18px;opacity:0;animation:fadeUp 0.7s 0.5s both">Learn every workflow<br><span style="color:var(--accent)">before you need it</span></div>
-    <div style="font-size:15px;color:var(--text2);max-width:560px;line-height:1.7;margin-bottom:36px;opacity:0;animation:fadeUp 0.7s 0.8s both">Payment Gateway P1, Authentication P2, Failed Deployment, Database Replication Lag, Emergency Security Patch (CVE-2024-44000, CVSS 9.8), Customer PII Exposure (ICO 72-hour window), Service Review Pattern Analysis.</div>
-    <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;opacity:0;animation:fadeUp 0.7s 1.0s both">
-      <span style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);padding:6px 14px;border-radius:6px;font-size:12px">💳 Payment P1</span>
-      <span style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);color:var(--accent);padding:6px 14px;border-radius:6px;font-size:12px">🔐 Auth P2</span>
-      <span style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:var(--amber);padding:6px 14px;border-radius:6px;font-size:12px">🔄 Failed Deploy</span>
-      <span style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);color:var(--purple);padding:6px 14px;border-radius:6px;font-size:12px">🛡 CVE 9.8</span>
-      <span style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);padding:6px 14px;border-radius:6px;font-size:12px">🔴 PII Exposure</span>
+  <div class="s8-left">
+    <div class="ih-eyebrow">Integration Hub</div>
+    <div class="ih-h2">Live data in.<br>Structured outputs out.</div>
+    <div class="ih-body">A full JavaScript API surface and webhook receiver for 9 monitoring platforms. Automation populates the incident record. Engineers review, complete and generate outputs. No copy-paste from alerting to ITSM.</div>
+    <div class="platform-grid">
+      <div class="plat-chip">Dynatrace</div>
+      <div class="plat-chip">Datadog</div>
+      <div class="plat-chip">New Relic</div>
+      <div class="plat-chip">Grafana</div>
+      <div class="plat-chip">CloudWatch</div>
+      <div class="plat-chip">Azure Monitor</div>
+      <div class="plat-chip">ServiceNow</div>
+      <div class="plat-chip">GitHub Actions</div>
+      <div class="plat-chip">Generic JSON</div>
+    </div>
+  </div>
+  <div class="s8-right">
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots">
+          <div class="code-dot cd-r"></div>
+          <div class="code-dot cd-a"></div>
+          <div class="code-dot cd-g"></div>
+        </div>
+        <span class="code-tab">Integration Hub — JS API</span>
+      </div>
+      <div class="code-body">
+<span class="c-comment">// Dynatrace webhook → auto-populate incident</span>
+<span class="c-obj">window</span>.<span class="c-fn">ITSMTool</span>.<span class="c-fn">loadWebhookPayload</span>({
+  <span class="c-str">"ProblemID"</span>: <span class="c-str">"P-12345"</span>,
+  <span class="c-str">"ProblemTitle"</span>: <span class="c-str">"Response time degradation"</span>,
+  <span class="c-str">"ProblemSeverity"</span>: <span class="c-str">"PERFORMANCE"</span>,
+  <span class="c-str">"ImpactedEntities"</span>: <span class="c-str">"payment-service"</span>
+}, <span class="c-str">'dynatrace'</span>);
+
+<span class="c-comment">// Or use the JS API directly</span>
+<span class="c-obj">window</span>.<span class="c-fn">ITSMTool</span>.<span class="c-fn">setSeverity</span>(<span class="c-str">'P2'</span>);
+<span class="c-obj">window</span>.<span class="c-fn">ITSMTool</span>.<span class="c-fn">loadObsContext</span>({
+  platform: <span class="c-str">'dynatrace'</span>,
+  aiFinding: <span class="c-str">'Connection pool exhaustion...'</span>,
+  metrics: [{ name: <span class="c-str">'Error Rate'</span>, value: <span class="c-str">'23%'</span> }]
+});
+
+<span class="c-comment">// Read all generated outputs</span>
+<span class="c-keyword">const</span> <span class="c-val">outputs</span> = <span class="c-obj">window</span>.<span class="c-fn">ITSMTool</span>.<span class="c-fn">getOutputs</span>();
+<span class="c-obj">console</span>.<span class="c-fn">log</span>(<span class="c-val">outputs</span>.<span class="c-val">servicenow</span>);
+      </div>
     </div>
   </div>
 </div>
 
+<!-- SCENE 9: INTELLIGENCE & AUDIT TRAIL -->
 <div class="scene" id="s9">
+  <div class="ia-eyebrow">New in v25</div>
+  <div class="ia-title">🧠 Intelligence &amp; Audit Trail</div>
+  <div class="ia-sub">Tools that don't just capture data — they support decisions and protect data</div>
+  <div class="ia-cards">
+    <div class="ia-card" style="animation:popIn 0.5s 0.4s both;border-color:rgba(139,92,246,0.3);">
+      <div class="ia-card-icon">🧠</div>
+      <div class="ia-card-title">Decision Log</div>
+      <div class="ia-card-body">Log key decisions with automatic timestamps during the incident. Feeds directly into the PIR and handover pack. Creates the audit trail that post-incident reviews depend on.</div>
+      <span class="ia-card-tag ia-tag-purple">Stage 2 — Incident workspace</span>
+    </div>
+    <div class="ia-card" style="animation:popIn 0.5s 0.7s both;border-color:rgba(20,184,166,0.3);">
+      <div class="ia-card-icon">🔒</div>
+      <div class="ia-card-title">Sanitise Export</div>
+      <div class="ia-card-body">One toggle replaces emails, IPs, ticket references and proper names with [REDACTED] across all 7 outputs. Share externally without a data review step.</div>
+      <span class="ia-card-tag ia-tag-teal">All outputs · one click</span>
+    </div>
+    <div class="ia-card" style="animation:popIn 0.5s 1.0s both;border-color:rgba(16,185,129,0.3);">
+      <div class="ia-card-icon">📋</div>
+      <div class="ia-card-title">Checklist Progress</div>
+      <div class="ia-card-body">The Post-Incident Action Checklist shows a live progress bar and completion percentage. Green when all items are done.</div>
+      <span class="ia-card-tag ia-tag-green">Live progress bar</span>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 10: CLOSE -->
+<div class="scene" id="s10">
   <div class="close-eyebrow">Open Source · Free to Use</div>
-  <div class="close-h1">Practitioner-built.<br><span>Completely free.</span></div>
-  <div class="close-sub">From first alert to service review. Single HTML file. Nothing to install. Works offline.</div>
+  <div class="close-h1">Practitioner-built. Production<br>grade. <span>Completely free.</span></div>
+  <div class="close-sub">From first alert to service review — with decision logs, SLA health bars, sanitise export and live checklist progress. Incident, problem, change, RCA, reporting and integration in one place. Single HTML file. Nothing to install.</div>
   <div class="close-stats">
     <div class="close-stat"><div class="close-stat-num">7</div><div class="close-stat-lbl">Workflow stages</div></div>
+    <div class="close-stat"><div class="close-stat-num">7</div><div class="close-stat-lbl">Practice scenarios</div></div>
     <div class="close-stat"><div class="close-stat-num">8</div><div class="close-stat-lbl">ITSM outputs</div></div>
     <div class="close-stat"><div class="close-stat-num">428</div><div class="close-stat-lbl">Functions</div></div>
+    <div class="close-stat"><div class="close-stat-num">130+</div><div class="close-stat-lbl">Glossary terms</div></div>
     <div class="close-stat"><div class="close-stat-num">35</div><div class="close-stat-lbl">Pattern checks</div></div>
     <div class="close-stat"><div class="close-stat-num">0</div><div class="close-stat-lbl">Dependencies</div></div>
   </div>
-  <div class="close-url"><span style="font-size:18px">🔗</span>github.com/Zeus-17/itsm-workflow-intelligence</div>
+  <div class="close-url">
+    <span class="close-url-icon">🔗</span>
+    github.com/Zeus-17/itsm-workflow-intelligence
+  </div>
   <div class="close-author">James Holford · Senior Service Delivery &amp; Technology Operations Leader | 22 Years Financial Services | Operational Resilience | Actively Upskilling and Building with AI &amp; Cloud | CSPO | Google Cloud Digital Leader</div>
 </div>
 
+<!-- DOTS -->
 <div id="dots"></div>
+<!-- PROGRESS -->
 <div id="progressBar"></div>
 
 <script>
-const SCENES=10;
-const TIMINGS=[7000,7000,7000,7000,7000,7000,7000,7000,7000,8000];
+const SCENES=11;
+const TIMINGS=[8000,8000,8000,8000,8000,8000,8000,8000,8000,8000,9000]; // ms per scene
 let current=0;
-let sceneStart;
+let elapsed=0;
 let animFrame;
+let sceneStart;
+
+// Build dots
 var dotsEl=document.getElementById('dots');
-for(var i=0;i<SCENES;i++){var d=document.createElement('div');d.className='dot'+(i===0?' active':'');dotsEl.appendChild(d);}
-function goTo(n){document.getElementById('s'+current).classList.remove('active');document.querySelectorAll('.dot')[current].classList.remove('active');document.querySelectorAll('.dot')[current].classList.add('done');current=n;document.getElementById('s'+n).classList.add('active');document.querySelectorAll('.dot')[n].classList.remove('done');document.querySelectorAll('.dot')[n].classList.add('active');sceneStart=performance.now();}
-function tick(now){var duration=TIMINGS[current];var elapsed=now-sceneStart;var totalElapsed=0;for(var i=0;i<current;i++)totalElapsed+=TIMINGS[i];totalElapsed+=elapsed;var totalDuration=TIMINGS.reduce(function(a,b){return a+b;},0);var pct=Math.min(100,(totalElapsed/totalDuration)*100);document.getElementById('progressBar').style.width=pct+'%';if(elapsed>=duration){if(current<SCENES-1){goTo(current+1);}else{goTo(0);document.querySelectorAll('.dot').forEach(function(d){d.classList.remove('done');});}}animFrame=requestAnimationFrame(tick);}
-sceneStart=performance.now();animFrame=requestAnimationFrame(tick);
-document.addEventListener('click',function(){if(current<SCENES-1)goTo(current+1);else goTo(0);});
+for(var i=0;i<SCENES;i++){
+  var d=document.createElement('div');
+  d.className='dot'+(i===0?' active':'');
+  dotsEl.appendChild(d);
+}
+
+function goTo(n){
+  document.getElementById('s'+current).classList.remove('active');
+  document.querySelectorAll('.dot')[current].classList.remove('active');
+  document.querySelectorAll('.dot')[current].classList.add('done');
+  current=n;
+  document.getElementById('s'+n).classList.add('active');
+  document.querySelectorAll('.dot')[n].classList.remove('done');
+  document.querySelectorAll('.dot')[n].classList.add('active');
+  sceneStart=performance.now();
+}
+
+function tick(now){
+  var duration=TIMINGS[current];
+  var elapsed=now-sceneStart;
+  var totalElapsed=0;
+  for(var i=0;i<current;i++)totalElapsed+=TIMINGS[i];
+  totalElapsed+=elapsed;
+  var totalDuration=TIMINGS.reduce(function(a,b){return a+b;},0);
+  var pct=Math.min(100,(totalElapsed/totalDuration)*100);
+  document.getElementById('progressBar').style.width=pct+'%';
+  if(elapsed>=duration){
+    if(current<SCENES-1){
+      goTo(current+1);
+    } else {
+      // Loop back to start
+      goTo(0);
+      document.querySelectorAll('.dot').forEach(function(d){d.classList.remove('done');});
+    }
+  }
+  animFrame=requestAnimationFrame(tick);
+}
+
+sceneStart=performance.now();
+animFrame=requestAnimationFrame(tick);
+
+// Click to advance
+document.addEventListener('click',function(){
+  if(current<SCENES-1)goTo(current+1);
+  else goTo(0);
+});
 </script>
 </body>
 </html>

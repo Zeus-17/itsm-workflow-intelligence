@@ -1401,6 +1401,56 @@ textarea{resize:vertical;min-height:80px;}
   .handover-card-title{font-size:11px;}
 }
 
+/* ═══ REVIEW IMPROVEMENTS ═══ */
+
+/* 1. SLA health bar */
+.sla-health-track{flex:1;height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin:0 6px;}
+.sla-health-fill{height:100%;border-radius:3px;transition:width 1s linear,background 0.5s;}
+.sla-health-fill.sla-ok{background:var(--green);}
+.sla-health-fill.sla-warn{background:var(--amber);}
+.sla-health-fill.sla-red{background:var(--red);}
+
+/* 2. Checklist progress */
+.pic-progress-row{display:flex;align-items:center;gap:10px;padding:8px 0 12px;margin-bottom:8px;border-bottom:1px solid var(--border);}
+.pic-progress-track{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.pic-progress-fill{height:100%;background:var(--green);border-radius:4px;transition:width 0.3s ease;}
+.pic-progress-label{font-size:11px;font-family:var(--mono);color:var(--text2);min-width:52px;text-align:right;}
+.pic-progress-pct{font-size:13px;font-weight:700;color:var(--green);font-family:var(--mono);min-width:36px;}
+
+/* 3. Service cluster */
+.svc-cluster-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border);cursor:pointer;}
+.svc-cluster-row:hover{background:var(--surface2);margin:0 -14px;padding:6px 14px;border-radius:6px;}
+.svc-cluster-name{flex:1;font-size:12px;color:var(--text);font-weight:500;}
+.svc-cluster-bar-track{width:80px;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.svc-cluster-bar-fill{height:100%;border-radius:4px;background:var(--accent);}
+.svc-cluster-count{font-size:11px;font-family:var(--mono);color:var(--text3);min-width:28px;text-align:right;}
+.svc-cluster-detail{font-size:11px;color:var(--text2);padding:8px 0 6px;line-height:1.6;display:none;}
+.svc-cluster-detail.open{display:block;}
+
+/* 5. Decision log */
+.decision-log-entry{display:flex;gap:10px;padding:6px 0;border-bottom:0.5px solid var(--border);}
+.decision-log-time{font-size:10px;font-family:var(--mono);color:var(--text3);white-space:nowrap;padding-top:2px;min-width:42px;}
+.decision-log-text{font-size:12px;color:var(--text);flex:1;line-height:1.5;}
+.decision-log-del{font-size:12px;color:var(--text3);cursor:pointer;background:none;border:none;flex-shrink:0;}
+.decision-log-del:hover{color:var(--red);}
+.decision-log-empty{font-size:11px;color:var(--text3);padding:6px 0;font-style:italic;}
+
+/* 6. Data backup nudge */
+#backupNudge{display:none;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);
+  border-radius:7px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--amber);
+  align-items:center;gap:10px;}
+#backupNudge.show{display:flex;}
+#backupNudge button{font-size:11px;padding:3px 10px;background:var(--amber);color:#000;
+  border:none;border-radius:4px;cursor:pointer;font-family:var(--mono);flex-shrink:0;}
+
+/* 7. Sanitise toggle */
+.sanitise-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;
+  background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2);
+  border-radius:7px;margin-bottom:12px;}
+.sanitise-bar label{font-size:11px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:7px;flex:1;}
+.sanitise-bar input[type=checkbox]{accent-color:var(--purple);width:13px;height:13px;}
+.sanitise-active-note{font-size:10px;color:var(--purple);font-family:var(--mono);}
+
 /* ═══ STRUCTURED IMPROVEMENTS ═══ */
 
 /* P6: Visual hierarchy — line-height, form spacing, headings, card accent border */
@@ -1915,7 +1965,10 @@ body{line-height:1.75;}
     <div class="sla-time ok" id="slaTime">--:--</div>
     <div class="sla-label" id="slaLabel"><span id="slaClockTitle">SLA remaining</span></div>
   </div>
-  <div style="flex:1;font-size:12px;color:var(--text2);" id="slaDetail">Start time required to activate SLA clock</div>
+  <div style="flex:1">
+    <div class="sla-health-track"><div class="sla-health-fill sla-ok" id="slaHealthBar" style="width:100%"></div></div>
+    <div style="font-size:12px;color:var(--text2);margin-top:4px;" id="slaDetail">Start time required to activate SLA clock</div>
+  </div>
 </div>
 
 
@@ -2130,6 +2183,15 @@ body{line-height:1.75;}
       <div style="font-size:12px;color:var(--text3);padding:8px 0">No saved periods yet. Save the current period to begin building history.</div>
     </div>
     <div id="periodBarCharts" style="margin-top:8px"></div>
+
+    <!-- SERVICE CLUSTER VIEW -->
+    <div style="margin-top:18px">
+      <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text2);font-family:var(--mono);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+        <span>Incidents by Service / Component</span>
+        <button class="btn-session" onclick="buildServiceClusters()" style="font-size:10px">↺ Refresh</button>
+      </div>
+      <div id="serviceClusterList"><div style="font-size:11px;color:var(--text3);font-style:italic">Save periods or sessions to see incident clustering by service.</div></div>
+    </div>
     <div id="quarterlyRollupSection" style="margin-top:16px;display:none">
       <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;font-family:var(--mono);margin-bottom:8px">Quarterly Rollup — from saved monthly periods</div>
       <div id="quarterlyRollupContent"></div>
@@ -4184,6 +4246,21 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
     </div>
   </div>
 
+  <!-- DECISION LOG -->
+  <div class="card lite-hide" id="decisionLogCard">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Decision Log
+        <span class="tooltip-wrap"><span class="tooltip-icon">?</span><span class="tooltip-box">Log key decisions made during this incident with automatic timestamps. Creates an objective audit trail that feeds into your PIR and handover pack. Examples: "Decided to roll back to v3.1", "Agreed to escalate to P1", "Chose workaround over fix due to time constraint".</span></span>
+      </span>
+      <span class="tl-badge" id="decisionCount">0 decisions</span>
+    </div>
+    <div id="decisionLogList"><div class="decision-log-empty">No decisions logged yet. Log key calls here as you make them.</div></div>
+    <div style="display:flex;gap:8px;margin-top:10px;align-items:flex-start">
+      <input id="decisionInput" placeholder="e.g. Decided to roll back to v3.1.2 — patch introduced the regression" style="flex:1;font-size:12px" oninput="" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addDecision();}">
+      <button class="btn btn-secondary btn-sm" onclick="addDecision()">+ Log decision</button>
+    </div>
+  </div>
+
   <div class="btn-actions">
     <button class="btn btn-primary" onclick="validateAndGoTo(3)">Continue ›</button>
     <button class="btn btn-secondary" onclick="goToStage(1)">‹ Back</button>
@@ -4912,6 +4989,17 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
     <div id="patternList" style="font-size:12px;color:var(--text2)">No patterns detected yet — save more sessions to enable analysis.</div>
   </div>
 
+  <!-- BACKUP NUDGE -->
+  <div id="backupNudge">⚠ You have significant unsaved data in this session. Export a backup before closing this tab.
+    <button onclick="exportSessionJSON();document.getElementById('backupNudge').classList.remove('show')">Export now</button>
+  </div>
+
+  <!-- SANITISE BAR -->
+  <div class="sanitise-bar">
+    <label><input type="checkbox" id="sanitiseToggle" onchange="toggleSanitise(this.checked)"> 🔒 Sanitise outputs for sharing — replaces potentially sensitive values with <code style="font-size:10px;background:var(--surface2);padding:1px 4px;border-radius:3px">[REDACTED]</code></label>
+    <span class="sanitise-active-note" id="sanitiseNote" style="display:none">● Active — outputs are sanitised</span>
+  </div>
+
   <!-- POST-INCIDENT CHECKLIST -->
   <div class="card" id="picCard" style="margin-bottom:16px">
     <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
@@ -4920,6 +5008,11 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
         <button class="btn-session" onclick="generatePostIncidentChecklist()" title="Refresh if you changed any flags after generating">↺ Refresh</button>
         <button class="btn-session" onclick="exportChecklist()">Download</button>
       </div>
+    </div>
+    <div id="picProgressRow" style="display:none" class="pic-progress-row">
+      <span class="pic-progress-pct" id="picProgressPct">0%</span>
+      <div class="pic-progress-track"><div class="pic-progress-fill" id="picProgressFill" style="width:0%"></div></div>
+      <span class="pic-progress-label" id="picProgressLabel">0 / 0 done</span>
     </div>
     <div id="picContent">
       <div style="font-size:12px;color:var(--text2);padding:8px 0">Generate your outputs first — checklist will appear here based on your incident details. If you change severity, regulatory flags or RCA data after generating, click ↺ Refresh to update the checklist.</div>
@@ -5400,6 +5493,7 @@ function startSLAClock(){
       label.textContent='SLA remaining';
       detail.textContent=sev+' SLA target: '+limit+' mins. Elapsed: '+Math.round(elapsedMins)+' mins.';
     }
+    if(typeof updateSLAHealthBar==='function')updateSLAHealthBar(remaining,limit);
   }
   tick();
   slaInterval=setInterval(function(){tick();updateSLAStatusIndicator();},1000);
@@ -5469,8 +5563,10 @@ function autosave(){
       localStorage.setItem('itsm_session',JSON.stringify(data));
       // Save timeline separately
       try{if(typeof timelineEvents!=='undefined')localStorage.setItem('itsm_timeline',JSON.stringify(timelineEvents));}catch(e){}
+      try{if(typeof decisionLog!=='undefined')localStorage.setItem('itsm_decisions',JSON.stringify(decisionLog));}catch(e){}
       try{if(typeof saveReassignState!=='undefined')saveReassignState();}catch(e){}
       try{saveCurrencyState();}catch(e){}
+      try{if(typeof checkBackupNudge==='function')checkBackupNudge();}catch(e){}
       const s=document.getElementById('saveStatus');
       if(s){s.textContent='Saved '+new Date().toLocaleTimeString('en-GB');s.classList.add('saved');}
     }catch(e){console.warn('Autosave failed:',e);}
@@ -6144,7 +6240,7 @@ Problem Record: PRB[NUMBER]
 Change Request: CHG[NUMBER]
 Jira Bug: [LINK]
 Jira Remediation Story: [LINK]
-
+${typeof getDecisionLogBlock==='function'&&getDecisionLogBlock()?getDecisionLogBlock():''}
 ---
 Generated by ITSM Workflow Intelligence Tool v25 — https://zeus-17.github.io/itsm-workflow-intelligence/`);
 
@@ -7064,7 +7160,7 @@ function generatePostIncidentChecklist(){
       <div class="pic-section-title">${s.icon} ${s.title}</div>
       ${s.items.map(item=>`
         <div class="pic-item">
-          <input type="checkbox">
+          <input type="checkbox" onchange="updateChecklistProgress()">
           <div style="flex:1">
             <div class="pic-label">${item.text}</div>
             <div class="pic-sublabel">${item.sub}</div>
@@ -7072,6 +7168,7 @@ function generatePostIncidentChecklist(){
           <span class="pic-badge ${item.due}">${item.timing}</span>
         </div>`).join('')}
     </div>`).join('');
+  if(typeof updateChecklistProgress==='function')updateChecklistProgress();
 }
 
 function exportChecklist(){
@@ -7231,6 +7328,8 @@ window.addEventListener('load',()=>{
         }
       }catch(e){}
     }
+    const dl=localStorage.getItem('itsm_decisions');
+    if(dl){try{var pd=JSON.parse(dl);if(Array.isArray(pd)){decisionLog=pd;renderDecisionLog();}}catch(e){}}
   }catch(e){}
 });
 
@@ -10023,6 +10122,7 @@ function initReporting(){
   renderTeamConfig();
   renderPeriodDataEntry();
   renderPeriodHistory();
+  if(typeof buildServiceClusters==='function')setTimeout(buildServiceClusters,200);
   // Restore form fields
   ['rpt_period_start','rpt_period_end','rpt_prepared_by','rpt_org_name'].forEach(function(id){
     var el = document.getElementById(id);
@@ -15490,6 +15590,189 @@ function showSkeletonInContainer(containerId){
   var el=document.getElementById(containerId);
   if(!el)return;
   el.innerHTML='<div class="skeleton-block"><div class="skeleton-header"></div><div class="skeleton-line w90"></div><div class="skeleton-line w70"></div><div class="skeleton-line w50"></div><div class="skeleton-line w90"></div><div class="skeleton-line w35"></div></div>';
+}
+
+// ── REVIEW IMPROVEMENTS — NEW FUNCTIONS ─────────────────────
+
+// 1. SLA Health Bar — update the colored progress bar inside the SLA clock
+function updateSLAHealthBar(remaining, limit){
+  var bar=document.getElementById('slaHealthBar');
+  if(!bar)return;
+  bar.classList.remove('sla-ok','sla-warn','sla-red');
+  if(remaining<=0){
+    bar.style.width='100%';bar.classList.add('sla-red');return;
+  }
+  var pct=Math.min(100,Math.max(0,(remaining/limit)*100));
+  bar.style.width=pct+'%';
+  if(pct>50)bar.classList.add('sla-ok');
+  else if(pct>25)bar.classList.add('sla-warn');
+  else bar.classList.add('sla-red');
+}
+
+// 2. Checklist progress tracking
+function updateChecklistProgress(){
+  var items=document.querySelectorAll('#picContent .pic-item input[type=checkbox]');
+  if(!items.length){document.getElementById('picProgressRow').style.display='none';return;}
+  var done=0;
+  items.forEach(function(cb){if(cb.checked)done++;});
+  var total=items.length;
+  var pct=Math.round((done/total)*100);
+  document.getElementById('picProgressRow').style.display='flex';
+  document.getElementById('picProgressPct').textContent=pct+'%';
+  document.getElementById('picProgressFill').style.width=pct+'%';
+  document.getElementById('picProgressLabel').textContent=done+' / '+total+' done';
+  var fill=document.getElementById('picProgressFill');
+  fill.style.background=pct===100?'var(--green)':pct>=50?'var(--accent)':'var(--amber)';
+}
+
+// 3. Service cluster view — groups saved sessions by service name
+function buildServiceClusters(){
+  var container=document.getElementById('serviceClusterList');
+  if(!container)return;
+  var map={};
+  // Scan all saved sessions
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(!k||!k.startsWith('itsm_session_'))continue;
+    try{
+      var d=JSON.parse(localStorage.getItem(k));
+      var svc=(d&&d.incidentData&&(d.incidentData.t1_service||d.incidentData.i_shortdesc))||'';
+      if(!svc)svc='Unknown service';
+      var sev=(d&&d.incidentData&&d.incidentData.selectedSev)||'';
+      if(!map[svc])map[svc]={count:0,sevs:[],sessions:[]};
+      map[svc].count++;
+      if(sev)map[svc].sevs.push(sev);
+      map[svc].sessions.push({name:k.replace('itsm_session_',''),sev:sev,shortdesc:(d&&d.incidentData&&d.incidentData.i_shortdesc)||''});
+    }catch(e){}
+  }
+  // Also add current active incident if service is set
+  var curSvc=g('t1_service');
+  if(curSvc){
+    if(!map[curSvc])map[curSvc]={count:0,sevs:[],sessions:[]};
+    map[curSvc].count++;
+    map[curSvc].sessions.push({name:'Current session',sev:selectedSev||'',shortdesc:g('i_shortdesc')||g('t1_observation')||''});
+    if(selectedSev)map[curSvc].sevs.push(selectedSev);
+  }
+  var entries=Object.keys(map).sort(function(a,b){return map[b].count-map[a].count;});
+  if(!entries.length){
+    container.innerHTML='<div style="font-size:11px;color:var(--text3);font-style:italic">No saved sessions found. Save sessions to build service cluster history.</div>';
+    return;
+  }
+  var max=map[entries[0]].count;
+  container.innerHTML=entries.map(function(svc){
+    var m=map[svc];
+    var p1=m.sevs.filter(function(s){return s==='P1';}).length;
+    var barW=Math.round((m.count/max)*100);
+    var detailId='svcDetail_'+svc.replace(/[^a-z0-9]/gi,'_');
+    var incidents=m.sessions.map(function(s){
+      return '<div style="font-size:11px;color:var(--text2);padding:2px 0;border-bottom:0.5px solid var(--border)">'
+        +'<span style="font-family:var(--mono);color:'+(s.sev==='P1'?'var(--red)':s.sev==='P2'?'var(--amber)':'var(--text3)')+'">'+( s.sev||'—')+'</span> '
+        +(s.shortdesc||s.name||'—')+'</div>';
+    }).join('');
+    return '<div class="svc-cluster-row" onclick="this.nextElementSibling.classList.toggle(\'open\')">'
+      +'<span class="svc-cluster-name">'+svc+(p1?' <span style="color:var(--red);font-size:10px;font-family:var(--mono)">'+p1+' P1</span>':'')+'</span>'
+      +'<div class="svc-cluster-bar-track"><div class="svc-cluster-bar-fill" style="width:'+barW+'%"></div></div>'
+      +'<span class="svc-cluster-count">'+m.count+'</span>'
+      +'</div>'
+      +'<div class="svc-cluster-detail">'+incidents+'</div>';
+  }).join('');
+}
+
+// 5. Decision Log
+var decisionLog=[];
+function addDecision(){
+  var input=document.getElementById('decisionInput');
+  if(!input||!input.value.trim())return;
+  var text=input.value.trim();
+  var now=new Date();
+  var ts=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  decisionLog.push({ts:ts,date:now.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit'}),text:text,id:now.getTime()});
+  input.value='';
+  renderDecisionLog();
+  if(typeof addTimelineEvent==='function')addTimelineEvent('Decision logged: '+text,'auto');
+  autosave();
+}
+function renderDecisionLog(){
+  var el=document.getElementById('decisionLogList');
+  var cnt=document.getElementById('decisionCount');
+  if(!el)return;
+  if(!decisionLog.length){
+    el.innerHTML='<div class="decision-log-empty">No decisions logged yet. Log key calls here as you make them.</div>';
+    if(cnt)cnt.textContent='0 decisions';
+    return;
+  }
+  if(cnt)cnt.textContent=decisionLog.length+' decision'+(decisionLog.length!==1?'s':'');
+  el.innerHTML=decisionLog.map(function(d){
+    return '<div class="decision-log-entry">'
+      +'<span class="decision-log-time">'+d.ts+'</span>'
+      +'<span class="decision-log-text">'+d.text+'</span>'
+      +'<button class="decision-log-del" onclick="deleteDecision('+d.id+')" title="Remove">×</button>'
+      +'</div>';
+  }).join('');
+}
+function deleteDecision(id){
+  decisionLog=decisionLog.filter(function(d){return d.id!==id;});
+  renderDecisionLog();
+  autosave();
+}
+function getDecisionLogBlock(){
+  if(!decisionLog.length)return '';
+  var NL=String.fromCharCode(10);
+  return NL+'DECISION LOG'+NL+'-'.repeat(30)+NL
+    +decisionLog.map(function(d){return d.ts+' — '+d.text;}).join(NL)+NL;
+}
+
+// 6. Backup nudge — warn if session data exceeds threshold
+var _backupNudged=false;
+function checkBackupNudge(){
+  if(_backupNudged)return;
+  try{
+    var total=0;
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k&&k.startsWith('itsm_')){total+=localStorage.getItem(k).length;}
+    }
+    if(total>200000){// ~200KB of itsm data
+      var nudge=document.getElementById('backupNudge');
+      if(nudge)nudge.classList.add('show');
+      _backupNudged=true;
+    }
+  }catch(e){}
+}
+
+// 7. Sanitise outputs — replace sensitive field values with [REDACTED]
+var _sanitiseActive=false;
+var _originalOutputs={};
+var _sensitivePatterns=[
+  /\b[A-Z]{2,3}[0-9]{5,10}\b/g,   // ticket refs like INC0012345
+  /\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}\b/g, // email
+  /\b(?:\d{1,3}\.){3}\d{1,3}\b/g,  // IP addresses
+  /\b[A-Z][a-z]+ [A-Z][a-z]+\b/g  // Proper name (Two word Title Case)
+];
+function toggleSanitise(active){
+  _sanitiseActive=active;
+  var note=document.getElementById('sanitiseNote');
+  if(note)note.style.display=active?'inline':'none';
+  var ids=['sn_out','jira_bug_out','jira_story_out','conf_out','prob_out','cr_out','rca_report_out'];
+  if(active){
+    ids.forEach(function(id){
+      var el=document.getElementById(id);
+      if(!el||!el.textContent||el.textContent==='Generating...')return;
+      _originalOutputs[id]=el.textContent;
+      var txt=el.textContent;
+      _sensitivePatterns.forEach(function(re){txt=txt.replace(re,'[REDACTED]');});
+      el.textContent=txt;
+    });
+    showToast('Outputs sanitised — [REDACTED] replaces potentially sensitive values. Click copy to share the sanitised version.','info',4000);
+  } else {
+    ids.forEach(function(id){
+      var el=document.getElementById(id);
+      if(el&&_originalOutputs[id])el.textContent=_originalOutputs[id];
+    });
+    _originalOutputs={};
+    showToast('Sanitisation removed — original outputs restored.','info',2000);
+  }
+  if(typeof highlightOutputBlocks==='function')highlightOutputBlocks();
 }
 
 // ── STRUCTURED IMPROVEMENTS — NEW FUNCTIONS ─────────────────
