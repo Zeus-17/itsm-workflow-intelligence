@@ -2458,6 +2458,7 @@ body{line-height:1.75;}
   <div class="integration-tab-bar">
     <button class="integration-tab-btn active" onclick="switchIntTab('api',this)">📡 JS API</button>
     <button class="integration-tab-btn" onclick="switchIntTab('webhook',this)">🔗 Webhook</button>
+    <button class="integration-tab-btn" onclick="switchIntTab('urlparams',this)">🔗 URL Parameters</button>
     <button class="integration-tab-btn" onclick="switchIntTab('fieldmap',this)">🗺 Field Mapping</button>
     <button class="integration-tab-btn" onclick="switchIntTab('schema',this)">📋 Schema</button>
     <button class="integration-tab-btn" onclick="switchIntTab('examples',this)">💡 Examples</button>
@@ -2524,6 +2525,53 @@ console.log(outputs.changeRequest); // Change request text</div>
   </div>
 
   <!-- WEBHOOK TAB -->
+  <!-- URL PARAMETERS TAB -->
+  <div class="integration-tab-pane" id="itab_urlparams">
+    <div class="card">
+      <div class="card-title">URL Parameter Pre-fill — Zero Infrastructure</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.7;">
+        The simplest integration path. Any system that can construct a URL (a Slack bot, a PagerDuty runbook link, a ChatOps command) can open this tool with fields pre-filled by appending parameters to the URL. No server, no API key, no configuration required.
+      </div>
+      <div class="schema-block" id="urlParamExample">// ── FULL EXAMPLE URL ─────────────────────────────────
+https://zeus-17.github.io/itsm-workflow-intelligence/itsm-workflow-tool-v25.html
+  ?service=Payment+Gateway
+  &amp;sev=P1
+  &amp;obs=Card+payments+failing+%E2%80%94+503+errors+since+14%3A32
+  &amp;shortdesc=Payment+Gateway+P1+%E2%80%94+all+card+transactions+failing
+  &amp;assigngroup=Platform+Operations
+  &amp;workspace=incident</div>
+      <div style="margin-top:14px">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);margin-bottom:8px;">Supported parameters</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead><tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:4px 8px;color:var(--text3);font-family:var(--mono);font-weight:600;">Parameter</th>
+            <th style="text-align:left;padding:4px 8px;color:var(--text3);font-family:var(--mono);font-weight:600;">Maps to</th>
+            <th style="text-align:left;padding:4px 8px;color:var(--text3);font-family:var(--mono);font-weight:600;">Example value</th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom:0.5px solid var(--border);"><td style="padding:4px 8px;font-family:var(--mono);color:var(--accent);">service</td><td style="padding:4px 8px;color:var(--text2);">Affected service name</td><td style="padding:4px 8px;color:var(--text3);">Payment+Gateway</td></tr>
+            <tr style="border-bottom:0.5px solid var(--border);"><td style="padding:4px 8px;font-family:var(--mono);color:var(--accent);">sev</td><td style="padding:4px 8px;color:var(--text2);">Severity (P1–P4)</td><td style="padding:4px 8px;color:var(--text3);">P1</td></tr>
+            <tr style="border-bottom:0.5px solid var(--border);"><td style="padding:4px 8px;font-family:var(--mono);color:var(--accent);">obs</td><td style="padding:4px 8px;color:var(--text2);">Initial observation</td><td style="padding:4px 8px;color:var(--text3);">503+errors+since+14%3A32</td></tr>
+            <tr style="border-bottom:0.5px solid var(--border);"><td style="padding:4px 8px;font-family:var(--mono);color:var(--accent);">shortdesc</td><td style="padding:4px 8px;color:var(--text2);">Short description</td><td style="padding:4px 8px;color:var(--text3);">Payment+Gateway+P1</td></tr>
+            <tr style="border-bottom:0.5px solid var(--border);"><td style="padding:4px 8px;font-family:var(--mono);color:var(--accent);">ci</td><td style="padding:4px 8px;color:var(--text2);">Configuration item</td><td style="padding:4px 8px;color:var(--text3);">PAY-GW-PROD-01</td></tr>
+            <tr style="border-bottom:0.5px solid var(--border);"><td style="padding:4px 8px;font-family:var(--mono);color:var(--accent);">assigngroup</td><td style="padding:4px 8px;color:var(--text2);">Assignment group</td><td style="padding:4px 8px;color:var(--text3);">Platform+Operations</td></tr>
+            <tr style="border-bottom:0.5px solid var(--border);"><td style="padding:4px 8px;font-family:var(--mono);color:var(--accent);">diagnosis</td><td style="padding:4px 8px;color:var(--text2);">Initial diagnosis</td><td style="padding:4px 8px;color:var(--text3);">Connection+pool+exhausted</td></tr>
+            <tr style="border-bottom:0.5px solid var(--border);"><td style="padding:4px 8px;font-family:var(--mono);color:var(--accent);">reporter</td><td style="padding:4px 8px;color:var(--text2);">Reported by</td><td style="padding:4px 8px;color:var(--text3);">Monitoring+Alert</td></tr>
+            <tr style="border-bottom:0.5px solid var(--border);"><td style="padding:4px 8px;font-family:var(--mono);color:var(--accent);">workspace</td><td style="padding:4px 8px;color:var(--text2);">Open workspace directly</td><td style="padding:4px 8px;color:var(--text3);">incident, fasttrack, pickup</td></tr>
+            <tr><td style="padding:4px 8px;font-family:var(--mono);color:var(--accent);">detect</td><td style="padding:4px 8px;color:var(--text2);">Detection method</td><td style="padding:4px 8px;color:var(--text3);">Monitoring+alert</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:14px;padding:10px 12px;background:var(--surface2);border-radius:6px;font-size:11px;color:var(--text2);line-height:1.65;">
+        <strong style="color:var(--text);">How to use in practice:</strong> Configure your alerting platform (PagerDuty, Datadog, Slack bot) to generate a link using this pattern. When an alert fires, the engineer clicks the link, the tool opens with the incident data pre-filled, reviews it, and clicks Continue. A human always confirms before any output is generated.
+      </div>
+      <div style="margin-top:10px">
+        <button class="btn btn-secondary btn-sm" onclick="generateURLParamExample()">Generate URL from current fields</button>
+        <span id="urlParamOutput" style="font-size:11px;color:var(--text3);margin-left:10px;"></span>
+      </div>
+    </div>
+  </div>
+
   <div class="integration-tab-pane" id="itab_webhook">
     <div class="card">
       <div class="card-title">Webhook Receiver
@@ -15833,6 +15881,71 @@ function showSkeletonInContainer(containerId){
   el.innerHTML='<div class="skeleton-block"><div class="skeleton-header"></div><div class="skeleton-line w90"></div><div class="skeleton-line w70"></div><div class="skeleton-line w50"></div><div class="skeleton-line w90"></div><div class="skeleton-line w35"></div></div>';
 }
 
+// ── URL PARAMETER PRE-FILL ───────────────────────────────────
+// Zero-infrastructure integration: any system that can construct a URL
+// (Slack bot, PagerDuty runbook, ChatOps command) can open this tool
+// with incident fields pre-filled. Human reviews all data before continuing.
+
+var _urlParamFieldMap={
+  service:'t1_service', obs:'t1_observation', observation:'t1_observation',
+  shortdesc:'i_shortdesc', desc:'i_desc', description:'i_desc',
+  ci:'i_ci', assigngroup:'i_assigngroup', assign:'i_assigngroup',
+  diagnosis:'i_diagnosis', reporter:'t1_reporter', detect:'t1_detection',
+  detection:'t1_detection', workaround:'i_workaround', users:'i_usersnum'
+};
+
+function readURLParams(){
+  try{
+    var params=new URLSearchParams(window.location.search);
+    if(!params.toString())return;
+    var hasData=false;
+    Object.keys(_urlParamFieldMap).forEach(function(param){
+      var val=params.get(param);
+      if(!val)return;
+      var el=document.getElementById(_urlParamFieldMap[param]);
+      if(el&&el.tagName!=='SELECT'){el.value=decodeURIComponent(val);hasData=true;}
+    });
+    // Severity
+    var sev=params.get('sev')||params.get('severity');
+    if(sev){
+      var sevUpper=sev.toUpperCase();
+      if(['P1','P2','P3','P4'].indexOf(sevUpper)>-1){setSev(sevUpper);hasData=true;}
+    }
+    // Workspace navigation
+    var ws=params.get('workspace')||params.get('nav');
+    if(ws&&typeof navTo==='function')setTimeout(function(){navTo(ws);},300);
+    if(hasData){
+      if(typeof updateScore==='function')setTimeout(updateScore,100);
+      if(typeof autosave==='function')setTimeout(autosave,200);
+      if(typeof addTimelineEvent==='function')
+        addTimelineEvent('Incident pre-filled via URL parameters — review all fields before continuing','auto');
+      showToast('Fields pre-filled from URL — review before continuing.','info',4000);
+    }
+  }catch(e){}
+}
+
+function generateURLParamExample(){
+  var base='https://zeus-17.github.io/itsm-workflow-intelligence/itsm-workflow-tool-v25.html';
+  var parts=[];
+  var vals={
+    service:g('t1_service'), sev:selectedSev,
+    obs:g('t1_observation'), shortdesc:g('i_shortdesc'),
+    ci:g('i_ci'), assigngroup:g('i_assigngroup'), diagnosis:g('i_diagnosis'),
+    reporter:g('t1_reporter'), workspace:'incident'
+  };
+  Object.keys(vals).forEach(function(k){
+    if(vals[k]&&vals[k].trim())parts.push(k+'='+encodeURIComponent(vals[k].trim()));
+  });
+  var url=base+(parts.length?'?'+parts.join('&'):'');
+  navigator.clipboard.writeText(url).then(function(){
+    var out=document.getElementById('urlParamOutput');
+    if(out){out.textContent='Copied to clipboard ✓';setTimeout(function(){out.textContent='';},3000);}
+  }).catch(function(){
+    var out=document.getElementById('urlParamOutput');
+    if(out)out.textContent=url.slice(0,80)+'…';
+  });
+}
+
 // ── CONTENT LAYER ────────────────────────────────────────────
 // Fetches updatable regulatory/ITIL/platform guidance from GitHub.
 // Embedded content in the HTML is always the fallback — nothing breaks offline.
@@ -16815,6 +16928,8 @@ window.addEventListener('load',function(){
   // Re-run welcome check now that welcomeOverlay is attached to body
   if(typeof showWelcomeIfFirstTime==='function')showWelcomeIfFirstTime();
   if(typeof showQuickstartIfFirstTime==='function')showQuickstartIfFirstTime();
+  // Read URL parameters — pre-fill fields if passed (zero-infrastructure integration)
+  if(typeof readURLParams==='function')readURLParams();
   // Initialise content layer — silent background fetch, falls back to embedded defaults
   if(typeof initContentLayer==='function')setTimeout(initContentLayer,1500);
 },false);
