@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>ITSM Workflow Intelligence Tool v25</title>
 <meta name="description" content="Structured incident, change and service review guidance. Paste-ready outputs for ServiceNow, Jira and Confluence.">
 <meta name="theme-color" content="#3b82f6">
@@ -15580,7 +15583,7 @@ function dismissQuickstart(e){
 window.addEventListener('load',function(){
   ['shareModal','trainingModal','welcomeOverlay','browserWarn',
    'templatePickerPanel','obOverlay','kbShortcutPanel',
-   'changelogModal','privacyModal','tocPanel','appFooter'].forEach(function(id){
+   'changelogModal','privacyModal','tocPanel','tocToggleBtn','appFooter'].forEach(function(id){
     var el=document.getElementById(id);
     if(el&&el.parentElement!==document.body)document.body.appendChild(el);
   });
