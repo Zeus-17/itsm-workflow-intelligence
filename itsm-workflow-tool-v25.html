@@ -957,8 +957,8 @@ body.high-contrast.light-mode{
   --text:#000000;--text2:#111111;--text3:#222222;
   --bg:#ffffff;--surface:#f5f5f5;--surface2:#ebebeb;
   --border:#888888;--border2:#999999;}
-/* Zoom wrapper */
-#appZoomWrap{transform-origin:top left;}
+/* Zoom wrapper — scaling via documentElement.fontSize; no transform needed */
+#appZoomWrap{}
 
 /* ── PRINT CSS ── */
 
@@ -1397,6 +1397,111 @@ textarea{resize:vertical;min-height:80px;}
   .copy-all-bar{flex-direction:column;align-items:flex-start;gap:8px;}
   .handover-card-title{font-size:11px;}
 }
+
+/* ═══ STRUCTURED IMPROVEMENTS ═══ */
+
+/* P6: Visual hierarchy — line-height, form spacing, headings, card accent border */
+body{line-height:1.75;}
+.form-group{margin-bottom:16px;}
+.card-title,.stage-title,.section-label,.accordion-title,.obs-section-title,
+.gloss-section-title,.ig-section-title{font-weight:600!important;font-size:13px!important;}
+.card{border-left:2px solid rgba(59,130,246,0.3);}
+
+/* P3: Version badge clickable */
+.app-header-version{cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.app-header-version:hover{color:var(--text2);}
+
+/* P1: TOC panel */
+#tocPanel{position:fixed;top:var(--nav-h,96px);left:0;z-index:3000;background:var(--surface);
+  border:1px solid var(--border);border-right-color:var(--border2);border-radius:0 10px 10px 0;
+  min-width:210px;max-width:250px;box-shadow:4px 0 24px rgba(0,0,0,0.3);
+  transform:translateX(calc(-100% - 1px));transition:transform 0.22s cubic-bezier(0.4,0,0.2,1);}
+#tocPanel.open{transform:translateX(0);}
+#tocToggleBtn{position:fixed;top:calc(var(--nav-h,96px) + 10px);left:0;z-index:3001;
+  background:var(--accent);color:#fff;border:none;border-radius:0 6px 6px 0;
+  padding:6px 5px 6px 4px;cursor:pointer;font-size:10px;writing-mode:vertical-rl;
+  text-orientation:mixed;letter-spacing:0.05em;font-family:var(--mono);font-weight:600;
+  transition:opacity 0.15s;line-height:1.2;}
+#tocToggleBtn:hover{opacity:0.85;}
+.toc-header{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 13px 8px;border-bottom:1px solid var(--border);font-size:10px;
+  font-weight:600;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.1em;}
+.toc-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0;}
+.toc-list{padding:6px 0;max-height:calc(100vh - var(--nav-h,96px) - 70px);overflow-y:auto;}
+.toc-item{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;
+  font-size:12px;color:var(--text2);border:none;background:none;width:100%;text-align:left;
+  transition:background 0.1s,color 0.1s;font-family:var(--sans);}
+.toc-item:hover,.toc-item.toc-active{background:var(--surface2);color:var(--text);}
+.toc-item-icon{font-size:13px;flex-shrink:0;width:18px;text-align:center;}
+.toc-divider{height:1px;background:var(--border);margin:4px 10px;}
+
+/* P1: Quickstart card */
+#quickstartCard{background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.3);
+  border-radius:10px;padding:16px 18px;margin:14px auto 0;max-width:560px;}
+.qs-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:7px;}
+.qs-sub{font-size:11px;color:var(--text2);margin-bottom:12px;line-height:1.5;}
+.qs-steps{display:flex;gap:8px;flex-wrap:wrap;}
+.qs-step{flex:1;min-width:130px;background:var(--surface2);border-radius:8px;
+  padding:10px 12px;cursor:pointer;border:2px solid transparent;
+  transition:border-color 0.15s,background 0.15s;}
+.qs-step:hover{border-color:var(--accent);background:rgba(59,130,246,0.06);}
+.qs-step-num{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;
+  font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  margin:0 auto 6px;font-family:var(--mono);}
+.qs-step-label{font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px;text-align:center;}
+.qs-step-sub{font-size:10px;color:var(--text3);line-height:1.4;text-align:center;}
+.qs-dismiss{font-size:10px;color:var(--text3);cursor:pointer;text-decoration:underline;
+  margin-top:10px;display:block;text-align:right;background:none;border:none;font-family:var(--sans);}
+
+/* P3: Changelog modal */
+#changelogModal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.65);
+  align-items:center;justify-content:center;}
+#changelogModal.show{display:flex;}
+.changelog-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;
+  padding:24px;max-width:540px;width:92%;max-height:82vh;overflow-y:auto;
+  box-shadow:0 16px 48px rgba(0,0,0,0.6);}
+.changelog-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;}
+.changelog-title{font-size:16px;font-weight:700;color:var(--text);}
+.changelog-ver{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.changelog-close{background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1;flex-shrink:0;}
+.changelog-section{margin-bottom:14px;}
+.changelog-section-title{font-size:10px;font-weight:600;text-transform:uppercase;
+  letter-spacing:0.1em;color:var(--accent);font-family:var(--mono);margin-bottom:7px;}
+.changelog-item{font-size:12px;color:var(--text2);padding:3px 0 3px 14px;
+  position:relative;line-height:1.55;}
+.changelog-item::before{content:'→';position:absolute;left:0;color:var(--text3);}
+
+/* P4: Privacy modal */
+#privacyModal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.65);
+  align-items:center;justify-content:center;}
+#privacyModal.show{display:flex;}
+.privacy-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;
+  padding:24px;max-width:460px;width:92%;box-shadow:0 16px 48px rgba(0,0,0,0.6);}
+.privacy-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.privacy-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:14px;}
+.privacy-body{font-size:13px;color:var(--text2);line-height:1.75;}
+.privacy-body p{margin-bottom:10px;}
+.privacy-close{margin-top:18px;padding:8px 20px;background:var(--accent);color:#fff;
+  border:none;border-radius:6px;cursor:pointer;font-size:12px;font-family:var(--sans);}
+
+/* P4: App footer */
+#appFooter{text-align:center;padding:20px 16px 28px;font-size:11px;color:var(--text3);
+  border-top:1px solid var(--border);margin-top:48px;}
+#appFooter a,#appFooter span.footer-link{color:var(--text3);cursor:pointer;
+  text-decoration:underline;text-underline-offset:2px;}
+#appFooter a:hover,#appFooter span.footer-link:hover{color:var(--text2);}
+#appFooter .footer-sep{margin:0 8px;opacity:0.4;}
+
+/* P2: Regulatory guidance toggle */
+.reg-toggle-row{display:flex;align-items:center;gap:8px;padding:4px 0;
+  margin:2px 0 8px;cursor:pointer;}
+.reg-toggle-label{font-size:11px;color:var(--text3);font-style:italic;}
+.reg-toggle-btn{font-size:10px;font-family:var(--mono);color:var(--accent);
+  background:none;border:1px solid rgba(59,130,246,0.4);border-radius:4px;
+  padding:2px 8px;cursor:pointer;transition:background 0.12s,color 0.12s;white-space:nowrap;}
+.reg-toggle-btn:hover{background:var(--accent);color:#fff;}
+.reg-fields{overflow:hidden;max-height:0;transition:max-height 0.28s ease;}
+.reg-fields.open{max-height:800px;}
 </style>
 </head>
 <body>
@@ -1407,7 +1512,7 @@ textarea{resize:vertical;min-height:80px;}
   <div class="app-header-brand">
     <div class="app-header-logo"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
     <span class="app-header-title">ITSM Workflow Intelligence</span>
-    <span class="app-header-version">v25</span>
+    <span class="app-header-version" onclick="toggleChangelogModal()" title="What's new in v25 — click to view changelog">v25</span>
     <span class="location-crumb" id="locationCrumb"></span>
   </div>
   <div class="app-header-right">
@@ -1456,6 +1561,7 @@ textarea{resize:vertical;min-height:80px;}
     <button class="nav-action-btn" onclick="obRestart()" title="Tour">?</button>
   </div>
 </div>
+<button id="tocToggleBtn" onclick="toggleTOC()" title="Table of contents — all workspaces" aria-label="Toggle navigation contents">☰ TOC</button>
 <div class="lite-mode-banner" id="liteModeBanner">⬜ LITE MODE &nbsp;·&nbsp;<span style="cursor:pointer;text-decoration:underline" onclick="setMode('full')">Switch to Full Mode</span></div>
   <!-- SESSION MANAGER -->
   <div class="session-bar">
@@ -3481,14 +3587,20 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
           <option value="4">Recurring / seen before</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Regulatory / compliance exposure</label>
-        <select id="t1_regulatory" onchange="updateScore();autosave()">
-          <option value="0">None identified</option>
-          <option value="2">Possible FCA/PRA consideration</option>
-          <option value="4">Likely regulatory notification required</option>
-          <option value="5">Definite breach / DORA incident</option>
-        </select>
+      <div class="reg-toggle-row" onclick="toggleRegFields('regFields_stage1')">
+        <span class="reg-toggle-label">Regulated environment? Show regulatory guidance</span>
+        <button class="reg-toggle-btn" type="button" id="regBtn_stage1">Show ▸</button>
+      </div>
+      <div class="reg-fields" id="regFields_stage1">
+        <div class="form-group">
+          <label>Regulatory / compliance exposure <span style="font-size:10px;color:var(--text3)">(FCA / PRA / DORA / PCI DSS)</span></label>
+          <select id="t1_regulatory" onchange="updateScore();autosave()">
+            <option value="0">None identified</option>
+            <option value="2">Possible FCA/PRA consideration</option>
+            <option value="4">Likely regulatory notification required</option>
+            <option value="5">Definite breach / DORA incident</option>
+          </select>
+        </div>
       </div>
       <div class="form-group">
         <label>Part of a recurring pattern?</label>
@@ -4056,7 +4168,13 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
       <div class="check-group">
         <label class="check-item"><input type="checkbox" id="sla_breach" onchange="autosave();refreshChecklistIfVisible()"><div><div class="check-item-label">SLA breach has occurred or is imminent</div></div></label>
         <label class="check-item"><input type="checkbox" id="sla_notify" onchange="autosave()"><div><div class="check-item-label">Customer / stakeholder notification required under SLA terms</div></div></label>
-        <label class="check-item"><input type="checkbox" id="sla_regulatory" onchange="autosave();refreshChecklistIfVisible()"><div><div class="check-item-label">Regulatory notification may be required (FCA / PRA / DORA)</div></div></label>
+        <div class="reg-toggle-row" onclick="toggleRegFields('regFields_stage2')" style="margin:6px 0 2px;">
+          <span class="reg-toggle-label">Show FCA / PRA / DORA regulatory flag</span>
+          <button class="reg-toggle-btn" type="button" id="regBtn_stage2">Show ▸</button>
+        </div>
+        <div class="reg-fields" id="regFields_stage2">
+          <label class="check-item"><input type="checkbox" id="sla_regulatory" onchange="autosave();refreshChecklistIfVisible()"><div><div class="check-item-label">Regulatory notification may be required (FCA / PRA / DORA)</div></div></label>
+        </div>
       </div>
     </div>
   </div>
@@ -5806,7 +5924,10 @@ ${getWorkNotesBlock()}
 ${getSNFieldDisclaimers()}
 ${reassignLog&&reassignLog.length?'REASSIGNMENT HISTORY'+String.fromCharCode(10)+'-'.repeat(30)+String.fromCharCode(10)+getReassignLogText():''}
 [close_notes]:
-${resolution}`);
+${resolution}
+
+---
+Generated by ITSM Workflow Intelligence Tool v25 — https://zeus-17.github.io/itsm-workflow-intelligence/`);
 
   set('jira_bug_out',`JIRA — BUG / INCIDENT TICKET (Engineering and QA)
 ===================================================
@@ -5868,7 +5989,10 @@ ACCEPTANCE CRITERIA FOR PERMANENT FIX
 - Recurrence monitoring in place and baselined
 - Problem Record updated to Resolved / Closed
 - Post-Incident Review completed
-- No recurrence within agreed observation period`);
+- No recurrence within agreed observation period
+
+---
+Generated by ITSM Workflow Intelligence Tool v25 — https://zeus-17.github.io/itsm-workflow-intelligence/`);
 
   set('jira_story_out',`JIRA — REMEDIATION STORY (PO / SM / PM / Delivery)
 =====================================================
@@ -5919,7 +6043,10 @@ DEPENDENCIES
 
 COMPLIANCE NOTE
 ---------------
-${slaReg?'Regulatory notification may be required. Confirm with compliance before closing.':'No regulatory notification identified at this time.'}`);
+${slaReg?'Regulatory notification may be required. Confirm with compliance before closing.':'No regulatory notification identified at this time.'}
+
+---
+Generated by ITSM Workflow Intelligence Tool v25 — https://zeus-17.github.io/itsm-workflow-intelligence/`);
 
   set('conf_out',`CONFLUENCE — POST-INCIDENT REVIEW
 ==================================
@@ -6011,7 +6138,10 @@ ServiceNow Incident: INC[NUMBER]
 Problem Record: PRB[NUMBER]
 Change Request: CHG[NUMBER]
 Jira Bug: [LINK]
-Jira Remediation Story: [LINK]`);
+Jira Remediation Story: [LINK]
+
+---
+Generated by ITSM Workflow Intelligence Tool v25 — https://zeus-17.github.io/itsm-workflow-intelligence/`);
 
   set('prob_out',`SERVICENOW — PROBLEM RECORD
 ============================
@@ -6056,7 +6186,10 @@ Why 4: ${whys[3]}
 Why 5: ${whys[4]}`}
 
 [u_contributing_factors]:
-${rcaContrib}`);
+${rcaContrib}
+
+---
+Generated by ITSM Workflow Intelligence Tool v25 — https://zeus-17.github.io/itsm-workflow-intelligence/`);
 
   set('cr_out',`SERVICENOW — CHANGE REQUEST / RFC
 ===================================
@@ -6112,7 +6245,10 @@ When closing the change in ServiceNow, select the appropriate PIR outcome:
 - Completed with issues — work completed but issues encountered that did not prevent the change
 - Unsuccessful — backout steps successful — change failed, backout executed successfully
 - Unsuccessful — backout steps unsuccessful — change failed and could not be reversed
-- Incomplete — change work not completed within planned window`);
+- Incomplete — change work not completed within planned window
+
+---
+Generated by ITSM Workflow Intelligence Tool v25 — https://zeus-17.github.io/itsm-workflow-intelligence/`);
 
   set('rca_report_out',`ROOT CAUSE ANALYSIS REPORT
 ===========================
@@ -6176,7 +6312,10 @@ OUTCOMES
 Problem Record: PRB[NUMBER]
 Change Request: CHG[NUMBER]
 Target Resolution: ${prTarget}
-Problem Owner: ${prOwner}`);
+Problem Owner: ${prOwner}
+
+---
+Generated by ITSM Workflow Intelligence Tool v25 — https://zeus-17.github.io/itsm-workflow-intelligence/`);
 }
 
 // ── SESSION MANAGER ─────────────────────────────────────────
@@ -14713,17 +14852,15 @@ function applyTextScale(val,silent){
   val=parseInt(val);
   val=Math.max(85,Math.min(145,val));
   _a11yScale=val;
-  var wrap=document.getElementById('appZoomWrap');
-  if(wrap){
-    if(val===100){
-      wrap.style.transform='';wrap.style.width='';wrap.style.height='';
-    } else {
-      var scale=val/100;
-      wrap.style.transform='scale('+scale+')';
-      wrap.style.transformOrigin='top left';
-      // Compensate container size so page doesn't collapse
-      wrap.style.width=(100/scale)+'%';
-    }
+  // Apply via root font-size (cascades em/rem) + body zoom (scales all px-based content).
+  // The CSS uses absolute px values throughout, so zoom is the reliable path.
+  // documentElement.fontSize future-proofs any rem additions.
+  if(val===100){
+    document.documentElement.style.fontSize='';
+    document.body.style.zoom='';
+  } else {
+    document.documentElement.style.fontSize=val+'%';
+    document.body.style.zoom=String(val/100);
   }
   var slider=document.getElementById('a11yScaleSlider');
   var label=document.getElementById('a11yScaleLabel');
@@ -15350,6 +15487,81 @@ function showSkeletonInContainer(containerId){
   el.innerHTML='<div class="skeleton-block"><div class="skeleton-header"></div><div class="skeleton-line w90"></div><div class="skeleton-line w70"></div><div class="skeleton-line w50"></div><div class="skeleton-line w90"></div><div class="skeleton-line w35"></div></div>';
 }
 
+// ── STRUCTURED IMPROVEMENTS — NEW FUNCTIONS ─────────────────
+
+// P3: Changelog modal toggle
+function toggleChangelogModal(){
+  var m=document.getElementById('changelogModal');
+  if(!m)return;
+  m.style.display=m.style.display==='flex'?'none':'flex';
+  if(m.style.display==='flex')m.onclick=function(e){if(e.target===m)m.style.display='none';};
+}
+
+// P4: Privacy modal toggle
+function togglePrivacyModal(){
+  var m=document.getElementById('privacyModal');
+  if(!m)return;
+  m.style.display=m.style.display==='flex'?'none':'flex';
+  if(m.style.display==='flex')m.onclick=function(e){if(e.target===m)m.style.display='none';};
+}
+
+// P1: TOC panel toggle
+function toggleTOC(){
+  var p=document.getElementById('tocPanel');
+  if(!p)return;
+  p.classList.toggle('open');
+  var btn=document.getElementById('tocToggleBtn');
+  if(btn)btn.textContent=p.classList.contains('open')?'× TOC':'☰ TOC';
+  // Update active item
+  if(p.classList.contains('open'))updateTOCActiveItem();
+  // Close on outside click
+  if(p.classList.contains('open')){
+    setTimeout(function(){
+      document.addEventListener('click',closeTOCOnOutside,{once:true,capture:true});
+    },50);
+  }
+}
+function closeTOCOnOutside(e){
+  var p=document.getElementById('tocPanel');
+  var btn=document.getElementById('tocToggleBtn');
+  if(p&&!p.contains(e.target)&&btn&&!btn.contains(e.target)){
+    p.classList.remove('open');
+    if(btn)btn.textContent='☰ TOC';
+  }
+}
+function updateTOCActiveItem(){
+  document.querySelectorAll('.toc-item').forEach(function(item){
+    item.classList.remove('toc-active');
+  });
+}
+
+// P2: Regulatory fields toggle
+function toggleRegFields(id){
+  var fields=document.getElementById(id);
+  if(!fields)return;
+  var isOpen=fields.classList.toggle('open');
+  var btnId=id.replace('regFields','regBtn');
+  var btn=document.getElementById(btnId);
+  if(btn)btn.textContent=isOpen?'Hide ▾':'Show ▸';
+}
+
+// P1: Quickstart card
+function showQuickstartIfFirstTime(){
+  var card=document.getElementById('quickstartCard');
+  if(!card)return;
+  try{
+    if(!localStorage.getItem('itsm_quickstart_done')){
+      card.style.display='block';
+    }
+  }catch(e){}
+}
+function dismissQuickstart(e){
+  e.stopPropagation();
+  var card=document.getElementById('quickstartCard');
+  if(card)card.style.display='none';
+  try{localStorage.setItem('itsm_quickstart_done','1');}catch(e2){}
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 // Relocate global overlays to <body> — these elements are parsed AFTER this script
 // block closes, so getElementById returns null here. A load listener runs after the
@@ -15357,12 +15569,14 @@ function showSkeletonInContainer(containerId){
 // Without this, all modals are trapped inside #stage7 (display:none) and are invisible.
 window.addEventListener('load',function(){
   ['shareModal','trainingModal','welcomeOverlay','browserWarn',
-   'templatePickerPanel','obOverlay','kbShortcutPanel'].forEach(function(id){
+   'templatePickerPanel','obOverlay','kbShortcutPanel',
+   'changelogModal','privacyModal','tocPanel','appFooter'].forEach(function(id){
     var el=document.getElementById(id);
     if(el&&el.parentElement!==document.body)document.body.appendChild(el);
   });
   // Re-run welcome check now that welcomeOverlay is attached to body
   if(typeof showWelcomeIfFirstTime==='function')showWelcomeIfFirstTime();
+  if(typeof showQuickstartIfFirstTime==='function')showQuickstartIfFirstTime();
 },false);
 buildRCASteps();
 buildPreChecks();
@@ -15552,6 +15766,28 @@ style="display:none">
       </div>
     </div>
     <div style="margin-bottom:10px"><div class="welcome-choice" onclick="welcomeChoice('simple')" style="text-align:left;padding:10px 14px;"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:20px">⬜</span><div><div class="welcome-choice-title" style="font-size:12px">Simple issue — just the basics</div><div class="welcome-choice-sub" style="font-size:11px">Lite Mode: 2 fields + severity → ServiceNow output</div></div></div></div></div>
+    <div id="quickstartCard" style="display:none">
+      <div class="qs-title">⚡ Quickstart — 3 steps to your first output</div>
+      <div class="qs-sub">New to the tool? Follow these steps to generate your first structured output in under 2 minutes.</div>
+      <div class="qs-steps">
+        <div class="qs-step" onclick="welcomeChoice('incident')">
+          <div class="qs-step-num">1</div>
+          <div class="qs-step-label">Choose incident type</div>
+          <div class="qs-step-sub">Select the scenario that matches your situation</div>
+        </div>
+        <div class="qs-step" onclick="welcomeChoice('incident')">
+          <div class="qs-step-num">2</div>
+          <div class="qs-step-label">Enter core fields</div>
+          <div class="qs-step-sub">Service name, short description, severity</div>
+        </div>
+        <div class="qs-step" onclick="welcomeChoice('incident')">
+          <div class="qs-step-num">3</div>
+          <div class="qs-step-label">Generate outputs</div>
+          <div class="qs-step-sub">Paste-ready ServiceNow, Jira and Confluence records</div>
+        </div>
+      </div>
+      <button class="qs-dismiss" onclick="dismissQuickstart(event)">Dismiss — don't show again</button>
+    </div>
     <div class="welcome-skip" onclick="welcomeChoice('skip')">Skip — I know what I am doing</div>
   </div>
 </div>
@@ -15671,6 +15907,102 @@ style="display:none">
     <button class="a11y-toggle" id="a11yHCBtn" onclick="toggleHighContrast()">Off — click to enable</button>
   </div>
   <div class="a11y-footer">Settings persist across sessions.<br>Keyboard: Alt+A to open/close this panel.</div>
+</div>
+
+<!-- APP FOOTER -->
+<div id="appFooter">
+  <span>ITSM Workflow Intelligence Tool v25</span>
+  <span class="footer-sep">·</span>
+  <a href="https://zeus-17.github.io/itsm-workflow-intelligence/" target="_blank" rel="noopener">zeus-17.github.io</a>
+  <span class="footer-sep">·</span>
+  <span class="footer-link" onclick="togglePrivacyModal()">Data &amp; Privacy</span>
+  <span class="footer-sep">·</span>
+  <span class="footer-link" onclick="toggleChangelogModal()">What's new in v25</span>
+</div>
+
+<!-- TOC PANEL -->
+<div id="tocPanel" role="dialog" aria-label="Navigation contents" aria-modal="true" style="">
+  <div class="toc-header">
+    <span>Workspaces</span>
+    <button class="toc-close" onclick="toggleTOC()" aria-label="Close contents">×</button>
+  </div>
+  <div class="toc-list">
+    <button class="toc-item" onclick="navTo('incident');toggleTOC()"><span class="toc-item-icon">🚨</span>Incident Workflow</button>
+    <button class="toc-item" onclick="navTo('customer');toggleTOC()"><span class="toc-item-icon">📞</span>Customer Report</button>
+    <button class="toc-item" onclick="navTo('pickup');toggleTOC()"><span class="toc-item-icon">📥</span>Pick Up Incident</button>
+    <button class="toc-item" onclick="navTo('fasttrack');toggleTOC()"><span class="toc-item-icon">⚡</span>P1 Fast Track</button>
+    <button class="toc-item" onclick="openTrainingMode();toggleTOC()"><span class="toc-item-icon">🎓</span>Practice Run</button>
+    <div class="toc-divider"></div>
+    <button class="toc-item" onclick="navTo('problem');toggleTOC()"><span class="toc-item-icon">🔎</span>Problem Record</button>
+    <button class="toc-item" onclick="navTo('retro');toggleTOC()"><span class="toc-item-icon">📋</span>Retrospective</button>
+    <button class="toc-item" onclick="navTo('reporting');toggleTOC()"><span class="toc-item-icon">📊</span>Reporting</button>
+    <button class="toc-item" onclick="navTo('integration');toggleTOC()"><span class="toc-item-icon">🔌</span>Integration</button>
+    <div class="toc-divider"></div>
+    <button class="toc-item" onclick="navTo('change');toggleTOC()"><span class="toc-item-icon">🔄</span>Change Request</button>
+    <button class="toc-item" onclick="navTo('glossary');toggleTOC()"><span class="toc-item-icon">📖</span>Glossary</button>
+    <div class="toc-divider"></div>
+    <button class="toc-item" onclick="togglePrivacyModal();toggleTOC()"><span class="toc-item-icon">🔒</span>Data &amp; Privacy</button>
+  </div>
+</div>
+
+<!-- CHANGELOG MODAL -->
+<div id="changelogModal" role="dialog" aria-label="What's new in v25" aria-modal="true">
+  <div class="changelog-box">
+    <div class="changelog-hdr">
+      <div>
+        <div class="changelog-title">What's new in v25</div>
+        <div class="changelog-ver">ITSM Workflow Intelligence Tool — May 2026</div>
+      </div>
+      <button class="changelog-close" onclick="toggleChangelogModal()" aria-label="Close changelog">×</button>
+    </div>
+    <div class="changelog-section">
+      <div class="changelog-section-title">Operational features</div>
+      <div class="changelog-item">Live SLA countdown — mm:ss display on Hold SLA button with browser notification at ≤10 min remaining</div>
+      <div class="changelog-item">Shift handover pack — one-click structured handover summary in Stage 7</div>
+      <div class="changelog-item">Copy All Outputs — single button to copy all 7 outputs as a structured document</div>
+      <div class="changelog-item">Severity override auto-log — timeline entry whenever you override the score-suggested severity</div>
+    </div>
+    <div class="changelog-section">
+      <div class="changelog-section-title">Navigation and accessibility</div>
+      <div class="changelog-item">Table of Contents panel — collapsible, lists all 12 workspaces for one-click navigation</div>
+      <div class="changelog-item">Accessibility panel fix — text scaling now applies to the entire page via root font-size</div>
+      <div class="changelog-item">Known Issues badge — persistent red dot count on KI nav button</div>
+      <div class="changelog-item">Severity badge in nav — coloured dot next to stage name</div>
+      <div class="changelog-item">Tab title — updates with severity when incident is active</div>
+      <div class="changelog-item">Offline detection banner — fixed bottom banner when network is unavailable</div>
+      <div class="changelog-item">Mobile layout — single-column reflow below 600px</div>
+    </div>
+    <div class="changelog-section">
+      <div class="changelog-section-title">Visual improvements</div>
+      <div class="changelog-item">Output field highlighting — accent-coloured [field_name] labels in all generated outputs</div>
+      <div class="changelog-item">CSS bar charts in Reporting — period history visualisation</div>
+      <div class="changelog-item">Skeleton loading shimmer on reporting first render</div>
+      <div class="changelog-item">Increased line-height and form group spacing for readability under pressure</div>
+      <div class="changelog-item">Output provenance line — every generated record includes tool attribution for audit traceability</div>
+    </div>
+    <div class="changelog-section">
+      <div class="changelog-section-title">Progressive disclosure</div>
+      <div class="changelog-item">Regulatory guidance fields hidden by default — FCA / PRA / DORA / GDPR fields shown only when toggled</div>
+    </div>
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);">
+      <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">v25 · <a href="https://zeus-17.github.io/itsm-workflow-intelligence/" target="_blank" rel="noopener" style="color:var(--text3)">zeus-17.github.io/itsm-workflow-intelligence</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY MODAL -->
+<div id="privacyModal" role="dialog" aria-label="Data and Privacy" aria-modal="true">
+  <div class="privacy-box">
+    <div class="privacy-title">🔒 Data &amp; Privacy</div>
+    <div class="privacy-sub">ITSM Workflow Intelligence Tool v25</div>
+    <div class="privacy-body">
+      <p>This tool runs entirely in your browser. <strong>No data is transmitted to any server.</strong></p>
+      <p>All session data — incident records, known issues, saved sessions, reporting history, and custom fields — is stored in your browser's <code style="font-family:var(--mono);font-size:12px;background:var(--surface2);padding:1px 5px;border-radius:3px">localStorage</code> only, and is never sent externally.</p>
+      <p>Clear your browser data to remove all stored information. No account, login, or network connection is required to use any feature of this tool.</p>
+      <p style="font-size:11px;color:var(--text3)">The tool does not use cookies, analytics, or any external resources at runtime. The Google Fonts stylesheet linked in the document head is the only external request made on load.</p>
+    </div>
+    <button class="privacy-close" onclick="togglePrivacyModal()">Close</button>
+  </div>
 </div>
 
 <!-- PWA SERVICE WORKER REGISTRATION -->
