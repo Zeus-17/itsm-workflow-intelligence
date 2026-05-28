@@ -1,0 +1,47 @@
+ITSM Workflow Intelligence Tool
+Copyright © 2026 James Holford. All rights reserved.
+
+PERMITTED USE
+-------------
+Personal use: You may use this tool for your own incident management,
+service review and ITSM workflow purposes.
+
+Organisational use: Your organisation may use this tool internally
+for incident management, training and operational purposes.
+
+Viewing and learning: You may read the source code to learn from it.
+
+Attribution: Any derivative work, fork or adaptation must retain
+clear and visible credit to the original author:
+"Based on ITSM Workflow Intelligence Tool by James Holford
+(https://github.com/zeus-17/itsm-workflow-intelligence)"
+
+PROHIBITED WITHOUT WRITTEN PERMISSION
+--------------------------------------
+- Commercial redistribution, resale or sublicensing of this tool
+  or any substantial portion of it
+- Offering this tool or a derivative as a paid product or service
+- Removing or obscuring author attribution
+- Representing this work as your own original creation
+
+REGULATORY CONTENT
+------------------
+Regulatory guidance within this tool relating to FCA, PRA, DORA,
+UK GDPR, ITIL and related frameworks is informational only.
+It is not legal or compliance advice. Always verify regulatory
+requirements with authoritative sources and engage your compliance
+team or legal counsel for decisions specific to your organisation.
+The author provides no warranty as to the accuracy or currency
+of any regulatory guidance shown.
+
+DISCLAIMER
+----------
+This tool is provided "as is", without warranty of any kind.
+The author accepts no liability for any use of this tool or any
+decisions made based on guidance it provides.
+
+CONTACT
+-------
+For commercial licensing enquiries or permissions beyond the scope
+above, contact the author via LinkedIn:
+https://www.linkedin.com/in/james-holford/
