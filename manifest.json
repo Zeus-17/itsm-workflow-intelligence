@@ -1,0 +1,40 @@
+{
+  "name": "ITSM Workflow Intelligence Tool",
+  "short_name": "ITSM Tool",
+  "description": "Structured incident, change and service review guidance. Paste-ready outputs for ServiceNow, Jira and Confluence. Works offline.",
+  "start_url": "/itsm-workflow-intelligence/",
+  "scope": "/itsm-workflow-intelligence/",
+  "display": "standalone",
+  "background_color": "#0f1117",
+  "theme_color": "#3b82f6",
+  "orientation": "any",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='24' fill='%233b82f6'/%3E%3Cpath d='M48 96l10 5 38-38M96 48l48 48-48 48' stroke='white' stroke-width='12' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%233b82f6'/%3E%3Cpath d='M128 256l26 13 102-102M256 128l128 128-128 128' stroke='white' stroke-width='32' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Incident",
+      "short_name": "Incident",
+      "description": "Start a new incident record",
+      "url": "/itsm-workflow-intelligence/?start=incident"
+    },
+    {
+      "name": "P1 Fast Track",
+      "short_name": "P1",
+      "description": "Bridge pack in 90 seconds",
+      "url": "/itsm-workflow-intelligence/?mode=fasttrack"
+    }
+  ]
+}
