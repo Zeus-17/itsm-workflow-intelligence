@@ -4848,9 +4848,6 @@ Nav bar → Problem → Create New<br>
 <script>function showIfFirstTime(){
   try{
     var wo=document.getElementById('welcomeOverlay');
-    if(!wo)returnfunction showIfFirstTime(){
-  try{
-    var wo=document.getElementById('welcomeOverlay');
     if(!wo)return;
     if(!localStorage.getItem('itsm_welcomed')){
       wo.style.display='flex';
@@ -7006,7 +7003,7 @@ const obSteps=[
 function obStart(){
   if(localStorage.getItem(OB_KEY))return;
   obStep=0;
-  document.getElementById('obOverlay').style.display='block';
+  var _oo=document.getElementById('obOverlay');if(_oo)_oo.style.display='block';
   obRender();
 }
 
@@ -7038,8 +7035,10 @@ function obRender(){
     var navHeight=(document.getElementById('navRail')?.offsetTop||0)+(document.getElementById('navRail')?.offsetHeight||44)+(document.getElementById('liteModeBanner')?.classList.contains('show')?22:0)+8;
     var tipTop=Math.max(navHeight+8,rect.bottom+pad+14);
     var tipLeft=Math.max(12,Math.min(rect.left,window.innerWidth-tipW-12));
-    if(tipTop+180>window.innerHeight)tipTop=rect.top-200;
+    var tipH=tip.offsetHeight||200;
+    if(tipTop+tipH+8>window.innerHeight)tipTop=rect.top-tipH-16;
     if(tipTop<10)tipTop=rect.bottom+14;
+    tipTop=Math.max(10,Math.min(tipTop,window.innerHeight-tipH-8));
     tip.style.top=tipTop+'px';
     tip.style.left=tipLeft+'px';
     tip.style.width=tipW+'px';
@@ -7054,7 +7053,7 @@ function obAdvance(){
 }
 
 function obDismiss(){
-  document.getElementById('obOverlay').style.display='none';
+  var _oo2=document.getElementById('obOverlay');if(_oo2)_oo2.style.display='none';
   localStorage.setItem(OB_KEY,'1');
   var op=document.getElementById('orgPanel');
   var oa=document.getElementById('orgArrow');
@@ -10858,7 +10857,8 @@ function addTrendToRAGTable(){
 // ── WELCOME OVERLAY ───────────────────────────────────────────────
 
 function welcomeChoice(choice){
-  document.getElementById('welcomeOverlay').classList.add('hidden');
+  var _wo=document.getElementById('welcomeOverlay');
+  if(_wo){_wo.classList.add('hidden');_wo.style.display='';}
   try{localStorage.setItem('itsm_welcomed','1');}catch(e){}
   if(choice==='incident')quickStart();
   else if(choice==='customer')startCustomerMode();
@@ -14986,6 +14986,19 @@ function setRiskFactor(fieldId, value, btn){
 }
 
 // ── INIT ─────────────────────────────────────────────────────
+// Relocate global overlays to <body> — these elements are parsed AFTER this script
+// block closes, so getElementById returns null here. A load listener runs after the
+// full DOM is built, at which point the elements exist and can be reparented.
+// Without this, all modals are trapped inside #stage7 (display:none) and are invisible.
+window.addEventListener('load',function(){
+  ['shareModal','trainingModal','welcomeOverlay','browserWarn',
+   'templatePickerPanel','obOverlay','kbShortcutPanel'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&el.parentElement!==document.body)document.body.appendChild(el);
+  });
+  // Re-run welcome check now that welcomeOverlay is attached to body
+  if(typeof showWelcomeIfFirstTime==='function')showWelcomeIfFirstTime();
+},false);
 buildRCASteps();
 buildPreChecks();
 if(typeof initNavigation==='function')initNavigation();
@@ -15030,25 +15043,26 @@ window.addEventListener('load',()=>{
 
 
 
+</script>
 
 style="display:none">
-  <div class="ob-highlight" id="obHighlight"></div>
-  <div class="ob-tip" id="obTip">
+  <div class="ob-highlight"></div>
+  <div class="ob-tip">
     <div class="ob-step">
-      <span id="obStepLabel">Step 1 of 3</span>
+      <span>Step 1 of 3</span>
       <div class="ob-dots">
-        <div class="ob-dot active" id="obDot0"></div>
-        <div class="ob-dot" id="obDot1"></div>
-        <div class="ob-dot" id="obDot2"></div>
-        <div class="ob-dot" id="obDot3"></div>
-        <div class="ob-dot" id="obDot4"></div>
+        <div class="ob-dot active"></div>
+        <div class="ob-dot"></div>
+        <div class="ob-dot"></div>
+        <div class="ob-dot"></div>
+        <div class="ob-dot"></div>
       </div>
     </div>
-    <div class="ob-title" id="obTitle"></div>
-    <div class="ob-body" id="obBody"></div>
+    <div class="ob-title"></div>
+    <div class="ob-body"></div>
     <div class="ob-actions">
-      <button class="ob-next" id="obNext" onclick="obAdvance()">Next</button>
-      <button class="ob-skip" onclick="obDismiss()">Skip tour</button>
+      <button class="ob-next">Next</button>
+      <button class="ob-skip">Skip tour</button>
     </div>
   </div>
 </div>
@@ -15211,6 +15225,25 @@ style="display:none">
 </div>
 
 
+
+<!-- ONBOARDING TOUR OVERLAY -->
+<div id="obOverlay" style="display:none;position:fixed;inset:0;z-index:9998;pointer-events:none;">
+  <div class="ob-highlight" id="obHighlight"></div>
+  <div class="ob-tip" id="obTip" style="pointer-events:all;">
+    <div class="ob-step"><span id="obStepLabel">Step 1 of 5</span>
+      <div class="ob-dots" style="display:flex;gap:4px;margin-left:auto;">
+        <div class="ob-dot" id="obDot0"></div>
+        <div class="ob-dot" id="obDot1"></div>
+        <div class="ob-dot" id="obDot2"></div>
+        <div class="ob-dot" id="obDot3"></div>
+        <div class="ob-dot" id="obDot4"></div>
+      </div>
+    </div>
+    <div class="ob-title" id="obTitle"></div>
+    <div class="ob-body" id="obBody"></div>
+    <button class="ob-next" id="obNext" onclick="obAdvance()">Next →</button>
+  </div>
+</div>
 <!-- KEYBOARD SHORTCUTS PANEL -->
 <div class="kb-panel" id="kbShortcutPanel">
   <div class="kb-panel-title">
