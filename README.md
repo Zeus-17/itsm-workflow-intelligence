@@ -1,6 +1,6 @@
 # ITSM Workflow Intelligence Tool — v25
 
-**Designed and built by [James Holford](https://www.linkedin.com/in/james-holford/)**  
+**Designed and built by [James Holford](https://www.linkedin.com/in/james-holford-z17/)**  
 Built with [Claude (Anthropic)](https://claude.ai) · © 2026 James Holford
 
 ---
@@ -17,7 +17,7 @@ A production-grade operational co-pilot for incident management, service review 
 
 The tool solves a specific, real problem: incident managers under pressure have to simultaneously log structured records, communicate to multiple audiences, make compliance assessments, coordinate escalation, and document decisions — often at 3am, alone, with no institutional memory to draw on.
 
-This tool acts as an experienced colleague sitting next to them. It structures the thinking, generates the outputs, surfaces the regulatory obligations, and never sends anything without a human confirming it first.
+This tool acts as an experienced colleague sitting next to them. It structures the thinking, generates the outputs, surfaces the regulatory obligations and never sends anything without a human confirming it first.
 
 ### Core capabilities
 
