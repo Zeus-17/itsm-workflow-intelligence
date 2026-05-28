@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "content_version": "2026-01-15",
+    "schema_version": "1",
+    "tool_version": "v25",
+    "changelog": "Initial content layer. Regulatory guidance validated against FCA Handbook Jan 2026, DORA Articles 17/18/19 (note: RTS under Article 18 pending final publication), UK GDPR/ICO guidance Jan 2026, ITIL 4 current edition. Review quarterly or when FCA/EBA/ICO publish material updates.",
+    "next_review": "2026-04-15",
+    "maintainer": "Update this file when FCA, EBA, ICO or AXELOS publish material changes. Increment content_version to YYYY-MM-DD of update. Add entry to changelog."
+  },
+
+  "content_warnings": [
+    {
+      "id": "dora_rts_pending",
+      "type": "warn",
+      "title": "DORA Article 18 RTS — pending final publication",
+      "text": "Regulatory Technical Standards governing ICT incident reporting thresholds under DORA Article 18 are pending final publication by EBA/ESMA/EIOPA. Incident classification thresholds shown in this tool are indicative. Verify with your compliance team before making regulatory notifications.",
+      "applies_to": ["dora"],
+      "expires": "2026-12-31"
+    }
+  ],
+
+  "intel_rules": {
+    "security": {
+      "hint": "<strong>Security incident detected.</strong> In ServiceNow, route to your Security Operations team, not standard IT Ops. Consider raising a Security Incident record (sn_si_incident table) separately from the standard incident. Engage your CISO or security lead immediately. DORA Article 17 and FCA SUP 15 require rapid escalation of security incidents in regulated environments. DORA Article 19 requires notification to competent authority for major ICT-related incidents.",
+      "links": "<a href='https://www.servicenow.com/community/security-operations/ct-p/security-ops' target='_blank'>ServiceNow Security Operations ↗</a>"
+    },
+    "data": {
+      "hint": "<strong>Data/Database incident.</strong> If personal data may be affected, your Data Protection Officer must be notified immediately. ICO breach notification is required within 72 hours of becoming aware of a personal data breach (UK GDPR Article 33). In ServiceNow, flag the Privacy Impact field if available. DORA operational incident thresholds may also apply for financial services.",
+      "links": "<a href='https://ico.org.uk/for-organisations/report-a-breach/' target='_blank'>ICO breach reporting ↗</a>"
+    },
+    "thirdparty": {
+      "hint": "<strong>Third-party/Supplier incident.</strong> In ServiceNow, populate the caused_by field and raise a Supplier Management record if this represents a service level failure. DORA Article 28 requires contractual arrangements with ICT third-party service providers to include incident notification obligations. Ensure your vendor escalation path is active.",
+      "links": "<a href='https://www.servicenow.com/community/itsm-articles/servicenow-incident-workflow-how-incident-management-really-runs/ta-p/3469448' target='_blank'>Supplier incident handling ↗</a>"
+    }
+  },
+
+  "preflight_descriptions": {
+    "payment_regulatory": "This incident description contains payment-related terms. If operating in an FCA/PRA-regulated environment, a notification obligation assessment under FCA SUP 15 is required. Payment Services Regulations 2017 (PSR 2017) may also require notification to the PSR. Consider enabling the regulatory flag and engaging your compliance team immediately.",
+    "pii_regulatory": "The description may indicate a personal data incident under UK GDPR. The ICO 72-hour notification window starts at the point of awareness (Article 33). DPO and Legal engagement is required now. If operating in financial services, DORA operational incident reporting may also apply.",
+    "dora_note": "DORA Article 18 RTS thresholds are pending final publication. Verify current reporting thresholds with your compliance team before making any regulatory notifications."
+  },
+
+  "regulatory_references": {
+    "fca_sup15": {
+      "title": "FCA SUP 15 — Notification of operational incidents",
+      "summary": "SUP 15.3.1R: firms must notify the FCA as soon as practicable of any operational incident that may require immediate attention. For major operational incidents affecting systems critical to regulated services, notification by close of business on the day is expected.",
+      "url": "https://www.handbook.fca.org.uk/handbook/SUP/15/",
+      "validated": "2026-01-15"
+    },
+    "dora_article_17": {
+      "title": "DORA Article 17 — ICT-related incident management",
+      "summary": "Requires financial entities to establish a sound ICT-related incident management process. Incident classification, notification, and escalation procedures must be documented and tested. Human oversight is required — autonomous incident closure without human confirmation is not compliant.",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32022R2554",
+      "validated": "2026-01-15"
+    },
+    "dora_article_18": {
+      "title": "DORA Article 18 — Classification of ICT-related incidents",
+      "summary": "Major ICT-related incidents must be reported to competent authority: initial notification within 4 hours of classification, intermediate report within 72 hours, final report within 1 month. Specific classification criteria in RTS — pending final publication.",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32022R2554",
+      "validated": "2026-01-15",
+      "note": "RTS under Article 18 pending final publication — thresholds indicative only"
+    },
+    "uk_gdpr_article_33": {
+      "title": "UK GDPR Article 33 — Personal data breach notification",
+      "summary": "Personal data breach must be notified to ICO within 72 hours of becoming aware, unless unlikely to result in risk to rights and freedoms of individuals. Controller must document all breaches, including those not notified.",
+      "url": "https://ico.org.uk/for-organisations/report-a-breach/",
+      "validated": "2026-01-15"
+    }
+  },
+
+  "itil_notes": {
+    "version": "ITIL 4 — current edition. AXELOS publishes practice guide updates periodically. Check axelos.com for amendment notices.",
+    "incident_definition": "ITIL 4: Incident — an unplanned interruption to a service or reduction in the quality of a service.",
+    "problem_definition": "ITIL 4: Problem — a cause, or potential cause, of one or more incidents. Problems require investigation to identify root cause and implement permanent fix.",
+    "change_definition": "ITIL 4: Change — the addition, modification, or removal of anything that could have a direct or indirect effect on services."
+  },
+
+  "glossary_additions": [],
+
+  "platform_notes": {
+    "servicenow_note": "ServiceNow field API names in this tool are validated against Washington DC / Xanadu releases. Core ITSM fields (short_description, description, urgency, impact, assignment_group, cmdb_ci) are stable across all releases. Verify custom field prefixes against your instance configuration.",
+    "jira_note": "Jira REST API v3 field names current as of 2026. Project-specific field IDs (customfield_xxxxx) vary by instance — replace with your organisation's values.",
+    "confluence_note": "Confluence REST API v2 endpoints current. Space keys and parent page IDs are organisation-specific — configure in org profile.",
+    "validated": "2026-01-15"
+  }
+}

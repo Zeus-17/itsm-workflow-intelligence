@@ -718,7 +718,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   <div class="slide-hero" style="padding:16px 0 22px;">
     <div class="slide-hero-badge">🔒 Data and Regulatory Guidance</div>
     <div class="slide-hero-title" style="font-size:22px;">What to Enter. What Not To.</div>
-    <div class="slide-hero-sub">Incident records are operational records, not customer records. GDPR Article 5(1)(c) data minimisation applies at every stage.</div>
+    <div class="slide-hero-sub">Incident records are operational records, not customer records. GDPR Article 5(1)(c) data minimisation applies at every stage. Regulatory guidance updates automatically from GitHub — guidance text only, no user data ever transmitted.</div>
   </div>
   <div class="feature-grid">
     <div class="feature-card">
@@ -750,6 +750,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
       <div class="feature-icon">🏦</div>
       <div class="feature-title">DORA and BCBS 239</div>
       <div class="feature-body">DORA Articles 9 and 17 referenced throughout. BCBS 239 data governance principles referenced in problem record and root cause sections.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔄</div>
+      <div class="feature-title">Self-updating regulatory guidance</div>
+      <div class="feature-body">Regulatory and ITIL content updates automatically in the background. FCA/DORA/GDPR guidance text, platform field notes and ITIL definitions are maintained in a separate JSON file on GitHub — updated when regulations change without touching the tool. Manual 'Check for updates' button available. Organisations host their own content source for jurisdiction-specific guidance. Full offline fallback always active.</div>
     </div>
   </div>
 </div>
@@ -965,6 +970,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
       <div class="feature-icon">🚨</div>
       <div class="feature-title">Escalation Sequencer</div>
       <div class="feature-body">For P1/P2 incidents with an org profile populated, Stage 2 shows a numbered action card: "Right now — in this order: 1. Engage MIM, 2. Primary escalation, 3. Open bridge call..." Eliminates the cognitive overhead of knowing what to do first under pressure.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📋</div>
+      <div class="feature-title">Content layer — always current</div>
+      <div class="feature-body">Regulatory guidance, ITIL definitions and platform notes live in a separate JSON. Updated on GitHub when FCA, EBA, ICO or AXELOS publish changes. Tool fetches silently on load. No user data transmitted. Manual trigger and org-hosted source both supported.</div>
     </div>
   </div>
 </div>

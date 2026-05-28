@@ -1451,6 +1451,24 @@ textarea{resize:vertical;min-height:80px;}
 .sanitise-bar input[type=checkbox]{accent-color:var(--purple);width:13px;height:13px;}
 .sanitise-active-note{font-size:10px;color:var(--purple);font-family:var(--mono);}
 
+/* ═══ CONTENT LAYER ═══ */
+.content-update-section{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+.content-update-header{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--mono);margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.content-status-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.content-status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.content-status-dot.dot-ok{background:var(--green);}
+.content-status-dot.dot-warn{background:var(--amber);}
+.content-status-dot.dot-default{background:var(--text3);}
+.content-status-text{font-size:11px;color:var(--text2);font-family:var(--mono);flex:1;}
+.content-warning-banner{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:8px 10px;margin-bottom:10px;font-size:11px;color:var(--amber);line-height:1.55;}
+.content-warning-title{font-weight:600;margin-bottom:2px;}
+.content-btn-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.content-org-section{margin-top:10px;}
+.content-org-label{font-size:11px;color:var(--text3);margin-bottom:5px;line-height:1.5;}
+.content-org-url-row{display:flex;gap:6px;}
+.content-org-url-row input{flex:1;font-size:11px;}
+.content-changelog{font-size:10px;color:var(--text3);font-family:var(--mono);padding:7px;background:var(--bg);border-radius:5px;border:1px solid var(--border);line-height:1.6;margin-top:8px;}
+
 /* ═══ EXTRAORDINARY FEATURES ═══ */
 
 /* Output confidence scoring */
@@ -2036,6 +2054,32 @@ body{line-height:1.75;}
         <div style="display:flex;gap:6px">
           <button class="btn btn-primary btn-sm" onclick="saveKnownIssue()">Save issue</button>
           <button class="btn btn-secondary btn-sm" onclick="closeAddKIForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGULATORY & CONTENT UPDATES -->
+    <div class="content-update-section">
+      <div class="content-update-header">📋 Regulatory &amp; Content Updates</div>
+      <div id="contentWarningBanner" style="display:none" class="content-warning-banner">
+        <div class="content-warning-title" id="contentWarningTitle"></div>
+        <div id="contentWarningText"></div>
+      </div>
+      <div class="content-status-row">
+        <div class="content-status-dot dot-default" id="contentStatusDot"></div>
+        <span class="content-status-text" id="contentStatusText">Checking content version…</span>
+      </div>
+      <div id="contentChangelog" class="content-changelog" style="display:none"></div>
+      <div class="content-btn-row" style="margin-top:8px">
+        <button class="btn btn-secondary btn-sm" onclick="fetchContentUpdate(true)">↺ Check for updates</button>
+        <button class="btn btn-secondary btn-sm" onclick="showContentChangelog()">📋 View changelog</button>
+        <button class="btn btn-secondary btn-sm" onclick="resetToBuiltInContent()">↩ Reset to built-in</button>
+      </div>
+      <div class="content-org-section">
+        <div class="content-org-label">Organisation content URL <span style="opacity:0.6">(optional — host your own guidance JSON for org-specific field names, jurisdiction or custom regulatory guidance)</span></div>
+        <div class="content-org-url-row">
+          <input id="contentOrgUrl" placeholder="https://your-intranet/itsm-content.json" oninput="autosave()">
+          <button class="btn btn-secondary btn-sm" onclick="applyOrgContentUrl()">Apply</button>
         </div>
       </div>
     </div>
@@ -15713,6 +15757,171 @@ function showSkeletonInContainer(containerId){
   el.innerHTML='<div class="skeleton-block"><div class="skeleton-header"></div><div class="skeleton-line w90"></div><div class="skeleton-line w70"></div><div class="skeleton-line w50"></div><div class="skeleton-line w90"></div><div class="skeleton-line w35"></div></div>';
 }
 
+// ── CONTENT LAYER ────────────────────────────────────────────
+// Fetches updatable regulatory/ITIL/platform guidance from GitHub.
+// Embedded content in the HTML is always the fallback — nothing breaks offline.
+// User data is never transmitted. Only guidance text is fetched.
+
+var CONTENT_URL='https://raw.githubusercontent.com/zeus-17/itsm-workflow-intelligence/main/itsm-content-v25.json';
+var CONTENT_CACHE_KEY='itsm_content_cache';
+var CONTENT_CACHE_TTL=24*60*60*1000; // 24 hours
+var _contentLayer=null;
+var _contentSource='built-in'; // 'built-in' | 'cached' | 'live' | 'org'
+
+function initContentLayer(){
+  // Load org custom URL if saved
+  try{
+    var orgUrl=localStorage.getItem('itsm_content_url')||'';
+    var urlEl=document.getElementById('contentOrgUrl');
+    if(urlEl&&orgUrl)urlEl.value=orgUrl;
+  }catch(e){}
+  // Try cache first
+  try{
+    var cached=JSON.parse(localStorage.getItem(CONTENT_CACHE_KEY)||'null');
+    if(cached&&cached.fetched_at&&(Date.now()-cached.fetched_at)<CONTENT_CACHE_TTL&&cached.data){
+      applyContentLayer(cached.data,'cached');
+      return;
+    }
+  }catch(e){}
+  // Attempt background fetch (silent — no error shown if offline)
+  fetchContentUpdate(false);
+}
+
+function fetchContentUpdate(manual){
+  var customUrl='';
+  try{customUrl=localStorage.getItem('itsm_content_url')||'';}catch(e){}
+  var url=customUrl||CONTENT_URL;
+  var isOrg=!!customUrl;
+  fetch(url,{cache:'no-cache'})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(function(data){
+      if(!data||!data.meta)throw new Error('Invalid content format');
+      try{
+        localStorage.setItem(CONTENT_CACHE_KEY,JSON.stringify({fetched_at:Date.now(),data:data,url:url}));
+      }catch(e){}
+      var isNew=!_contentLayer||(data.meta.content_version&&_contentLayer.meta&&data.meta.content_version!==_contentLayer.meta.content_version);
+      applyContentLayer(data,isOrg?'org':'live');
+      if(manual){
+        showToast(isNew?'Content updated to '+data.meta.content_version+' — regulatory guidance refreshed.':'Content is current — no updates available.','success',3500);
+      } else if(isNew&&_contentLayer){
+        showToast('Regulatory guidance updated to '+data.meta.content_version+'.','info',3000);
+      }
+    })
+    .catch(function(){
+      if(manual)showToast('Could not fetch updates — check connection. Built-in content is in use.','warn',4000);
+      renderContentStatusUI();
+    });
+}
+
+function applyContentLayer(data,source){
+  _contentLayer=data;
+  _contentSource=source||'live';
+  // Override intelRules with updated regulatory guidance
+  if(data.intel_rules&&typeof intelRules!=='undefined'){
+    Object.keys(data.intel_rules).forEach(function(key){
+      if(intelRules[key]&&data.intel_rules[key].hint){
+        intelRules[key].hint=data.intel_rules[key].hint;
+      }
+      if(intelRules[key]&&data.intel_rules[key].links){
+        intelRules[key].links=data.intel_rules[key].links;
+      }
+    });
+  }
+  // Append glossary additions
+  if(data.glossary_additions&&data.glossary_additions.length&&typeof glossaryData!=='undefined'){
+    data.glossary_additions.forEach(function(term){
+      var exists=glossaryData.some(function(t){return t.a===term.a||t.t===term.t;});
+      if(!exists)glossaryData.push(term);
+    });
+  }
+  // Override pre-flight descriptions if available
+  if(data.preflight_descriptions){
+    window._preflightDescriptions=data.preflight_descriptions;
+  }
+  renderContentStatusUI();
+  showContentWarnings(data.content_warnings);
+}
+
+function renderContentStatusUI(){
+  var dot=document.getElementById('contentStatusDot');
+  var txt=document.getElementById('contentStatusText');
+  if(!dot||!txt)return;
+  dot.className='content-status-dot';
+  if(_contentLayer&&_contentLayer.meta){
+    var v=_contentLayer.meta.content_version||'unknown';
+    var src={cached:'cached',live:'fetched live',org:'organisation source',built_in:'built-in defaults'}[_contentSource]||_contentSource;
+    txt.textContent='Version: '+v+' · Source: '+src+' · Next review: '+(_contentLayer.meta.next_review||'—');
+    dot.classList.add('dot-ok');
+  } else {
+    txt.textContent='Using built-in defaults — regulatory guidance embedded at tool build';
+    dot.classList.add('dot-default');
+  }
+}
+
+function showContentWarnings(warnings){
+  if(!warnings||!warnings.length)return;
+  var now=new Date();
+  var active=warnings.filter(function(w){
+    var expires=w.expires?new Date(w.expires):null;
+    return !expires||expires>now;
+  });
+  if(!active.length)return;
+  var w=active[0]; // show most important
+  var banner=document.getElementById('contentWarningBanner');
+  var title=document.getElementById('contentWarningTitle');
+  var text=document.getElementById('contentWarningText');
+  if(banner&&title&&text){
+    title.textContent=w.title||'Regulatory notice';
+    text.textContent=w.text||'';
+    banner.style.display='block';
+  }
+}
+
+function showContentChangelog(){
+  var el=document.getElementById('contentChangelog');
+  if(!el)return;
+  if(el.style.display==='block'){el.style.display='none';return;}
+  if(_contentLayer&&_contentLayer.meta){
+    var lines=['Changelog: '+(_contentLayer.meta.changelog||'—')];
+    if(_contentLayer.meta.next_review)lines.push('Next review: '+_contentLayer.meta.next_review);
+    if(_contentLayer.platform_notes&&_contentLayer.platform_notes.servicenow_note)lines.push('ServiceNow: '+_contentLayer.platform_notes.servicenow_note);
+    el.textContent=lines.join('\n\n');
+  } else {
+    el.textContent='No external content loaded. Built-in guidance is current as at tool version v25 (January 2026).';
+  }
+  el.style.display='block';
+}
+
+function resetToBuiltInContent(){
+  try{localStorage.removeItem(CONTENT_CACHE_KEY);}catch(e){}
+  _contentLayer=null;
+  _contentSource='built-in';
+  renderContentStatusUI();
+  var banner=document.getElementById('contentWarningBanner');
+  if(banner)banner.style.display='none';
+  var cl=document.getElementById('contentChangelog');
+  if(cl)cl.style.display='none';
+  showToast('Reset to built-in content. Regulatory guidance is embedded at v25 build date.','info',3500);
+}
+
+function applyOrgContentUrl(){
+  var input=document.getElementById('contentOrgUrl');
+  if(!input||!input.value.trim()){showToast('Enter a valid URL first.','warn');return;}
+  var url=input.value.trim();
+  try{new URL(url);}catch(e){showToast('Invalid URL — check format.','warn');return;}
+  try{localStorage.setItem('itsm_content_url',url);}catch(e){}
+  showToast('Organisation content URL saved. Fetching…','info',2000);
+  fetchContentUpdate(true);
+}
+
+function getContentValue(path,defaultValue){
+  if(!_contentLayer)return defaultValue;
+  var parts=path.split('.');
+  var val=_contentLayer;
+  for(var i=0;i<parts.length;i++){if(val==null)return defaultValue;val=val[parts[i]];}
+  return val!=null?val:defaultValue;
+}
+
 // ── EXTRAORDINARY FEATURES ───────────────────────────────────
 
 // ─── 1. OUTPUT CONFIDENCE SCORING ────────────────────────────
@@ -16419,6 +16628,8 @@ window.addEventListener('load',function(){
   // Re-run welcome check now that welcomeOverlay is attached to body
   if(typeof showWelcomeIfFirstTime==='function')showWelcomeIfFirstTime();
   if(typeof showQuickstartIfFirstTime==='function')showQuickstartIfFirstTime();
+  // Initialise content layer — silent background fetch, falls back to embedded defaults
+  if(typeof initContentLayer==='function')setTimeout(initContentLayer,1500);
 },false);
 buildRCASteps();
 buildPreChecks();
@@ -16893,7 +17104,8 @@ window.addEventListener('load',()=>{
       <p>This tool runs entirely in your browser. <strong>No data is transmitted to any server.</strong></p>
       <p>All session data — incident records, known issues, saved sessions, reporting history, and custom fields — is stored in your browser's <code style="font-family:var(--mono);font-size:12px;background:var(--surface2);padding:1px 5px;border-radius:3px">localStorage</code> only, and is never sent externally.</p>
       <p>Clear your browser data to remove all stored information. No account, login, or network connection is required to use any feature of this tool.</p>
-      <p style="font-size:11px;color:var(--text3)">The tool does not use cookies, analytics, or any external resources at runtime. The Google Fonts stylesheet linked in the document head is the only external request made on load.</p>
+      <p>To keep regulatory guidance current, the tool may silently fetch a <code style="font-family:var(--mono);font-size:12px;background:var(--surface2);padding:1px 5px;border-radius:3px">content-v25.json</code> file from GitHub on load. This file contains updated FCA/DORA/GDPR guidance text only — <strong>no user data is ever sent anywhere.</strong> The fetch is outbound only. If you are offline or the fetch fails, built-in defaults are used with no error. You can disable this and reset to built-in defaults at any time in Settings → Regulatory &amp; Content.</p>
+      <p style="font-size:11px;color:var(--text3)">The tool does not use cookies or analytics. The Google Fonts stylesheet in the document head and the optional regulatory content fetch are the only external requests made.</p>
     </div>
     <button class="privacy-close" onclick="togglePrivacyModal()">Close</button>
   </div>
