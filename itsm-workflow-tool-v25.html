@@ -4845,7 +4845,21 @@ Nav bar → Problem → Create New<br>
 
 
 
-<script>
+<script>function showIfFirstTime(){
+  try{
+    var wo=document.getElementById('welcomeOverlay');
+    if(!wo)return;
+    if(!localStorage.getItem('itsm_welcomed')){
+      wo.style.display='flex';
+    } else {
+      wo.style.display='none';
+    }
+  }catch(e){
+    var wo=document.getElementById('welcomeOverlay');
+    if(wo)wo.style.display='flex';
+  }
+}
+function showWelcomeIfFirstTime(){showIfFirstTime();}
 
 
 
@@ -7889,13 +7903,14 @@ var trainingScenarios={
 
 function openTrainingMode(){
   var m=document.getElementById('trainingModal');
-  if(m){m.style.display='flex';m.style.alignItems='center';m.style.justifyContent='center';}
+  if(!m)return;
+  m.style.cssText='display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:99999;background:rgba(0,0,0,0.85);';
 }
 
 function loadScenario(key){
   var scenario=trainingScenarios[key];
   if(!scenario){showToast('Scenario not found.','warn');return;}
-  var _tm=document.getElementById('trainingModal');if(_tm)_tm.style.display='none';
+  var _tm=document.getElementById('trainingModal');if(_tm){_tm.style.cssText='display:none;';};
 
 
   // Reporting scenario — navigate directly to reporting workspace
@@ -10830,13 +10845,6 @@ function addTrendToRAGTable(){
 // ════════════════════════════════════════════════════════════════
 
 // ── WELCOME OVERLAY ───────────────────────────────────────────────
-function showWelcomeIfFirstTime(){
-  try{
-    if(!localStorage.getItem('itsm_welcomed')){
-      document.getElementById('welcomeOverlay').classList.remove('hidden');
-    }
-  }catch(e){}
-}
 
 function welcomeChoice(choice){
   document.getElementById('welcomeOverlay').classList.add('hidden');
@@ -12760,12 +12768,12 @@ function saveTemplates(){
 function openTemplatePicker(){
   renderTemplatePicker();
   var panel=document.getElementById('templatePickerPanel');
-  if(panel)panel.style.display='block';
+  if(panel)panel.style.cssText='display:block;position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:99999;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:640px;width:92%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.5);';
 }
 
 function closeTemplatePicker(){
   var panel=document.getElementById('templatePickerPanel');
-  if(panel)panel.style.display='none';
+  if(panel)panel.style.cssText='display:none;';
 }
 
 function renderTemplatePicker(){
@@ -14608,8 +14616,9 @@ function _updateA11yModeButtons(){
 function toggleA11yPanel(){
   var p=document.getElementById('a11yPanel');
   if(!p)return;
-  p.style.display=(p.style.display==='block')?'none':'block';
-  if(p.style.display==='block'){
+  var isVisible=(p.style.display==='block');
+  p.style.cssText=isVisible?'display:none;':'display:block;position:fixed;top:56px;right:8px;z-index:99999;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;min-width:240px;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,0.4);';
+  if(!isVisible){
     var s=document.getElementById('a11yScaleSlider');
     var l=document.getElementById('a11yScaleLabel');
     var scale=typeof _a11yScale!=='undefined'?_a11yScale:100;
@@ -15110,7 +15119,7 @@ window.addEventListener('load',()=>{
 </div>
 
 <!-- FIRST-TIME WELCOME -->
-<div class="welcome-overlay hidden" id="welcomeOverlay">
+<div class="welcome-overlay hidden" id="welcomeOverlay" style="display:none">
   <div class="welcome-box">
     <div style="font-size:40px;margin-bottom:12px">⚡</div>
     <div class="welcome-title">ITSM Workflow Intelligence Tool</div>
