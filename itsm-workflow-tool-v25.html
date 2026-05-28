@@ -1321,6 +1321,82 @@ textarea{resize:vertical;min-height:80px;}
   .nav-item{min-height:44px;display:flex;align-items:center;justify-content:center;}
   .sev-btn{min-height:44px;}
 }
+
+/* ═══ V25 ENHANCEMENTS ═══ */
+
+/* wdtg-body text size fix */
+.wdtg-body{font-size:11px!important;font-weight:400!important;}
+
+/* Nav severity dot badge */
+.nav-sev-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:5px;vertical-align:middle;flex-shrink:0;transition:background 0.2s;}
+.nav-sev-dot.sev-p1{background:var(--red);}
+.nav-sev-dot.sev-p2{background:var(--amber);}
+.nav-sev-dot.sev-p3{background:var(--green);}
+.nav-sev-dot.sev-p4{background:var(--text3);}
+
+/* KI nav button badge overlay */
+#kiNavBtn{position:relative;}
+.ki-dot-badge{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:8px;background:var(--red);color:#fff;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 3px;font-family:var(--mono);line-height:1;pointer-events:none;z-index:2;}
+.ki-dot-badge.show{display:flex;}
+
+/* Offline detection banner */
+#offlineBanner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:8000;background:rgba(239,68,68,0.95);color:#fff;text-align:center;padding:8px 16px;font-size:12px;font-weight:500;font-family:var(--mono);letter-spacing:0.04em;backdrop-filter:blur(4px);}
+#offlineBanner.show{display:block;}
+
+/* Copy-all button bar */
+.copy-all-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 0 4px;margin-top:4px;border-top:1px solid var(--border);}
+.copy-all-bar .copy-all-label{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.btn-copy-all{font-size:12px;font-weight:600;padding:7px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:var(--mono);transition:opacity 0.15s;}
+.btn-copy-all:hover{opacity:0.85;}
+.btn-copy-all.copied{background:var(--green);}
+
+/* Handover pack card */
+.handover-card{background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:14px;margin-bottom:16px;}
+.handover-card-title{font-size:12px;font-weight:600;color:var(--accent);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.handover-card-desc{font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.5;}
+.handover-out{font-family:var(--mono);font-size:11px;line-height:1.75;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;white-space:pre-wrap;margin-top:10px;display:none;}
+.handover-out.visible{display:block;}
+
+/* Output block field label highlighting */
+.output-content .fk{color:var(--accent);font-weight:600;}
+
+/* Reporting period bar charts */
+.rpt-bar-section{margin:14px 0 10px;}
+.rpt-bar-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text2);font-family:var(--mono);margin-bottom:8px;}
+.rpt-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.rpt-bar-label{font-size:11px;color:var(--text2);min-width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);}
+.rpt-bar-track{flex:1;height:9px;background:var(--surface2);border-radius:5px;overflow:hidden;}
+.rpt-bar-fill{height:100%;border-radius:5px;background:var(--accent);transition:width 0.5s ease;}
+.rpt-bar-fill.rag-R{background:var(--red);}
+.rpt-bar-fill.rag-A{background:var(--amber);}
+.rpt-bar-fill.rag-G{background:var(--green);}
+.rpt-bar-val{font-size:10px;color:var(--text3);min-width:24px;text-align:right;font-family:var(--mono);}
+
+/* Skeleton loading shimmer */
+@keyframes shimmer-sweep{0%{background-position:-800px 0}100%{background-position:800px 0}}
+.skeleton-block{border-radius:6px;margin-bottom:8px;overflow:hidden;}
+.skeleton-line{height:12px;border-radius:4px;margin-bottom:7px;background:linear-gradient(90deg,var(--surface2) 25%,var(--surface) 50%,var(--surface2) 75%);background-size:800px 100%;animation:shimmer-sweep 1.4s infinite;}
+.skeleton-line.w90{width:90%;}
+.skeleton-line.w70{width:70%;}
+.skeleton-line.w50{width:50%;}
+.skeleton-line.w35{width:35%;}
+.skeleton-header{height:18px;border-radius:4px;width:55%;margin-bottom:10px;background:linear-gradient(90deg,var(--surface2) 25%,var(--surface) 50%,var(--surface2) 75%);background-size:800px 100%;animation:shimmer-sweep 1.4s infinite;}
+
+/* Mobile single-column at 600px */
+@media(max-width:600px){
+  .stage{padding:10px 8px;}
+  .card{padding:10px 10px;}
+  .form-grid,.form-grid-3{grid-template-columns:1fr;}
+  .sev-grid{grid-template-columns:1fr 1fr;}
+  .obs-dash-row,.obs-dash-grid{grid-template-columns:1fr 1fr;}
+  .regen-grid{grid-template-columns:1fr 1fr;}
+  .output-toolbar,.accordion-header-right{flex-wrap:wrap;gap:5px;}
+  #appZoomWrap{overflow-x:hidden;}
+  .nav-action-btn{padding:5px 7px;font-size:11px;}
+  .mtbf-grid{grid-template-columns:1fr 1fr;}
+  .copy-all-bar{flex-direction:column;align-items:flex-start;gap:8px;}
+  .handover-card-title{font-size:11px;}
+}
 </style>
 </head>
 <body>
@@ -1374,7 +1450,7 @@ textarea{resize:vertical;min-height:80px;}
   </div>
   <button class="nav-scroll-btn right" id="navScrollRight" onclick="scrollNavRight()">›</button>
   <div class="nav-rail-right">
-    <button class="nav-action-btn" id="kiNavBtn" onclick="toggleKIPanel()" title="Known Issues">⚠ KI</button>
+    <button class="nav-action-btn" id="kiNavBtn" onclick="toggleKIPanel()" title="Known Issues">⚠ KI<span class="ki-dot-badge" id="kiBadge"></span></button>
     <button class="nav-action-btn" onclick="openTemplatePicker()" title="Incident templates — pre-fill common incident types">📋</button>
     <button class="nav-action-btn" onclick="runCodeAudit()" title="Audit">🔍</button>
     <button class="nav-action-btn" onclick="obRestart()" title="Tour">?</button>
@@ -1942,6 +2018,7 @@ textarea{resize:vertical;min-height:80px;}
     <div id="periodHistoryList">
       <div style="font-size:12px;color:var(--text3);padding:8px 0">No saved periods yet. Save the current period to begin building history.</div>
     </div>
+    <div id="periodBarCharts" style="margin-top:8px"></div>
     <div id="quarterlyRollupSection" style="margin-top:16px;display:none">
       <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.07em;font-family:var(--mono);margin-bottom:8px">Quarterly Rollup — from saved monthly periods</div>
       <div id="quarterlyRollupContent"></div>
@@ -4687,6 +4764,20 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
     </div>
   </div>
 
+  <!-- HANDOVER PACK -->
+  <div class="handover-card" id="handoverCard">
+    <div class="handover-card-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Shift Handover Pack
+    </div>
+    <div class="handover-card-desc">One-click structured summary for shift handover — covers incident status, actions outstanding, severity, SLA position and next steps.</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-secondary btn-sm" onclick="generateHandoverPack()">Generate Handover Pack</button>
+      <button class="btn-session" id="handoverCopyBtn" onclick="copyHandoverPack()" style="display:none">Copy</button>
+    </div>
+    <pre class="handover-out" id="handoverOut"></pre>
+  </div>
+
   <!-- MTBF DASHBOARD -->
   <div class="card mtbf-section" id="mtbfSection" style="margin-bottom:16px;display:none">
     <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
@@ -4759,6 +4850,12 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
   </div>
 
   <div id="metricsPanel" class="metrics-row"></div>
+
+  <!-- COPY ALL OUTPUTS -->
+  <div class="copy-all-bar">
+    <span class="copy-all-label">Copy all outputs as a single structured document</span>
+    <button class="btn-copy-all" id="copyAllBtn" onclick="copyAllOutputs(this)">⊞ Copy All Outputs</button>
+  </div>
 
   <div class="accordion" id="outputAccordion">
 
@@ -4917,7 +5014,8 @@ function goToStage(n){
     applyOrgMemory();
     setTimeout(expandAllOutputs,100);
     setTimeout(generatePostIncidentChecklist,150);
-    setTimeout(function(){if(hasActiveIncidentData())addTimelineEvent('Outputs generated — incident documentation complete','resolved');},200);
+    setTimeout(function(){if(typeof highlightOutputBlocks==='function')highlightOutputBlocks();},300);
+    setTimeout(function(){if(hasActiveIncidentData())addTimelineEvent('Outputs generated — incident documentation complete','resolved');},400);
   }
   window.scrollTo({top:0,behavior:'smooth'});
   if(typeof updateNavRail==='function'){currentNav='incident';updateNavRail('incident');updateNavIncidentSub();updateLocationCrumb('incident');}
@@ -5005,17 +5103,29 @@ function hideValSummary(id){const el=document.getElementById(id);if(el)el.classL
 
 // ── SEVERITY ─────────────────────────────────────────────────
 function setSev(sev){
+  var _prevSev=selectedSev;
   selectedSev=sev;
   ['P1','P2','P3','P4'].forEach(s=>document.getElementById('sev'+s).classList.remove('selected'));
   document.getElementById('sev'+sev).classList.add('selected');
   showFieldError('err_sev',false);
   isMajorIncident=sev==='P1'||calcScore()>=17;
+  // Log override to timeline when user picks a severity that differs from the score suggestion
+  if(_prevSev!==''){
+    var _sc=calcScore();
+    var _suggested=_sc>=17?'P1':_sc>=11?'P2':_sc>=6?'P3':'P4';
+    if(sev!==_suggested){
+      if(typeof addTimelineEvent==='function')addTimelineEvent('Severity override — score ('+_sc+') suggests '+_suggested+', '+sev+' selected manually','auto');
+    }
+  }
   startSLAClock();
   // Update playbook if open
   var _pb=document.getElementById('playbookBody');
   if(_pb&&_pb.classList.contains('open'))renderPlaybook();
   var _pbadge=document.getElementById('playbookBadge');
   if(_pbadge){var _pl={P1:'P1 — Critical',P2:'P2 — High',P3:'P3 — Medium',P4:'P4 — Low'};_pbadge.textContent=_pl[sev]||sev;}
+  if(typeof updateNavSevDot==='function')updateNavSevDot();
+  if(typeof updateTabTitle==='function')updateTabTitle();
+  if(typeof requestSLANotificationPermission==='function')requestSLANotificationPermission();
   autosave();
 }
 
@@ -5140,6 +5250,11 @@ function startSLAClock(){
     clock.classList.add('active');
     clock.classList.remove('breach','warning');
     timeEl.classList.remove('breach','warning','ok');
+    // mm:ss display for last 60 minutes, h:mm otherwise
+    function fmtTime(mins){
+      if(mins<60){const m=Math.floor(mins);const s=Math.round((mins-m)*60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+      const h=Math.floor(mins/60);const m=Math.round(mins%60);return h+'h '+m+'m';
+    }
     if(remaining<=0){
       const over=Math.abs(remaining);
       const h=Math.floor(over/60);const m=Math.round(over%60);
@@ -5148,20 +5263,20 @@ function startSLAClock(){
       label.textContent='SLA BREACHED';
       detail.textContent=sev+' SLA was '+limit+' minutes. Escalate immediately.';
     } else if(remaining<=Math.min(30,limit*0.25)){
-      const h=Math.floor(remaining/60);const m=Math.round(remaining%60);
-      timeEl.textContent=(h>0?h+'h ':'')+m+'m';
+      timeEl.textContent=fmtTime(remaining);
       timeEl.classList.add('warning');clock.classList.add('warning');
       label.textContent='SLA remaining — WARNING';
       detail.textContent=sev+' SLA target: '+limit+' mins. Elapsed: '+Math.round(elapsedMins)+' mins.';
+      if(remaining<=10&&typeof sendSLABreachNotification==='function')sendSLABreachNotification(remaining,sev);
     } else {
-      const h=Math.floor(remaining/60);const m=Math.round(remaining%60);
-      timeEl.textContent=(h>0?h+'h ':'')+m+'m';
+      timeEl.textContent=fmtTime(remaining);
       timeEl.classList.add('ok');
       label.textContent='SLA remaining';
       detail.textContent=sev+' SLA target: '+limit+' mins. Elapsed: '+Math.round(elapsedMins)+' mins.';
     }
   }
-  tick();slaInterval=setInterval(function(){tick();updateSLAStatusIndicator();},30000);
+  tick();
+  slaInterval=setInterval(function(){tick();updateSLAStatusIndicator();},1000);
   updateSLAStatusIndicator();
 }
 document.getElementById('i_started').addEventListener('change',()=>{calcMTTR();startSLAClock();});
@@ -5395,6 +5510,9 @@ function generateMIOutputs(){
   const diagnosis=g('i_diagnosis')||'[Initial diagnosis]';
   const wa=g('i_workaround')||'No workaround currently available';
   const stakeholders=g('mi_stakeholders')||'[Key stakeholders]';
+  // tcBlock used in template literal below — compute locally
+  const NL=String.fromCharCode(10);
+  const tcBlock='TECHNICAL CONTEXT'+NL+'------------------'+NL+'Environment: '+(g('tc_environment')||'Not specified')+NL+'Infrastructure: '+(g('tc_infra')||'Not specified')+((g('tc_cloud')&&g('tc_cloud')!=='N/A')?NL+'Cloud Provider: '+g('tc_cloud'):'')+NL+'Version / Build: '+(g('tc_version')||'Not specified')+NL+'Affected Components: '+(g('tc_comp_data')||'Not specified')+NL+'Third-party Dependencies: '+(g('tc_dep_data')||'Not specified')+NL+'Downstream Impact: '+(g('tc_downstream')||'None identified')+NL+'Recent Changes in Area: '+(g('tc_recent_changes')||'None identified');
 
   set('mibridge_out',`MAJOR INCIDENT — WAR ROOM BRIDGE PACK
 ======================================
@@ -5552,6 +5670,19 @@ function generateAllOutputs(){
     goToStage(1);
     return;
   }
+  // Compute tcBlock first — generateMIOutputs() references it as a free variable
+  const tcBlock=(function(){
+    var env=g('tc_environment')||'Not specified';
+    var infra=g('tc_infra')||'Not specified';
+    var cloud=g('tc_cloud')||'N/A';
+    var ver=g('tc_version')||'Not specified';
+    var comps=g('tc_comp_data')||'Not specified';
+    var deps=g('tc_dep_data')||'Not specified';
+    var down=g('tc_downstream')||'None identified';
+    var chg=g('tc_recent_changes')||'None identified';
+    var NL=String.fromCharCode(10);
+    return 'TECHNICAL CONTEXT'+NL+'------------------'+NL+'Environment: '+env+NL+'Infrastructure: '+infra+(cloud&&cloud!=='N/A'?NL+'Cloud Provider: '+cloud:'')+NL+'Version / Build: '+ver+NL+'Affected Components: '+comps+NL+'Third-party Dependencies: '+deps+NL+'Downstream Impact: '+down+NL+'Recent Changes in Area: '+chg;
+  })();
   generateMIOutputs();
   if(typeof markStagesDone==='function')markStagesDone(6);
   if(typeof markStagesDone==='function')markStagesDone(6);
@@ -5573,16 +5704,7 @@ function generateAllOutputs(){
   const diagnosis=g('i_diagnosis')||'[Initial diagnosis]';
   const wa=g('i_workaround')||'None available';
   const waAvail=g('i_wa_avail')||'no';
-  // Tech context
-  const tcEnv=g('tc_environment')||'Not specified';
-  const tcInfra=g('tc_infra')||'Not specified';
-  const tcCloud=g('tc_cloud')||'N/A';
-  const tcVersion=g('tc_version')||'Not specified';
-  const tcComps=g('tc_comp_data')||'Not specified';
-  const tcDeps=g('tc_dep_data')||'Not specified';
-  const tcDownstream=g('tc_downstream')||'None identified';
-  const tcChanges=g('tc_recent_changes')||'None identified';
-  const tcBlock='TECHNICAL CONTEXT'+String.fromCharCode(10)+'------------------'+String.fromCharCode(10)+'Environment: '+tcEnv+String.fromCharCode(10)+'Infrastructure: '+tcInfra+(tcCloud&&tcCloud!=='N/A'?String.fromCharCode(10)+'Cloud Provider: '+tcCloud:'')+String.fromCharCode(10)+'Version / Build: '+tcVersion+String.fromCharCode(10)+'Affected Components: '+tcComps+String.fromCharCode(10)+'Third-party Dependencies: '+tcDeps+String.fromCharCode(10)+'Downstream Impact: '+tcDownstream+String.fromCharCode(10)+'Recent Changes in Area: '+tcChanges;
+  // Tech context (tcBlock already computed above for generateMIOutputs)
   const resolution=g('i_resolution')||'[Pending]';
   const reporter=g('t1_reporter')||'[Reporter]';
   const detection=g('t1_detection')||'[Detection method]';
@@ -6977,8 +7099,11 @@ const obSteps=[
     title:'Welcome — the navigation rail',
     body:'The nav rail gives instant access to every workspace: Incident workflow, Customer Report, P1 Fast Track, Pick Up Incident, Problem Record, Change Request, Glossary, Retrospective, Reporting and Integration Hub. Use the arrows if items are off-screen.'},
   {target:'#nav-fasttrack',arrow:'arrow-top',pos:'below',
-    title:'P1 Fast Track — bridge pack in 90 seconds',
-    body:'Critical incident: five fields, one click, bridge pack ready, SLA clock running. Full record pre-populated in the background. Return to complete the detail when the pressure eases. Keyboard shortcut: Alt+P.'},
+    title:'P1 Fast Track — live SLA countdown from the start',
+    body:'Critical incident: five fields, one click, bridge pack ready. The SLA clock starts automatically and shows a live mm:ss countdown so you know exactly how much time remains. Full record pre-populated in the background. Keyboard shortcut: Alt+P.'},
+  {target:'#kiNavBtn',arrow:'arrow-top',pos:'below',
+    title:'Known Issues — persistent badge count',
+    body:'The KI button shows a red badge when you have active known issues on record. Tap it to search by service name and see if your current incident matches a known pattern before you start a new investigation from scratch.'},
   {target:'#nav-change',arrow:'arrow-top',pos:'below',
     title:'Standalone Change Request',
     body:'Raise a Change Request independently of the incident workflow. Standard, Normal or Emergency — ITIL definitions shown alongside your organisation'+"'"+'s override. Six-factor risk scoring, step-builder for implementation and rollback plans, ECAB approval chain, change freeze detection. Generates a full ServiceNow CHG record.'},
@@ -6993,11 +7118,11 @@ const obSteps=[
     body:'Settings (⚙) configures: organisation name, SLA targets, Change Freeze Windows (auto-detected in Change Request), Webhook Severity Mapping, Field Label Overrides (rename any field to your terminology). All settings persist across sessions.',
     prereq:function(){var op=document.getElementById('orgPanel');var oa=document.getElementById('orgArrow');if(op&&!op.classList.contains('open')){op.classList.add('open');if(oa)oa.classList.add('open');}}},
   {target:'#nav-reporting',arrow:'arrow-top',pos:'below',
-    title:'Service review reporting — pattern analysis engine',
-    body:'Build your monthly service pack. Enter data per team: SLA attainment, incident volumes, change delivery, problem records, availability, CSAT, custom metrics. The pattern engine runs 35 checks automatically — surfacing probable causes and recommended actions. Four narrative styles for different audiences. Decisions required section always leads.'},
+    title:'Reporting — pattern engine + period bar charts',
+    body:'Build your monthly service pack: SLA attainment, incident volumes, change delivery, CSAT. The 35-check pattern engine surfaces probable causes automatically. Period history now includes bar charts for at-a-glance trend comparison across saved periods.'},
   {target:'#stage1',arrow:'arrow-top',pos:'below',isLast:true,
-    title:'Start your first incident — or try a practice run',
-    body:'Describe what you observed — routing suggestions appear as you type, smart suggestions fire automatically, and the tool guides you stage by stage to structured outputs. Or click Practice Run in the nav rail to load one of 7 fictional scenarios.'}
+    title:'Stage 7: Handover Pack + Copy All Outputs',
+    body:'When you reach Stage 7 (Generated Outputs), use Copy All Outputs to grab every document in one structured block. Generate Handover Pack produces a shift-handover summary with SLA position, open actions and next-step checklist for the incoming engineer.'}
 ];
 
 function obStart(){
@@ -7276,7 +7401,8 @@ function generateStatusPageOutput(){
   var NL=String.fromCharCode(10);
   var output='STATUS PAGE UPDATE — '+org+NL+'='.repeat(40)+NL+'Status: '+statusText+NL+'Service: '+svc+NL+'Severity: '+sev+NL+'Time: '+now+NL+NL+'UPDATE'+NL+'------'+NL+body+NL+NL+'---'+NL+'NEXT UPDATE: [Time]'+NL+'Updated by: '+org+' Operations Team'+NL+NL+'[Post to: your-status-page.com or equivalent]';
 
-  document.getElementById('status_page_out').textContent=output;
+  var spEl=document.getElementById('status_page_out');
+  if(spEl)spEl.textContent=output;
 }
 
 // ── MTBF / PATTERN ANALYSIS ──────────────────────────────────────
@@ -8939,6 +9065,7 @@ function loadKnownIssues(){
   }catch(e){knownIssues=[];}
   renderKIItems();
   updateKICount();
+  if(typeof updateKIBadgeCount==='function')updateKIBadgeCount();
 }
 
 function saveKnownIssues(){
@@ -9038,6 +9165,7 @@ function updateKICount(){
     var high=knownIssues.filter(function(k){return k.risk==='high';}).length;
     btn.textContent='⚠ Known Issues'+(knownIssues.length?' ('+knownIssues.length+(high?' ⬆'+high:'')+')':'');
   }
+  if(typeof updateKIBadgeCount==='function')updateKIBadgeCount();
 }
 
 function checkKIRelevance(){
@@ -9727,6 +9855,11 @@ var DEFAULT_THRESHOLDS = {
 
 // ── INIT REPORTING ────────────────────────────────────────────────
 function initReporting(){
+  // Show skeleton loading state
+  if(typeof showSkeletonInContainer==='function'){
+    showSkeletonInContainer('periodHistoryList');
+    showSkeletonInContainer('periodBarCharts');
+  }
   var raw = localStorage.getItem(REPORT_KEY);
   if(raw){
     try{
@@ -10660,6 +10793,8 @@ function renderPeriodHistory(){
   var monthlyPeriods=periods.filter(function(p){return p.mode==='monthly';});
   var qs=document.getElementById('quarterlyRollupSection');
   if(qs)qs.style.display=monthlyPeriods.length>=2?'block':'none';
+  // Bar charts
+  if(typeof renderPeriodBarCharts==='function')renderPeriodBarCharts(periods);
 }
 
 function selectHistoryPeriod(idx){
@@ -11801,6 +11936,7 @@ function updateNavIncidentSub(){
   if(!sub)return;
   var stageNames=['','Triage','Incident Record','Major Incident','Problem Record','RCA','Change Request','Outputs'];
   sub.textContent=stageNames[currentStage]||'Stage '+currentStage;
+  if(typeof updateNavSevDot==='function')updateNavSevDot();
 }
 
 function hasActiveIncidentData(){
@@ -11945,6 +12081,7 @@ function updateKINavBadge(){
   if(!btn)return;
   var high=knownIssues.filter(function(k){return k.risk==='high';}).length;
   btn.textContent='⚠ Known Issues'+(knownIssues.length?' ('+knownIssues.length+(high?', '+high+' high':'')+')':'');
+  if(typeof updateKIBadgeCount==='function')updateKIBadgeCount();
 }
 
 // Welcome overlay — update to use navTo
@@ -14985,6 +15122,231 @@ function setRiskFactor(fieldId, value, btn){
   autosave();
 }
 
+// ═══════════════════════════════════════════════════════════════
+// V25 ENHANCEMENT FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+// ── COPY ALL OUTPUTS ──────────────────────────────────────────
+function copyAllOutputs(btn){
+  var ids=['sn_out','jira_bug_out','jira_story_out','conf_out','prob_out','cr_out','rca_report_out'];
+  var parts=[];
+  var labels={
+    sn_out:'SERVICENOW INCIDENT RECORD',
+    jira_bug_out:'JIRA BUG TICKET',
+    jira_story_out:'JIRA REMEDIATION STORY',
+    conf_out:'CONFLUENCE POST-INCIDENT REVIEW',
+    prob_out:'SERVICENOW PROBLEM RECORD',
+    cr_out:'SERVICENOW CHANGE REQUEST',
+    rca_report_out:'RCA REPORT'
+  };
+  ids.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el||!el.textContent||el.textContent==='Generating...')return;
+    var txt=el.textContent.trim();
+    if(!txt)return;
+    var sep='═'.repeat(50);
+    parts.push(sep+'\n'+labels[id]+'\n'+sep+'\n'+txt);
+  });
+  if(!parts.length){showToast('Generate outputs first — no content to copy.','warn');return;}
+  var full='ITSM WORKFLOW INTELLIGENCE — ALL OUTPUTS\nGenerated: '+new Date().toLocaleString('en-GB')+'\n\n'+parts.join('\n\n');
+  navigator.clipboard.writeText(full).then(function(){
+    if(btn){btn.textContent='✓ Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='⊞ Copy All Outputs';btn.classList.remove('copied');},2500);}
+  }).catch(function(){
+    var ta=document.createElement('textarea');ta.value=full;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    if(btn){btn.textContent='✓ Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='⊞ Copy All Outputs';btn.classList.remove('copied');},2500);}
+  });
+}
+
+// ── HANDOVER PACK ─────────────────────────────────────────────
+function generateHandoverPack(){
+  var sev=selectedSev||'[Not set]';
+  var svc=g('t1_service')||g('i_shortdesc')||'[Not specified]';
+  var obs=g('t1_observation')||'[Not specified]';
+  var started=g('i_started')?new Date(g('i_started')).toLocaleString('en-GB'):'[Not set]';
+  var assigngroup=g('i_assigngroup')||'[Not set]';
+  var assigned=g('i_assigned')||'[Not set]';
+  var bridge=g('mi_bridge')||'[Not set]';
+  var mim=g('mi_manager')||'[Not set]';
+  var openActions=[];
+  try{
+    var acts=JSON.parse(localStorage.getItem('itsm_actions')||'[]');
+    openActions=acts.filter(function(a){return !a.done;}).map(function(a){return '  • '+a.text+(a.owner?' ['+a.owner+']':'')+(a.due?' — due '+a.due:'');});
+  }catch(e){}
+  var slaRemaining='[SLA clock not active]';
+  var slaEl=document.getElementById('slaTime');
+  if(slaEl&&slaEl.textContent&&slaEl.textContent!==':00'){slaRemaining=slaEl.textContent;}
+  var now=new Date().toLocaleString('en-GB');
+  var pack=[
+    '╔══════════════════════════════════════════════╗',
+    '║      SHIFT HANDOVER — INCIDENT SUMMARY       ║',
+    '╚══════════════════════════════════════════════╝',
+    '',
+    'Handover prepared: '+now,
+    '',
+    'INCIDENT STATUS',
+    '───────────────',
+    'Service:       '+svc,
+    'Severity:      '+sev,
+    'Started:       '+started,
+    'SLA remaining: '+slaRemaining,
+    '',
+    'WHAT HAPPENED',
+    '─────────────',
+    obs,
+    '',
+    'ASSIGNMENT',
+    '──────────',
+    'Assignment group: '+assigngroup,
+    'Assigned to:      '+assigned,
+    (bridge&&bridge!=='[Not set]'?'Bridge:           '+bridge:''),
+    (mim&&mim!=='[Not set]'?'MIM:              '+mim:''),
+    '',
+    'OPEN ACTIONS'+(openActions.length?' ('+openActions.length+' outstanding)':''),
+    '────────────',
+    openActions.length?openActions.join('\n'):'  No open actions on record.',
+    '',
+    'INCOMING ENGINEER — ACTIONS REQUIRED',
+    '──────────────────────────────────────',
+    '  □ Confirm incident ownership in ServiceNow',
+    '  □ Review open actions above and update owners',
+    '  □ Check SLA position — escalate if < 20% remaining',
+    '  □ Post bridge update within 15 minutes of handover',
+    '',
+    '─────────────────────────────────────────────',
+    'Generated by ITSM Workflow Intelligence v25'
+  ].filter(function(l){return l!=='';}).join('\n');
+  var out=document.getElementById('handoverOut');
+  var copyBtn=document.getElementById('handoverCopyBtn');
+  if(out){out.textContent=pack;out.classList.add('visible');}
+  if(copyBtn)copyBtn.style.display='inline-flex';
+}
+
+function copyHandoverPack(){
+  var out=document.getElementById('handoverOut');
+  var btn=document.getElementById('handoverCopyBtn');
+  if(!out||!out.textContent){showToast('Generate the pack first.','warn');return;}
+  navigator.clipboard.writeText(out.textContent).then(function(){
+    if(btn){btn.textContent='✓ Copied';setTimeout(function(){btn.textContent='Copy';},2000);}
+  }).catch(function(){
+    var ta=document.createElement('textarea');ta.value=out.textContent;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    if(btn){btn.textContent='✓ Copied';setTimeout(function(){btn.textContent='Copy';},2000);}
+  });
+}
+
+// ── OUTPUT FIELD HIGHLIGHTING ─────────────────────────────────
+function highlightOutputBlocks(){
+  var ids=['sn_out','jira_bug_out','jira_story_out','conf_out','prob_out'];
+  ids.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el||el.textContent==='Generating...'||!el.textContent.trim())return;
+    var safe=el.textContent.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    safe=safe.replace(/\[([a-zA-Z][a-zA-Z0-9_ ]*)\]/g,'<span class="fk">[$1]</span>');
+    el.innerHTML=safe;
+  });
+}
+
+// ── KI BADGE UPDATER ──────────────────────────────────────────
+// textContent assignments on kiNavBtn clear child nodes, so we re-append each call
+function updateKIBadgeCount(){
+  var btn=document.getElementById('kiNavBtn');
+  if(!btn)return;
+  var count=typeof knownIssues!=='undefined'?knownIssues.length:0;
+  var badge=btn.querySelector('.ki-dot-badge')||document.getElementById('kiBadge');
+  if(!badge){
+    badge=document.createElement('span');
+    badge.className='ki-dot-badge';
+    badge.id='kiBadge';
+    btn.appendChild(badge);
+  } else if(badge.parentElement!==btn){
+    btn.appendChild(badge);
+  }
+  if(count>0){
+    badge.textContent=count>9?'9+':String(count);
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+// ── OFFLINE DETECTION ─────────────────────────────────────────
+(function setupOfflineDetection(){
+  function setOfflineBanner(offline){
+    var b=document.getElementById('offlineBanner');
+    if(b)b.classList.toggle('show',offline);
+  }
+  window.addEventListener('online',function(){setOfflineBanner(false);});
+  window.addEventListener('offline',function(){setOfflineBanner(true);});
+  if(!navigator.onLine)setOfflineBanner(true);
+})();
+
+// ── BROWSER NOTIFICATION FOR SLA BREACH ──────────────────────
+var slaNotifiedAt=null;
+function requestSLANotificationPermission(){
+  if(typeof Notification!=='undefined'&&Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+}
+function sendSLABreachNotification(remaining,sev){
+  if(typeof Notification==='undefined'||Notification.permission!=='granted')return;
+  var key=(sev||'?')+'_'+Math.floor(remaining);
+  if(slaNotifiedAt===key)return;
+  slaNotifiedAt=key;
+  try{
+    new Notification('⚠ SLA Warning — '+sev+' Incident',{
+      body:'SLA breach in '+Math.round(remaining)+' minutes. Take action now.',
+      icon:'',tag:'itsm-sla-'+sev
+    });
+  }catch(e){}
+}
+
+// ── NAV SEVERITY DOT ──────────────────────────────────────────
+function updateNavSevDot(){
+  var sub=document.getElementById('navIncidentSub');
+  if(!sub)return;
+  var dot=sub.querySelector('.nav-sev-dot');
+  if(!selectedSev){if(dot)dot.remove();return;}
+  if(!dot){dot=document.createElement('span');dot.className='nav-sev-dot';sub.appendChild(dot);}
+  dot.className='nav-sev-dot sev-'+selectedSev.toLowerCase();
+  dot.title=selectedSev;
+}
+
+// ── MULTI-INCIDENT TAB TITLE ──────────────────────────────────
+function updateTabTitle(){
+  if(selectedSev&&currentNav==='incident'){
+    document.title=selectedSev+' — ITSM Tool';
+  } else {
+    document.title='ITSM Workflow Intelligence';
+  }
+}
+
+// ── REPORTING BAR CHARTS ──────────────────────────────────────
+function renderPeriodBarCharts(periods){
+  var container=document.getElementById('periodBarCharts');
+  if(!container||!periods||periods.length<2)return;
+  // Build bar chart from last 6 periods, newest first
+  var recent=periods.slice(0,6).reverse();
+  var maxRed=Math.max.apply(null,recent.map(function(p){
+    var c={G:0,A:0,R:0};Object.values(p.ragSnapshot||{}).forEach(function(r){if(c[r]!==undefined)c[r]++;});return c.R;
+  }))||1;
+  var html='<div class="rpt-bar-section"><div class="rpt-bar-section-title">RAG — Red count per period</div>';
+  recent.forEach(function(p){
+    var c={G:0,A:0,R:0};Object.values(p.ragSnapshot||{}).forEach(function(r){if(c[r]!==undefined)c[r]++;});
+    var pct=Math.round((c.R/maxRed)*100);
+    var cls=c.R===0?'rag-G':c.R<=2?'rag-A':'rag-R';
+    var lbl=(p.label||'').substring(0,12);
+    html+='<div class="rpt-bar-row"><span class="rpt-bar-label">'+lbl+'</span><div class="rpt-bar-track"><div class="rpt-bar-fill '+cls+'" style="width:'+pct+'%"></div></div><span class="rpt-bar-val">'+c.R+'R</span></div>';
+  });
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+// ── SKELETON LOADING ──────────────────────────────────────────
+function showSkeletonInContainer(containerId){
+  var el=document.getElementById(containerId);
+  if(!el)return;
+  el.innerHTML='<div class="skeleton-block"><div class="skeleton-header"></div><div class="skeleton-line w90"></div><div class="skeleton-line w70"></div><div class="skeleton-line w50"></div><div class="skeleton-line w90"></div><div class="skeleton-line w35"></div></div>';
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 // Relocate global overlays to <body> — these elements are parsed AFTER this script
 // block closes, so getElementById returns null here. A load listener runs after the
@@ -15096,7 +15458,7 @@ style="display:none">
         <div class="scenario-card-title">💳 Payment Gateway — Critical Outage</div>
         <div class="scenario-card-meta">
           <span class="scenario-card-sev sc-p1">P1 — Critical</span>
-          <span>Major Incident · 45,000 users · Regulatory exposure · Full 7-stage workflow</span>
+          <span>Major Incident · 45,000 users · Regulatory exposure · Live SLA countdown · Handover pack · Full 7-stage workflow</span>
         </div>
       </div>
 
@@ -15104,7 +15466,7 @@ style="display:none">
         <div class="scenario-card-title">🔐 Authentication Service Degradation</div>
         <div class="scenario-card-meta">
           <span class="scenario-card-sev sc-p2">P2 — High</span>
-          <span>Partial outage · Third-party SSO · Workaround available · Pattern detection</span>
+          <span>Partial outage · Third-party SSO · Workaround available · KI badge · Pattern detection</span>
         </div>
       </div>
 
@@ -15112,7 +15474,7 @@ style="display:none">
         <div class="scenario-card-title">🔄 Failed Deployment + Irreversible DB Migration</div>
         <div class="scenario-card-meta">
           <span class="scenario-card-sev sc-p3">P3 — Medium</span>
-          <span>Release-related · Rollback blocked · Change request workflow · PIR</span>
+          <span>Release-related · Rollback blocked · Change request workflow · Copy All Outputs · PIR</span>
         </div>
       </div>
 
@@ -15120,7 +15482,7 @@ style="display:none">
         <div class="scenario-card-title">🗄 Database Replication Lag</div>
         <div class="scenario-card-meta">
           <span class="scenario-card-sev sc-p2">P2 — High</span>
-          <span>Infrastructure · Reporting unavailable · Problem record · RCA</span>
+          <span>Infrastructure · Reporting unavailable · Problem record · RCA · Field highlighting</span>
         </div>
       </div>
 
@@ -15128,7 +15490,7 @@ style="display:none">
         <div class="scenario-card-title">🛡 Emergency Security Patch — CVE-2024-44000</div>
         <div class="scenario-card-meta">
           <span class="scenario-card-sev sc-p2">P2 — Security</span>
-          <span>CVSS 9.8 · Emergency CHG workflow · ECAB · Rollback decision tree</span>
+          <span>CVSS 9.8 · Emergency CHG workflow · ECAB · Rollback decision tree · Severity nav badge</span>
         </div>
       </div>
 
@@ -15136,15 +15498,15 @@ style="display:none">
         <div class="scenario-card-title">🔴 Customer PII Exposure — Data Breach</div>
         <div class="scenario-card-meta">
           <span class="scenario-card-sev sc-p1">P1 — Critical</span>
-          <span>ICO 72-hr window · FCA SUP 15 · GDPR · 12,000 customers</span>
+          <span>ICO 72-hr window · FCA SUP 15 · GDPR · 12,000 customers · SLA breach notification</span>
         </div>
       </div>
 
       <div class="scenario-card" onclick="loadScenario('service_review')" style="grid-column:1/-1">
-        <div class="scenario-card-title">📊 Service Review Reporting — Pattern Analysis</div>
+        <div class="scenario-card-title">📊 Service Review Reporting — Pattern Analysis + Bar Charts</div>
         <div class="scenario-card-meta">
           <span class="scenario-card-sev" style="background:rgba(139,92,246,0.1);color:var(--purple);">Reporting</span>
-          <span>Navigate to the Reporting workspace · RAG dashboard · 35-check pattern engine · Executive narrative</span>
+          <span>Navigate to the Reporting workspace · RAG dashboard · 35-check pattern engine · Period bar charts · Executive narrative</span>
         </div>
       </div>
 
@@ -15163,7 +15525,7 @@ style="display:none">
     <div style="font-size:40px;margin-bottom:12px">⚡</div>
     <div class="welcome-title">ITSM Workflow Intelligence Tool</div>
     <div class="welcome-sub">Structured guidance from first alert to service board. Paste-ready outputs for ServiceNow, Jira and Confluence. ITIL 4 aligned. FCA and PRA ready.</div>
-    <div style="display:flex;gap:14px;justify-content:center;margin:10px 0 14px;font-size:11px;color:var(--text3);flex-wrap:wrap;"><span>⚡ P1 bridge pack in 90s</span><span>📋 8 structured outputs</span><span>🔍 35 pattern checks</span><span>📖 130+ glossary terms</span></div>
+    <div style="display:flex;gap:14px;justify-content:center;margin:10px 0 14px;font-size:11px;color:var(--text3);flex-wrap:wrap;"><span>⚡ P1 bridge pack in 90s</span><span>📋 8 structured outputs</span><span>🔍 35 pattern checks</span><span>📖 130+ glossary terms</span><span>🔔 Live SLA countdown</span><span>📦 Shift handover pack</span></div>
     <div class="welcome-choice-grid">
       <div class="welcome-choice" onclick="welcomeChoice('incident')">
         <div class="welcome-choice-icon">🚨</div>
@@ -15190,6 +15552,8 @@ style="display:none">
     <div class="welcome-skip" onclick="welcomeChoice('skip')">Skip — I know what I am doing</div>
   </div>
 </div>
+
+<div id="offlineBanner">⚠ You are offline — changes will continue to save locally but connected features are unavailable</div>
 
 <div id="browserWarn">
   <div class="browser-warn-box">
@@ -15230,13 +15594,17 @@ style="display:none">
 <div id="obOverlay" style="display:none;position:fixed;inset:0;z-index:9998;pointer-events:none;">
   <div class="ob-highlight" id="obHighlight"></div>
   <div class="ob-tip" id="obTip" style="pointer-events:all;">
-    <div class="ob-step"><span id="obStepLabel">Step 1 of 5</span>
+    <div class="ob-step"><span id="obStepLabel">Step 1 of 9</span>
       <div class="ob-dots" style="display:flex;gap:4px;margin-left:auto;">
         <div class="ob-dot" id="obDot0"></div>
         <div class="ob-dot" id="obDot1"></div>
         <div class="ob-dot" id="obDot2"></div>
         <div class="ob-dot" id="obDot3"></div>
         <div class="ob-dot" id="obDot4"></div>
+        <div class="ob-dot" id="obDot5"></div>
+        <div class="ob-dot" id="obDot6"></div>
+        <div class="ob-dot" id="obDot7"></div>
+        <div class="ob-dot" id="obDot8"></div>
       </div>
     </div>
     <div class="ob-title" id="obTitle"></div>
