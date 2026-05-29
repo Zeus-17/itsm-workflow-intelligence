@@ -26,6 +26,8 @@
   --purple:#8b5cf6;--teal:#14b8a6;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
+/* Prevent iOS Safari from auto-adjusting font sizes on orientation change */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh;}
 
 .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap;}
@@ -1319,10 +1321,21 @@ textarea{resize:vertical;min-height:80px;}
   body{font-size:13px;}
   .card{padding:10px;margin-bottom:10px;}
   .form-group label{font-size:11px;}
-  input,textarea,select{font-size:14px;}
+  /* 16px minimum prevents iOS Safari auto-zoom on input focus */
+  input,textarea,select{font-size:16px;}
   .btn-primary{width:100%;justify-content:center;}
   pre{font-size:9px;line-height:1.5;}
   .welcome-title{font-size:20px;}
+}
+/* ── MOBILE HEADER FIX ────────────────────────────────────────
+   On narrow screens (phones) the header-right overflows the viewport,
+   pushing ☀/♿/⚙ off-screen. Fix: hide title + version + save-status
+   text so header-right fits. Logo stays — brand is still clear.       */
+@media(max-width:520px){
+  .app-header-title{display:none;}
+  .app-header-version{display:none;}
+  .app-save-status{display:none;}
+  .location-crumb{display:none!important;}
 }
 @media(max-width:900px){
   .nav-item{min-height:44px;display:flex;align-items:center;justify-content:center;}
