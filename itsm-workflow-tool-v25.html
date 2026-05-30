@@ -1656,12 +1656,13 @@ body{line-height:1.75;}
   min-width:210px;max-width:250px;box-shadow:4px 0 24px rgba(0,0,0,0.3);
   transform:translateX(calc(-100% - 1px));transition:transform 0.22s cubic-bezier(0.4,0,0.2,1);}
 #tocPanel.open{transform:translateX(0);}
-/* Toggle tab — start 20px below nav bottom edge to avoid any visual crowding */
+/* Toggle tab — icon-only, no writing-mode (avoids Safari rendering issues).
+   Explicit 22×44px footprint keeps it as a slim left-edge tab on all browsers. */
 #tocToggleBtn{position:fixed;top:calc(var(--nav-h) + 44px + 20px);left:0;z-index:488;
   background:var(--accent);color:#fff;border:none;border-radius:0 6px 6px 0;
-  padding:6px 5px 6px 4px;cursor:pointer;font-size:10px;writing-mode:vertical-rl;
-  text-orientation:mixed;letter-spacing:0.05em;font-family:var(--mono);font-weight:600;
-  transition:opacity 0.15s;line-height:1.2;}
+  width:22px;height:44px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px;font-family:var(--sans);font-weight:400;
+  transition:opacity 0.15s;line-height:1;padding:0;}
 #tocToggleBtn:hover{opacity:0.85;}
 /* Hide TOC button when TOC is open — the × close button takes over */
 #tocPanel.open ~ #tocToggleBtn{display:none;}
@@ -1820,7 +1821,7 @@ body{line-height:1.75;}
     <button class="nav-action-btn" onclick="obRestart()" title="Tour">?</button>
   </div>
 </div>
-<button id="tocToggleBtn" onclick="toggleTOC()" title="Table of contents — all workspaces" aria-label="Toggle navigation contents">☰ TOC</button>
+<button id="tocToggleBtn" onclick="toggleTOC()" title="Table of contents — all workspaces" aria-label="Toggle navigation contents">☰</button>
 <div class="lite-mode-banner" id="liteModeBanner">⬜ LITE MODE &nbsp;·&nbsp;<span style="cursor:pointer;text-decoration:underline" onclick="setMode('full')">Switch to Full Mode</span></div>
   <!-- SESSION MANAGER -->
   <div class="session-bar">
@@ -16905,7 +16906,7 @@ function toggleTOC(){
   var opening=!p.classList.contains('open');
   p.classList.toggle('open');
   var btn=document.getElementById('tocToggleBtn');
-  if(btn)btn.textContent=opening?'× TOC':'☰ TOC';
+  if(btn)btn.textContent=opening?'×':'☰';
   if(opening){
     // Add outside-click listener (not capture, not once — manually managed)
     if(_tocOutsideListener)document.removeEventListener('click',_tocOutsideListener);
@@ -16916,7 +16917,7 @@ function toggleTOC(){
          !panel.contains(e.target)&&
          toggle&&!toggle.contains(e.target)){
         panel.classList.remove('open');
-        toggle.textContent='☰ TOC';
+        toggle.textContent='☰';
         document.removeEventListener('click',_tocOutsideListener);
         _tocOutsideListener=null;
       }
@@ -16931,7 +16932,7 @@ function closeTOC(){
   var p=document.getElementById('tocPanel');
   if(p)p.classList.remove('open');
   var btn=document.getElementById('tocToggleBtn');
-  if(btn)btn.textContent='☰ TOC';
+  if(btn)btn.textContent='☰';
   if(_tocOutsideListener){document.removeEventListener('click',_tocOutsideListener);_tocOutsideListener=null;}
 }
 
