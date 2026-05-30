@@ -50,13 +50,13 @@
     "dora_article_17": {
       "title": "DORA Article 17 — ICT-related incident management",
       "summary": "Requires financial entities to establish a sound ICT-related incident management process. Incident classification, notification, and escalation procedures must be documented and tested. Human oversight is required — autonomous incident closure without human confirmation is not compliant.",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32022R2554",
+      "url": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
       "validated": "2026-01-15"
     },
     "dora_article_18": {
       "title": "DORA Article 18 — Classification of ICT-related incidents",
       "summary": "Major ICT-related incidents must be reported to competent authority: initial notification within 4 hours of classification, intermediate report within 72 hours, final report within 1 month. Specific classification criteria in RTS — pending final publication.",
-      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32022R2554",
+      "url": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
       "validated": "2026-01-15",
       "note": "RTS under Article 18 pending final publication — thresholds indicative only"
     },
