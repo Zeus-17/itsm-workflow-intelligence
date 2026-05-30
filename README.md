@@ -134,6 +134,16 @@ This tool was designed and built as a demonstration of applied AI collaboration,
 
 ---
 
+
+## Related tools
+
+**[Release Management Intelligence Tool](https://zeus-17.github.io/release-management-intelligence/)** — also by James Holford.
+
+Release planning and governance from first planning to formal PIR sign-off. Quality gates, Go/No-Go wizard, Hypercare mode, risk register, deployment runbook, blackout calendar and golden thread traceability across 12 tools. ITIL 4, DORA Metrics and EU DORA aligned.
+
+The two tools work alongside each other. Use this tool for incidents and operational events; use the RM tool for release planning and governance. During Hypercare in the RM tool, a direct link opens this tool with the release context pre-filled in the incident observation field.
+
+---
 ## Licence
 
 © 2026 James Holford. Personal and organisational use permitted. Commercial redistribution or use as the basis of a paid service requires written permission. See [LICENSE](LICENSE) for full terms.
