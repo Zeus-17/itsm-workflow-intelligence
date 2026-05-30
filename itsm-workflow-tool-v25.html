@@ -12909,7 +12909,7 @@ var _origAutosavePU=autosave;
 var GLOSSARY_STANDARD = {
   itsm: [
     {a:'ITSM', t:'IT Service Management', d:'The practice of designing, delivering, managing and improving IT services to meet organisational needs. Covers incident, problem, change, request and other service management disciplines.'},
-    {a:'ITIL', t:'Information Technology Infrastructure Library', d:'A framework of best practices for IT service management. ITIL 4 (current version) introduced the Service Value System and 34 management practices.'},
+    {a:'ITIL', t:'Information Technology Infrastructure Library', d:'A framework of best practices for IT service management. ITIL 4 (current edition, AXELOS/PeopleCert) introduced the Service Value System and 34 management practices. Practice definitions in this tool are held in the updateable content layer — as ITIL evolves, guidance can update without requiring app changes. Check axelos.com for the latest edition status.'},
     {a:'CI', t:'Configuration Item', d:'Any component that needs to be managed to deliver an IT service. Examples: servers, software, services, databases, documents.', dupes:'CI also means Continuous Integration in DevOps/engineering contexts.'},
     {a:'CMDB', t:'Configuration Management Database', d:'A database storing information about configuration items and their relationships. In ServiceNow, the CMDB underpins the asset and topology view.'},
     {a:'SLA', t:'Service Level Agreement', d:'A formal agreement between a service provider and customer defining expected service levels — typically response time and resolution time targets.', dupes:'Note: your organisation may define SLA thresholds differently from ITIL defaults. Check your internal SLA schedule.'},
@@ -13563,9 +13563,9 @@ function setStandaloneCRType(type){
   });
   // ITIL note
   var notes={
-    standard:'<strong style="color:var(--green)">Standard Change (ITIL 4)</strong> — Pre-approved, low-risk, well-understood procedure. No CAB approval required. Must be pre-authorised by the Change Manager and documented in the standard change catalogue. Examples: routine patching to a known schedule, pre-approved certificate renewal, standard configuration backup.',
-    normal:'<strong style="color:var(--accent)">Normal Change (ITIL 4)</strong> — Requires formal assessment, scheduling and authorisation by the Change Advisory Board (CAB). Used for all planned changes that are not standard or emergency. CAB review ensures risk assessment, stakeholder awareness and implementation readiness. May be Fast-Track Normal for lower-risk items that do not need full CAB.',
-    emergency:'<strong style="color:var(--red)">Emergency Change (ITIL 4)</strong> — Must be implemented as quickly as possible. Typically to restore service after a major incident or prevent imminent significant impact. Reviewed by the Emergency CAB (ECAB), which is a smaller, faster group than the full CAB. Emergency changes carry higher post-implementation scrutiny and an enhanced PIR is mandatory.'
+    standard:'<strong style="color:var(--green)">Standard Change (ITIL 4 — current edition)</strong> — Pre-approved, low-risk, well-understood procedure. No CAB approval required. Must be pre-authorised by the Change Manager and documented in the standard change catalogue. Examples: routine patching to a known schedule, pre-approved certificate renewal, standard configuration backup.',
+    normal:'<strong style="color:var(--accent)">Normal Change (ITIL 4 — current edition)</strong> — Requires formal assessment, scheduling and authorisation by the Change Advisory Board (CAB). Used for all planned changes that are not standard or emergency. CAB review ensures risk assessment, stakeholder awareness and implementation readiness. May be Fast-Track Normal for lower-risk items that do not need full CAB.',
+    emergency:'<strong style="color:var(--red)">Emergency Change (ITIL 4 — current edition)</strong> — Must be implemented as quickly as possible. Typically to restore service after a major incident or prevent imminent significant impact. Reviewed by the Emergency CAB (ECAB), which is a smaller, faster group than the full CAB. Emergency changes carry higher post-implementation scrutiny and an enhanced PIR is mandatory.'
   };
   var noteEl=document.getElementById('crStandaloneItilNote');
   if(noteEl)noteEl.innerHTML=notes[type]||'';
