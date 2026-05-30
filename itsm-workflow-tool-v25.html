@@ -1650,13 +1650,14 @@ body{line-height:1.75;}
 .app-header-version{cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
 .app-header-version:hover{color:var(--text2);}
 
-/* P1: TOC panel — positioned below full header+nav area (calc(--nav-h + 44px) = 96px) */
+/* TOC panel — sits below header(z:500)+nav(z:499) so z:490 is correct; panel clears both */
 #tocPanel{position:fixed;top:calc(var(--nav-h) + 44px);left:0;z-index:490;background:var(--surface);
   border:1px solid var(--border);border-right-color:var(--border2);border-radius:0 8px 8px 0;
   min-width:210px;max-width:250px;box-shadow:4px 0 24px rgba(0,0,0,0.3);
   transform:translateX(calc(-100% - 1px));transition:transform 0.22s cubic-bezier(0.4,0,0.2,1);}
 #tocPanel.open{transform:translateX(0);}
-#tocToggleBtn{position:fixed;top:calc(var(--nav-h) + 44px + 10px);left:0;z-index:490;
+/* Toggle tab — start 20px below nav bottom edge to avoid any visual crowding */
+#tocToggleBtn{position:fixed;top:calc(var(--nav-h) + 44px + 20px);left:0;z-index:488;
   background:var(--accent);color:#fff;border:none;border-radius:0 6px 6px 0;
   padding:6px 5px 6px 4px;cursor:pointer;font-size:10px;writing-mode:vertical-rl;
   text-orientation:mixed;letter-spacing:0.05em;font-family:var(--mono);font-weight:600;
@@ -1695,22 +1696,37 @@ body{line-height:1.75;}
   margin-top:10px;display:block;text-align:right;background:none;border:none;font-family:var(--sans);}
 
 /* P3: Changelog modal */
-#changelogModal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.65);
+#changelogModal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.7);
   align-items:center;justify-content:center;}
 #changelogModal.show{display:flex;}
-.changelog-box{background:var(--surface);border:1px solid var(--border2);border-radius:12px;
-  padding:24px;max-width:540px;width:92%;max-height:82vh;overflow-y:auto;
+.changelog-box{background:var(--surface);border:1px solid var(--border2);border-radius:14px;
+  padding:26px;max-width:560px;width:92%;max-height:85vh;overflow-y:auto;
   box-shadow:0 16px 48px rgba(0,0,0,0.6);}
-.changelog-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;}
-.changelog-title{font-size:16px;font-weight:700;color:var(--text);}
+.changelog-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;}
+.changelog-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;
+  background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:4px;
+  font-size:11px;color:var(--accent);font-family:var(--mono);font-weight:600;margin-bottom:6px;}
+.changelog-title{font-size:17px;font-weight:700;color:var(--text);}
 .changelog-ver{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
-.changelog-close{background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1;flex-shrink:0;}
-.changelog-section{margin-bottom:14px;}
+.changelog-close{background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;line-height:1;flex-shrink:0;padding:0;}
+.changelog-close:hover{color:var(--text);}
+/* Version blocks — one per release */
+.changelog-version-block{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border);}
+.changelog-version-block:last-child{border-bottom:none;margin-bottom:0;}
+.changelog-version-tag{display:inline-flex;align-items:center;gap:8px;margin-bottom:10px;}
+.changelog-ver-num{font-size:13px;font-weight:700;color:var(--text);font-family:var(--mono);}
+.changelog-ver-date{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.changelog-ver-current{font-size:10px;padding:1px 7px;border-radius:3px;
+  background:rgba(59,130,246,0.12);color:var(--accent);font-family:var(--mono);font-weight:600;}
+.changelog-section{margin-bottom:10px;}
 .changelog-section-title{font-size:10px;font-weight:600;text-transform:uppercase;
-  letter-spacing:0.1em;color:var(--accent);font-family:var(--mono);margin-bottom:7px;}
+  letter-spacing:0.1em;color:var(--accent);font-family:var(--mono);margin-bottom:6px;}
 .changelog-item{font-size:12px;color:var(--text2);padding:3px 0 3px 14px;
-  position:relative;line-height:1.55;}
+  position:relative;line-height:1.6;}
 .changelog-item::before{content:'→';position:absolute;left:0;color:var(--text3);}
+/* Clickable version in header */
+.app-header-version{cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.app-header-version:hover{color:var(--text2)!important;}
 
 /* P4: Privacy modal */
 #privacyModal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.65);
@@ -16848,8 +16864,29 @@ function toggleSanitise(active){
 function toggleChangelogModal(){
   var m=document.getElementById('changelogModal');
   if(!m)return;
-  m.style.display=m.style.display==='flex'?'none':'flex';
-  if(m.style.display==='flex')m.onclick=function(e){if(e.target===m)m.style.display='none';};
+  var isOpen=m.classList.contains('show');
+  if(isOpen){m.classList.remove('show');}
+  else{m.classList.add('show');m.onclick=function(e){if(e.target===m)m.classList.remove('show');};}
+}
+
+// ── ITSM VERSION TRACKING — auto-show What's New on first load of each version ──
+var ITSM_TOOL_VERSION='v25';
+var ITSM_VERSION_SEEN_KEY='itsm_version_seen_v1';
+
+function checkITSMVersionAndShowChangelog(){
+  try{
+    var seen=localStorage.getItem(ITSM_VERSION_SEEN_KEY);
+    if(seen===ITSM_TOOL_VERSION)return;
+    var isNewInstall=!seen;
+    if(!isNewInstall){
+      // Returning user seeing a new version — show changelog after short delay
+      setTimeout(function(){
+        var m=document.getElementById('changelogModal');
+        if(m){m.classList.add('show');m.onclick=function(e){if(e.target===m)m.classList.remove('show');};}
+      },900);
+    }
+    localStorage.setItem(ITSM_VERSION_SEEN_KEY,ITSM_TOOL_VERSION);
+  }catch(e){}
 }
 
 // P4: Privacy modal toggle
@@ -16950,6 +16987,7 @@ buildRCASteps();
 buildPreChecks();
 if(typeof initNavigation==='function')initNavigation();
 if(typeof showWelcomeIfFirstTime==='function')showWelcomeIfFirstTime();
+if(typeof checkITSMVersionAndShowChangelog==='function')checkITSMVersionAndShowChangelog();
 document.getElementById('mi_declared').value=new Date().toISOString().slice(0,16);
 loadActions();
 loadCustomFields();
@@ -17405,46 +17443,86 @@ window.addEventListener('load',()=>{
 </div>
 
 <!-- CHANGELOG MODAL -->
-<div id="changelogModal" role="dialog" aria-label="What's new in v25" aria-modal="true">
+<div id="changelogModal" role="dialog" aria-label="What's new" aria-modal="true">
   <div class="changelog-box">
     <div class="changelog-hdr">
       <div>
-        <div class="changelog-title">What's new in v25</div>
-        <div class="changelog-ver">ITSM Workflow Intelligence Tool — May 2026</div>
+        <div class="changelog-badge">✨ What's New</div>
+        <div class="changelog-title">ITSM Workflow Intelligence</div>
+        <div class="changelog-ver">Version history — filename stays stable, features grow</div>
       </div>
-      <button class="changelog-close" onclick="toggleChangelogModal()" aria-label="Close changelog">×</button>
+      <button class="changelog-close" onclick="toggleChangelogModal()" aria-label="Close">×</button>
     </div>
-    <div class="changelog-section">
-      <div class="changelog-section-title">Operational features</div>
-      <div class="changelog-item">Live SLA countdown — mm:ss display on Hold SLA button with browser notification at ≤10 min remaining</div>
-      <div class="changelog-item">Shift handover pack — one-click structured handover summary in Stage 7</div>
-      <div class="changelog-item">Copy All Outputs — single button to copy all 7 outputs as a structured document</div>
-      <div class="changelog-item">Severity override auto-log — timeline entry whenever you override the score-suggested severity</div>
+
+    <!-- v25 — Current -->
+    <div class="changelog-version-block">
+      <div class="changelog-version-tag">
+        <span class="changelog-ver-num">v25</span>
+        <span class="changelog-ver-date">May 2026</span>
+        <span class="changelog-ver-current">Current</span>
+      </div>
+      <div class="changelog-section">
+        <div class="changelog-section-title">Operational features</div>
+        <div class="changelog-item">Live SLA countdown — mm:ss display on Hold SLA button with browser notification at ≤10 min remaining</div>
+        <div class="changelog-item">Shift handover pack — one-click structured handover summary in Stage 7</div>
+        <div class="changelog-item">Copy All Outputs — single button to copy all 7 outputs as a structured document</div>
+        <div class="changelog-item">Severity override auto-log — timeline entry whenever you override the score-suggested severity</div>
+        <div class="changelog-item">ITIL 4 (current edition) framework readiness — practice definitions held in updateable content layer; as ITIL evolves, guidance updates automatically</div>
+      </div>
+      <div class="changelog-section">
+        <div class="changelog-section-title">Navigation &amp; accessibility</div>
+        <div class="changelog-item">Table of Contents panel — collapsible, lists all 12 workspaces for one-click navigation</div>
+        <div class="changelog-item">Accessibility panel — text scaling 85–145%, high contrast, dark/light mode persisted</div>
+        <div class="changelog-item">Known Issues badge — persistent red dot count on KI nav button</div>
+        <div class="changelog-item">Offline detection banner — fixed bottom banner when network unavailable</div>
+        <div class="changelog-item">Mobile layout — single-column reflow below 600px; 44px touch targets</div>
+        <div class="changelog-item">Version tracking — What's New auto-shows on first load of each version; re-openable via v25 badge</div>
+      </div>
+      <div class="changelog-section">
+        <div class="changelog-section-title">Visual &amp; regulatory</div>
+        <div class="changelog-item">Output field highlighting — accent-coloured [field_name] labels in all generated outputs</div>
+        <div class="changelog-item">CSS bar charts in Reporting — period history visualisation</div>
+        <div class="changelog-item">Regulatory guidance fields — FCA / PRA / DORA / GDPR fields shown only when toggled</div>
+        <div class="changelog-item">Content update mechanic — auto-fetches latest regulatory guidance from content layer on load</div>
+      </div>
     </div>
-    <div class="changelog-section">
-      <div class="changelog-section-title">Navigation and accessibility</div>
-      <div class="changelog-item">Table of Contents panel — collapsible, lists all 12 workspaces for one-click navigation</div>
-      <div class="changelog-item">Accessibility panel fix — text scaling now applies to the entire page via root font-size</div>
-      <div class="changelog-item">Known Issues badge — persistent red dot count on KI nav button</div>
-      <div class="changelog-item">Severity badge in nav — coloured dot next to stage name</div>
-      <div class="changelog-item">Tab title — updates with severity when incident is active</div>
-      <div class="changelog-item">Offline detection banner — fixed bottom banner when network is unavailable</div>
-      <div class="changelog-item">Mobile layout — single-column reflow below 600px</div>
+
+    <!-- Earlier versions — brief summary -->
+    <div class="changelog-version-block">
+      <div class="changelog-version-tag">
+        <span class="changelog-ver-num">v24</span>
+        <span class="changelog-ver-date">2026</span>
+      </div>
+      <div class="changelog-section">
+        <div class="changelog-section-title">Key additions</div>
+        <div class="changelog-item">Dark/light mode toggle (Alt+T) — persisted preference</div>
+        <div class="changelog-item">Known Issues register — persistent across sessions</div>
+        <div class="changelog-item">SLA pause / hold mechanic with reason logging</div>
+        <div class="changelog-item">Field label overrides — rename any field to match your org's terminology</div>
+        <div class="changelog-item">Reporting — 35-check pattern engine, period history, MTBF dashboard</div>
+      </div>
     </div>
-    <div class="changelog-section">
-      <div class="changelog-section-title">Visual improvements</div>
-      <div class="changelog-item">Output field highlighting — accent-coloured [field_name] labels in all generated outputs</div>
-      <div class="changelog-item">CSS bar charts in Reporting — period history visualisation</div>
-      <div class="changelog-item">Skeleton loading shimmer on reporting first render</div>
-      <div class="changelog-item">Increased line-height and form group spacing for readability under pressure</div>
-      <div class="changelog-item">Output provenance line — every generated record includes tool attribution for audit traceability</div>
+
+    <div class="changelog-version-block">
+      <div class="changelog-version-tag">
+        <span class="changelog-ver-num">v23 and earlier</span>
+        <span class="changelog-ver-date">2025–2026</span>
+      </div>
+      <div class="changelog-section">
+        <div class="changelog-section-title">Foundation</div>
+        <div class="changelog-item">Core 7-stage incident workflow — triage, classification, major incident, outputs, retrospective</div>
+        <div class="changelog-item">P1 Fast Track — five fields, bridge pack in under 90 seconds</div>
+        <div class="changelog-item">Standalone Change Request — Standard, Normal, Emergency with risk scoring and CAB support</div>
+        <div class="changelog-item">Integration Hub — JS API, URL parameters, webhook, field mapping, schema reference</div>
+        <div class="changelog-item">Glossary — 130+ terms across ITSM, SRE, regulatory, ServiceNow, Jira, Grafana</div>
+        <div class="changelog-item">PWA — installable, offline-capable, service worker cache management</div>
+      </div>
     </div>
-    <div class="changelog-section">
-      <div class="changelog-section-title">Progressive disclosure</div>
-      <div class="changelog-item">Regulatory guidance fields hidden by default — FCA / PRA / DORA / GDPR fields shown only when toggled</div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">Filename stays stable: <code style="font-family:var(--mono);background:var(--surface2);padding:1px 5px;border-radius:3px;">itsm-workflow-tool-v25.html</code></div>
+      <button class="btn btn-primary btn-sm" onclick="toggleChangelogModal()" style="font-size:12px;padding:6px 14px;">Got it</button>
     </div>
-    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);">
-      <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">v25 · <a href="https://zeus-17.github.io/itsm-workflow-intelligence/" target="_blank" rel="noopener" style="color:var(--text3)">zeus-17.github.io/itsm-workflow-intelligence</a></div>
     </div>
   </div>
 </div>
