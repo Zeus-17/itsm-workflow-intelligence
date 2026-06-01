@@ -21,7 +21,7 @@ on:
     # Every Monday at 08:00 UTC
     - cron: '0 8 * * 1'
   workflow_dispatch:
-    # Allow manual trigger from GitHub Actions tab — no other action needed
+    # Allow manual trigger from GitHub Actions tab
 
 jobs:
   check-regulatory-sources:
@@ -39,16 +39,19 @@ jobs:
           node-version: '20'
 
       - name: Check regulatory sources and update content
-        id: check
         run: |
           node - <<'EOF'
+          // FIX: wrapped in async IIFE — top-level await is not valid in CommonJS (node -)
           const fs = require('fs');
           const https = require('https');
 
-          // Helper: fetch a URL and return body as string
-          function fetch(url) {
+          function httpGet(url) {
             return new Promise((resolve, reject) => {
               https.get(url, { headers: { 'User-Agent': 'itsm-tool-monitor/1.0' } }, (res) => {
+                // Follow redirects (301/302)
+                if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+                  return httpGet(res.headers.location).then(resolve).catch(reject);
+                }
                 let data = '';
                 res.on('data', chunk => data += chunk);
                 res.on('end', () => resolve(data));
@@ -56,7 +59,6 @@ jobs:
             });
           }
 
-          // Sources to monitor — checking for recent publications
           const sources = [
             {
               id: 'fca_handbook',
@@ -68,11 +70,12 @@ jobs:
             },
             {
               id: 'eba_dora',
-              name: 'EBA — DORA',
-              url: 'https://www.eba.europa.eu/rss/news',
+              name: 'EBA publications',
+              // EBA Atom/RSS feed for regulatory news
+              url: 'https://www.eba.europa.eu/feed/news',
               keywords: ['DORA', 'Digital Operational Resilience', 'ICT', 'incident reporting', 'RTS'],
-              authority: 'https://www.eba.europa.eu/regulation-and-policy/dora',
-              authorityName: 'EBA DORA publications'
+              authority: 'https://eur-lex.europa.eu/eli/reg/2022/2554/oj',
+              authorityName: 'EU DORA (Digital Operational Resilience Act) — EUR-Lex'
             },
             {
               id: 'ico_news',
@@ -84,115 +87,109 @@ jobs:
             }
           ];
 
-          // Load existing content file
-          const contentPath = './itsm-content-v25.json';
-          let content = {};
-          try {
-            content = JSON.parse(fs.readFileSync(contentPath, 'utf8'));
-          } catch(e) {
-            console.error('Could not read content file:', e.message);
-            process.exit(1);
-          }
-
-          const today = new Date().toISOString().slice(0, 10);
-          const lastChecked = content.meta && content.meta.last_checked_at;
-          let foundNotices = [];
-          let checkErrors = [];
-
-          console.log(`Checking ${sources.length} regulatory sources...`);
-
-          // Check each source
-          for (const source of sources) {
+          (async () => {
+            const contentPath = './itsm-content-v25.json';
+            let content = {};
             try {
-              console.log(`  Checking: ${source.name} (${source.url})`);
-              const body = await fetch(source.url);
-
-              // Simple keyword check in RSS content published in the last 14 days
-              const twoWeeksAgo = new Date();
-              twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-
-              // Extract items from RSS
-              const itemMatches = body.match(/<item[\s\S]*?<\/item>/gi) || [];
-              let relevant = [];
-
-              for (const item of itemMatches) {
-                // Check pubDate
-                const dateMatch = item.match(/<pubDate>(.*?)<\/pubDate>/i);
-                if (dateMatch) {
-                  const pubDate = new Date(dateMatch[1]);
-                  if (pubDate < twoWeeksAgo) continue; // too old
-                }
-                // Check keywords
-                const titleMatch = item.match(/<title[^>]*>(.*?)<\/title>/i);
-                const descMatch = item.match(/<description[^>]*>([\s\S]*?)<\/description>/i);
-                const text = ((titleMatch && titleMatch[1]) + ' ' + (descMatch && descMatch[1])).toLowerCase();
-
-                if (source.keywords.some(kw => text.includes(kw.toLowerCase()))) {
-                  const link = (item.match(/<link>(.*?)<\/link>/i) || [])[1] || source.authority;
-                  relevant.push({
-                    title: titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : 'New publication',
-                    link: link.trim()
-                  });
-                }
-              }
-
-              if (relevant.length > 0) {
-                console.log(`  → ${relevant.length} relevant publication(s) found at ${source.name}`);
-                foundNotices.push({
-                  id: `${source.id}_${today.replace(/-/g,'')}`,
-                  type: 'info',
-                  title: `${source.name} — new publication detected`,
-                  text: `${relevant[0].title}. Verify any changes relevant to your incident management process.`,
-                  authority: source.authority,
-                  authorityName: source.authorityName,
-                  detected: today,
-                  applies_to: [source.id],
-                  expires: (() => {
-                    const d = new Date();
-                    d.setDate(d.getDate() + 90); // notice expires in 90 days
-                    return d.toISOString().slice(0, 10);
-                  })()
-                });
-              } else {
-                console.log(`  → No relevant publications in last 14 days`);
-              }
+              content = JSON.parse(fs.readFileSync(contentPath, 'utf8'));
             } catch(e) {
-              console.log(`  → Could not reach ${source.name}: ${e.message}`);
-              checkErrors.push(source.name);
+              console.error('Could not read content file:', e.message);
+              process.exit(1);
             }
-          }
 
-          // Update content file
-          content.meta = content.meta || {};
-          content.meta.last_checked_at = today;
+            const today = new Date().toISOString().slice(0, 10);
+            let foundNotices = [];
+            let checkErrors = [];
 
-          // Merge new notices (avoid duplicates by source id prefix)
-          const existing = content.content_warnings || [];
-          const existingIds = new Set(existing.map(w => w.id));
+            console.log(`Checking ${sources.length} regulatory sources...`);
 
-          for (const notice of foundNotices) {
-            // Remove older notices for same source
-            const sourcePrefix = notice.id.split('_').slice(0, -1).join('_');
-            const filtered = existing.filter(w => !w.id.startsWith(sourcePrefix));
-            filtered.push(notice);
-            content.content_warnings = filtered;
-          }
+            for (const source of sources) {
+              try {
+                console.log(`  Checking: ${source.name} (${source.url})`);
+                const body = await httpGet(source.url);
 
-          if (foundNotices.length === 0 && checkErrors.length === 0) {
-            // All clear — keep existing warnings but note check date
-            content.meta.last_check_result = 'clear';
-            console.log('All sources checked — no new relevant publications.');
-          }
+                const twoWeeksAgo = new Date();
+                twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
-          fs.writeFileSync(contentPath, JSON.stringify(content, null, 2) + '\n');
-          console.log(`Content file updated. Found: ${foundNotices.length} notices, Errors: ${checkErrors.length}`);
+                const itemMatches = body.match(/<(item|entry)[\s\S]*?<\/(item|entry)>/gi) || [];
+                let relevant = [];
 
-          // Signal to next step whether a commit is needed
-          const changed = foundNotices.length > 0 || true; // always commit to update last_checked_at
-          require('fs').writeFileSync('/tmp/check_result.txt', changed ? 'changed' : 'unchanged');
+                for (const item of itemMatches) {
+                  const dateMatch = item.match(/<(pubDate|updated|published)>(.*?)<\/(pubDate|updated|published)>/i);
+                  if (dateMatch) {
+                    const pubDate = new Date(dateMatch[2]);
+                    if (!isNaN(pubDate) && pubDate < twoWeeksAgo) continue;
+                  }
+                  const titleMatch = item.match(/<title[^>]*>(.*?)<\/title>/i);
+                  const descMatch = item.match(/<(description|summary|content)[^>]*>([\s\S]*?)<\/(description|summary|content)>/i);
+                  const text = ((titleMatch && titleMatch[1]) + ' ' + (descMatch && descMatch[2])).toLowerCase();
+
+                  if (source.keywords.some(kw => text.includes(kw.toLowerCase()))) {
+                    const link = (item.match(/<link>(.*?)<\/link>/i) || item.match(/<link[^>]+href="([^"]+)"/i) || [])[1] || source.authority;
+                    relevant.push({
+                      title: titleMatch ? titleMatch[1].replace(/<!\[CDATA\[|\]\]>|<[^>]+>/g, '').trim() : 'New publication',
+                      link: typeof link === 'string' ? link.trim() : source.authority
+                    });
+                  }
+                }
+
+                if (relevant.length > 0) {
+                  console.log(`  -> ${relevant.length} relevant publication(s) found at ${source.name}`);
+                  foundNotices.push({
+                    id: `${source.id}_${today.replace(/-/g,'')}`,
+                    type: 'info',
+                    title: `${source.name} — new publication detected`,
+                    text: `${relevant[0].title}. Verify any changes relevant to your incident management process at the source below.`,
+                    authority: source.authority,
+                    authorityName: source.authorityName,
+                    detected: today,
+                    applies_to: [source.id],
+                    expires: (() => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + 90);
+                      return d.toISOString().slice(0, 10);
+                    })()
+                  });
+                } else {
+                  console.log(`  -> No relevant publications in last 14 days`);
+                }
+              } catch(e) {
+                // Non-fatal: log the error but continue checking other sources
+                console.log(`  -> Could not reach ${source.name}: ${e.message}`);
+                checkErrors.push(source.name);
+              }
+            }
+
+            // Update content file
+            content.meta = content.meta || {};
+            content.meta.last_checked_at = today;
+            content.meta.last_check_errors = checkErrors.length > 0 ? checkErrors : undefined;
+
+            const existing = content.content_warnings || [];
+            let updated = [...existing];
+
+            for (const notice of foundNotices) {
+              const sourcePrefix = notice.id.split('_').slice(0, -1).join('_');
+              updated = updated.filter(w => !w.id || !w.id.startsWith(sourcePrefix));
+              updated.push(notice);
+            }
+            content.content_warnings = updated;
+
+            if (foundNotices.length === 0) {
+              content.meta.last_check_result = checkErrors.length > 0 ? 'partial_error' : 'clear';
+              console.log(`Check complete. Clear: ${checkErrors.length === 0}. Errors: ${checkErrors.join(', ') || 'none'}`);
+            }
+
+            fs.writeFileSync(contentPath, JSON.stringify(content, null, 2) + '\n');
+            console.log(`Content file updated. Notices found: ${foundNotices.length}, Source errors: ${checkErrors.length}`);
+
+          })().catch(e => {
+            console.error('Monitor failed:', e.message);
+            process.exit(1);
+          });
           EOF
 
-      - name: Commit updated content if changed
+      - name: Commit updated content
         run: |
           git config user.name "ITSM Content Monitor"
           git config user.email "actions@github.com"
@@ -203,8 +200,8 @@ jobs:
             git commit -m "chore: regulatory content monitor — $(date +%Y-%m-%d)
 
           Automated weekly check of FCA, EBA/DORA and ICO publications.
-          Any new notices are added to itsm-content-v25.json for display in the tool.
-          No regulatory guidance text was modified — notices point users to verify at source.
+          Any new notices added to itsm-content-v25.json for display in the tool.
+          Notices point users to verify at source — no guidance text modified.
 
           [skip ci]"
             git push
