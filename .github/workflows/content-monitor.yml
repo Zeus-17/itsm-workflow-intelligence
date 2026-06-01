@@ -1,209 +1,282 @@
-# ITSM Workflow Intelligence Tool — Autonomous Regulatory Content Monitor
-# -------------------------------------------------------------------------
-# Runs every Monday at 08:00 UTC. Checks authoritative regulatory sources
-# for new publications. If changes are detected, automatically updates
-# itsm-content-v25.json with a notice pointing users to the source.
+# ═══════════════════════════════════════════════════════════════════
+# REGULATORY CONTENT MONITOR
+# James Holford — Intelligence Tools Suite
+# ───────────────────────────────────────────────────────────────────
+# Runs every Monday at 08:00 UTC. No human intervention required.
+# Updates this tool's content JSON automatically when relevant
+# regulatory publications are detected from confirmed official sources.
 #
-# No human intervention required. No API keys needed.
-# Notices are informational — they point users to verify at source.
-# The tool fetches this file on load and surfaces any active notices.
+# CONFIRMED SOURCES (verified June 2026):
+#   EBA RSS    — eba.europa.eu/news-press/news/rss.xml
+#                Official EBA published feed. EU DORA and operational
+#                resilience publications. Confirmed working.
 #
-# Sources monitored:
-#   - FCA Handbook updates  (fca.org.uk)
-#   - EBA/DORA publications (eba.europa.eu)
-#   - ICO news              (ico.org.uk)
-#   - AXELOS/ITIL releases  (axelos.com)
+#   GOV.UK API — www.gov.uk/api/search.json
+#                Official UK Government Search API (GDS). Free, no auth.
+#                Used for FCA and ICO publications indexed on GOV.UK.
+#                Docs: docs.publishing.service.gov.uk/repos/search-api
+#
+# TO ADD A NEW TOOL:
+#   Copy this file to the new tool's repo at .github/workflows/
+#   Change CONTENT_FILE to the new tool's content JSON filename.
+#   That is all.
+#
+# DESIGN PRINCIPLE:
+#   Each tool's repo contains its own copy of this workflow.
+#   Each workflow updates only its own content file using the built-in
+#   GITHUB_TOKEN — no cross-repo dependencies, no stored secrets needed.
+#   Tools update independently. Users benefit whether they have one tool
+#   or several.
+# ═══════════════════════════════════════════════════════════════════
 
 name: Regulatory Content Monitor
 
 on:
   schedule:
-    # Every Monday at 08:00 UTC
     - cron: '0 8 * * 1'
   workflow_dispatch:
-    # Allow manual trigger from GitHub Actions tab
+
+env:
+  # ── CHANGE THIS LINE ONLY when deploying to a new tool repo ──
+  CONTENT_FILE: itsm-content-v25.json
+  # ─────────────────────────────────────────────────────────────
 
 jobs:
-  check-regulatory-sources:
+  monitor:
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Check regulatory sources and update content
+      - name: Check regulatory sources
         run: |
-          node - <<'EOF'
-          // FIX: wrapped in async IIFE — top-level await is not valid in CommonJS (node -)
-          const fs = require('fs');
+          node - <<'SCRIPT'
+          const fs   = require('fs');
           const https = require('https');
 
-          function httpGet(url) {
+          // ── HTTP helper with redirect following ──────────────────
+          function get(url, redirects = 5) {
             return new Promise((resolve, reject) => {
-              https.get(url, { headers: { 'User-Agent': 'itsm-tool-monitor/1.0' } }, (res) => {
-                // Follow redirects (301/302)
+              if (redirects === 0) return reject(new Error('Too many redirects'));
+              https.get(url, { headers: { 'User-Agent': 'regulatory-monitor/2.0 (open-source tool)' } }, res => {
                 if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-                  return httpGet(res.headers.location).then(resolve).catch(reject);
+                  res.resume();
+                  return get(res.headers.location, redirects - 1).then(resolve).catch(reject);
                 }
-                let data = '';
-                res.on('data', chunk => data += chunk);
-                res.on('end', () => resolve(data));
+                if (res.statusCode !== 200) {
+                  res.resume();
+                  return reject(new Error(`HTTP ${res.statusCode}`));
+                }
+                const chunks = [];
+                res.on('data', c => chunks.push(c));
+                res.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
               }).on('error', reject);
             });
           }
 
-          const sources = [
+          // ── Date helpers ─────────────────────────────────────────
+          const today      = new Date().toISOString().slice(0, 10);
+          const cutoff     = new Date();
+          cutoff.setDate(cutoff.getDate() - 14);
+
+          function isRecent(dateStr) {
+            if (!dateStr) return true; // no date = include
+            const d = new Date(dateStr);
+            return !isNaN(d) && d >= cutoff;
+          }
+
+          // ── Confirmed official sources ───────────────────────────
+          const SOURCES = [
             {
-              id: 'fca_handbook',
-              name: 'FCA Handbook',
-              url: 'https://www.handbook.fca.org.uk/updates/rss.xml',
-              keywords: ['SUP 15', 'operational resilience', 'operational incident', 'notification'],
-              authority: 'https://www.handbook.fca.org.uk/handbook/SUP/15/',
-              authorityName: 'FCA Handbook SUP 15'
+              id:   'eba_dora',
+              name: 'EBA — EU DORA and operational resilience',
+              type: 'rss',
+              url:  'https://www.eba.europa.eu/news-press/news/rss.xml',
+              keywords: [
+                'dora', 'digital operational resilience', 'ict',
+                'incident reporting', 'rts', 'its', 'technical standard',
+                'third-party', 'operational resilience'
+              ],
+              authority:     'https://eur-lex.europa.eu/eli/reg/2022/2554/oj',
+              authorityName: 'EU DORA — Digital Operational Resilience Act (EUR-Lex Official Journal)',
+              appliesto:     'eu_dora'
             },
             {
-              id: 'eba_dora',
-              name: 'EBA publications',
-              // EBA Atom/RSS feed for regulatory news
-              url: 'https://www.eba.europa.eu/feed/news',
-              keywords: ['DORA', 'Digital Operational Resilience', 'ICT', 'incident reporting', 'RTS'],
-              authority: 'https://eur-lex.europa.eu/eli/reg/2022/2554/oj',
-              authorityName: 'EU DORA (Digital Operational Resilience Act) — EUR-Lex'
+              id:   'fca_ops',
+              name: 'FCA — operational resilience and incident notification',
+              type: 'govuk',
+              url:  'https://www.gov.uk/api/search.json' +
+                    '?filter_organisations=financial-conduct-authority' +
+                    '&q=operational+resilience+incident+notification+SUP' +
+                    '&order=newest&count=10',
+              keywords: [
+                'operational resilience', 'sup 15', 'notification',
+                'incident', 'important business service', 'dora',
+                'critical third', 'outsourcing'
+              ],
+              authority:     'https://www.fca.org.uk/firms/operational-resilience',
+              authorityName: 'FCA — Operational Resilience guidance',
+              appliesto:     'fca'
             },
             {
-              id: 'ico_news',
-              name: 'ICO',
-              url: 'https://ico.org.uk/about-the-ico/news-and-events/news-and-blogs/rss/',
-              keywords: ['breach', 'GDPR', 'notification', 'data protection', 'reporting'],
-              authority: 'https://ico.org.uk/for-organisations/report-a-breach/',
-              authorityName: 'ICO breach reporting guidance'
+              id:   'ico_gdpr',
+              name: 'ICO — data breach notification and GDPR',
+              type: 'govuk',
+              url:  'https://www.gov.uk/api/search.json' +
+                    '?filter_organisations=information-commissioners-office' +
+                    '&q=breach+notification+GDPR+data+protection+reporting' +
+                    '&order=newest&count=10',
+              keywords: [
+                'breach', 'notification', 'gdpr', 'data protection',
+                'personal data', '72 hour', 'ico guidance', 'reporting'
+              ],
+              authority:     'https://ico.org.uk/for-organisations/report-a-breach/',
+              authorityName: 'ICO — Report a personal data breach',
+              appliesto:     'ico'
             }
           ];
 
+          // ── Parse RSS ─────────────────────────────────────────────
+          function parseRSS(body, keywords) {
+            const items = body.match(/<(item|entry)[\s\S]*?<\/(item|entry)>/gi) || [];
+            const found = [];
+            for (const item of items) {
+              const dateM  = item.match(/<(pubDate|updated|published)>(.*?)<\/(pubDate|updated|published)>/i);
+              const dateStr = dateM ? dateM[2] : null;
+              if (!isRecent(dateStr)) continue;
+              const titleM = item.match(/<title[^>]*>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?<\/title>/i);
+              const descM  = item.match(/<(description|summary)[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/(description|summary)>/i);
+              const text   = [titleM?.[1] || '', descM?.[2] || '']
+                              .join(' ').replace(/<[^>]+>/g, '').toLowerCase();
+              if (!keywords.some(kw => text.includes(kw))) continue;
+              const linkM  = item.match(/<link>(.*?)<\/link>/i) || item.match(/<link[^>]+href="([^"]+)"/i);
+              found.push({
+                title: (titleM?.[1] || 'New publication').replace(/<!\[CDATA\[|\]\]>|<[^>]+>/g, '').trim(),
+                link:  linkM?.[1]?.trim() || ''
+              });
+            }
+            return found;
+          }
+
+          // ── Parse GOV.UK API JSON ─────────────────────────────────
+          function parseGovUK(body, keywords) {
+            let data;
+            try { data = JSON.parse(body); } catch(e) { return []; }
+            const results = data.results || [];
+            const found   = [];
+            for (const r of results) {
+              if (!isRecent(r.public_timestamp)) continue;
+              const text = [r.title || '', r.description || ''].join(' ').toLowerCase();
+              if (!keywords.some(kw => text.includes(kw))) continue;
+              found.push({
+                title: r.title || 'New publication',
+                link:  r.link ? 'https://www.gov.uk' + r.link : ''
+              });
+            }
+            return found;
+          }
+
+          // ── Main ──────────────────────────────────────────────────
           (async () => {
-            const contentPath = './itsm-content-v25.json';
+            const contentFile = process.env.CONTENT_FILE || 'content.json';
             let content = {};
             try {
-              content = JSON.parse(fs.readFileSync(contentPath, 'utf8'));
+              content = JSON.parse(fs.readFileSync(contentFile, 'utf8'));
             } catch(e) {
-              console.error('Could not read content file:', e.message);
+              console.error(`Cannot read ${contentFile}:`, e.message);
               process.exit(1);
             }
 
-            const today = new Date().toISOString().slice(0, 10);
-            let foundNotices = [];
-            let checkErrors = [];
+            const notices = [];
+            const errors  = [];
 
-            console.log(`Checking ${sources.length} regulatory sources...`);
-
-            for (const source of sources) {
+            for (const src of SOURCES) {
               try {
-                console.log(`  Checking: ${source.name} (${source.url})`);
-                const body = await httpGet(source.url);
+                console.log(`Checking: ${src.name}`);
+                const body  = await get(src.url);
+                const found = src.type === 'rss'
+                  ? parseRSS(body, src.keywords)
+                  : parseGovUK(body, src.keywords);
 
-                const twoWeeksAgo = new Date();
-                twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+                console.log(`  Items parsed. Relevant in last 14 days: ${found.length}`);
 
-                const itemMatches = body.match(/<(item|entry)[\s\S]*?<\/(item|entry)>/gi) || [];
-                let relevant = [];
-
-                for (const item of itemMatches) {
-                  const dateMatch = item.match(/<(pubDate|updated|published)>(.*?)<\/(pubDate|updated|published)>/i);
-                  if (dateMatch) {
-                    const pubDate = new Date(dateMatch[2]);
-                    if (!isNaN(pubDate) && pubDate < twoWeeksAgo) continue;
-                  }
-                  const titleMatch = item.match(/<title[^>]*>(.*?)<\/title>/i);
-                  const descMatch = item.match(/<(description|summary|content)[^>]*>([\s\S]*?)<\/(description|summary|content)>/i);
-                  const text = ((titleMatch && titleMatch[1]) + ' ' + (descMatch && descMatch[2])).toLowerCase();
-
-                  if (source.keywords.some(kw => text.includes(kw.toLowerCase()))) {
-                    const link = (item.match(/<link>(.*?)<\/link>/i) || item.match(/<link[^>]+href="([^"]+)"/i) || [])[1] || source.authority;
-                    relevant.push({
-                      title: titleMatch ? titleMatch[1].replace(/<!\[CDATA\[|\]\]>|<[^>]+>/g, '').trim() : 'New publication',
-                      link: typeof link === 'string' ? link.trim() : source.authority
-                    });
-                  }
-                }
-
-                if (relevant.length > 0) {
-                  console.log(`  -> ${relevant.length} relevant publication(s) found at ${source.name}`);
-                  foundNotices.push({
-                    id: `${source.id}_${today.replace(/-/g,'')}`,
-                    type: 'info',
-                    title: `${source.name} — new publication detected`,
-                    text: `${relevant[0].title}. Verify any changes relevant to your incident management process at the source below.`,
-                    authority: source.authority,
-                    authorityName: source.authorityName,
-                    detected: today,
-                    applies_to: [source.id],
-                    expires: (() => {
-                      const d = new Date();
-                      d.setDate(d.getDate() + 90);
-                      return d.toISOString().slice(0, 10);
-                    })()
+                if (found.length > 0) {
+                  found.slice(0, 2).forEach(f => console.log(`  > ${f.title}`));
+                  const expire = new Date();
+                  expire.setDate(expire.getDate() + 90);
+                  notices.push({
+                    id:            `${src.id}_${today.replace(/-/g, '')}`,
+                    type:          'info',
+                    title:         `${src.name} — new publication detected`,
+                    text:          `${found[0].title}. Review for relevance to your ` +
+                                   `${src.appliesto === 'eu_dora' ? 'EU DORA' : src.appliesto.toUpperCase()} ` +
+                                   `obligations. Always verify at the authoritative source.`,
+                    authority:     src.authority,
+                    authorityName: src.authorityName,
+                    detected:      today,
+                    applies_to:    [src.appliesto],
+                    expires:       expire.toISOString().slice(0, 10)
                   });
-                } else {
-                  console.log(`  -> No relevant publications in last 14 days`);
                 }
               } catch(e) {
-                // Non-fatal: log the error but continue checking other sources
-                console.log(`  -> Could not reach ${source.name}: ${e.message}`);
-                checkErrors.push(source.name);
+                // Non-fatal: log and continue — one broken source should not fail the job
+                console.warn(`  Source error (${src.name}): ${e.message}`);
+                errors.push(`${src.id}: ${e.message}`);
               }
             }
 
-            // Update content file
+            // Update meta
             content.meta = content.meta || {};
-            content.meta.last_checked_at = today;
-            content.meta.last_check_errors = checkErrors.length > 0 ? checkErrors : undefined;
+            content.meta.last_checked_at    = today;
+            content.meta.last_check_result  = errors.length === SOURCES.length
+              ? 'all_sources_failed'
+              : notices.length > 0 ? 'notices_found' : 'clear';
+            if (errors.length)   content.meta.last_check_errors = errors;
+            else                 delete content.meta.last_check_errors;
 
-            const existing = content.content_warnings || [];
-            let updated = [...existing];
-
-            for (const notice of foundNotices) {
-              const sourcePrefix = notice.id.split('_').slice(0, -1).join('_');
-              updated = updated.filter(w => !w.id || !w.id.startsWith(sourcePrefix));
-              updated.push(notice);
+            // Merge notices — remove stale entries for same source prefix, add new ones
+            let warnings = content.content_warnings || [];
+            for (const notice of notices) {
+              const prefix = notice.id.split('_').slice(0, -1).join('_') + '_';
+              warnings = warnings.filter(w => !w.id || !w.id.startsWith(prefix));
+              warnings.push(notice);
             }
-            content.content_warnings = updated;
+            content.content_warnings = warnings;
 
-            if (foundNotices.length === 0) {
-              content.meta.last_check_result = checkErrors.length > 0 ? 'partial_error' : 'clear';
-              console.log(`Check complete. Clear: ${checkErrors.length === 0}. Errors: ${checkErrors.join(', ') || 'none'}`);
+            fs.writeFileSync(contentFile, JSON.stringify(content, null, 2) + '\n');
+            console.log(`\nDone. Notices: ${notices.length}, Errors: ${errors.length}, File: ${contentFile}`);
+
+            // Fail the job only if ALL sources errored — partial errors are logged but non-fatal
+            if (errors.length === SOURCES.length) {
+              console.error('All sources failed. Check source URLs.');
+              process.exit(1);
             }
+          })();
+          SCRIPT
 
-            fs.writeFileSync(contentPath, JSON.stringify(content, null, 2) + '\n');
-            console.log(`Content file updated. Notices found: ${foundNotices.length}, Source errors: ${checkErrors.length}`);
-
-          })().catch(e => {
-            console.error('Monitor failed:', e.message);
-            process.exit(1);
-          });
-          EOF
-
-      - name: Commit updated content
+      - name: Commit if content changed
         run: |
-          git config user.name "ITSM Content Monitor"
+          git config user.name  "Regulatory Content Monitor"
           git config user.email "actions@github.com"
-          git add itsm-content-v25.json
+          git add "${{ env.CONTENT_FILE }}"
           if git diff --cached --quiet; then
-            echo "No changes to commit"
+            echo "No content changes — all clear."
           else
-            git commit -m "chore: regulatory content monitor — $(date +%Y-%m-%d)
+            git commit -m "chore(content): regulatory monitor — $(date +%Y-%m-%d)
 
-          Automated weekly check of FCA, EBA/DORA and ICO publications.
-          Any new notices added to itsm-content-v25.json for display in the tool.
-          Notices point users to verify at source — no guidance text modified.
+          Sources checked: EBA RSS, GOV.UK FCA API, GOV.UK ICO API.
+          Any new notices added to ${{ env.CONTENT_FILE }}.
+          Content is informational — users directed to verify at source.
 
           [skip ci]"
             git push
-            echo "Content updated and pushed"
+            echo "Content file updated and deployed."
           fi
