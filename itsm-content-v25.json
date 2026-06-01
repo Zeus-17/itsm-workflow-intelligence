@@ -5,20 +5,26 @@
     "tool_version": "v25",
     "changelog": "Initial content layer. Regulatory guidance validated against FCA Handbook Jan 2026, DORA Articles 17/18/19 (note: RTS under Article 18 pending final publication), UK GDPR/ICO guidance Jan 2026, ITIL 4 current edition. Review quarterly or when FCA/EBA/ICO publish material updates.",
     "next_review": "2026-04-15",
-    "maintainer": "Update this file when FCA, EBA, ICO or AXELOS publish material changes. Increment content_version to YYYY-MM-DD of update. Add entry to changelog."
+    "maintainer": "Update this file when FCA, EBA, ICO or AXELOS publish material changes. Increment content_version to YYYY-MM-DD of update. Add entry to changelog.",
+    "last_checked_at": "2026-06-01",
+    "last_check_result": "clear",
+    "last_check_errors": [
+      "fca_ops: HTTP 422",
+      "ico_gdpr: HTTP 422"
+    ]
   },
-
   "content_warnings": [
     {
       "id": "dora_rts_pending",
       "type": "warn",
       "title": "DORA Article 18 RTS — pending final publication",
       "text": "Regulatory Technical Standards governing ICT incident reporting thresholds under DORA Article 18 are pending final publication by EBA/ESMA/EIOPA. Incident classification thresholds shown in this tool are indicative. Verify with your compliance team before making regulatory notifications.",
-      "applies_to": ["dora"],
+      "applies_to": [
+        "dora"
+      ],
       "expires": "2026-12-31"
     }
   ],
-
   "intel_rules": {
     "security": {
       "hint": "<strong>Security incident detected.</strong> In ServiceNow, route to your Security Operations team, not standard IT Ops. Consider raising a Security Incident record (sn_si_incident table) separately from the standard incident. Engage your CISO or security lead immediately. DORA Article 17 and FCA SUP 15 require rapid escalation of security incidents in regulated environments. DORA Article 19 requires notification to competent authority for major ICT-related incidents.",
@@ -33,13 +39,11 @@
       "links": "<a href='https://www.servicenow.com/community/itsm-articles/servicenow-incident-workflow-how-incident-management-really-runs/ta-p/3469448' target='_blank'>Supplier incident handling ↗</a>"
     }
   },
-
   "preflight_descriptions": {
     "payment_regulatory": "This incident description contains payment-related terms. If operating in an FCA/PRA-regulated environment, a notification obligation assessment under FCA SUP 15 is required. Payment Services Regulations 2017 (PSR 2017) may also require notification to the PSR. Consider enabling the regulatory flag and engaging your compliance team immediately.",
     "pii_regulatory": "The description may indicate a personal data incident under UK GDPR. The ICO 72-hour notification window starts at the point of awareness (Article 33). DPO and Legal engagement is required now. If operating in financial services, DORA operational incident reporting may also apply.",
     "dora_note": "DORA Article 18 RTS thresholds are pending final publication. Verify current reporting thresholds with your compliance team before making any regulatory notifications."
   },
-
   "regulatory_references": {
     "fca_sup15": {
       "title": "FCA SUP 15 — Notification of operational incidents",
@@ -67,7 +71,6 @@
       "validated": "2026-01-15"
     }
   },
-
   "itil_notes": {
     "version": "ITIL 4 — current edition (AXELOS/PeopleCert). Practice guide updates are published periodically. Check axelos.com for amendment notices and latest edition status. This tool's practice definitions are held in this content layer — not compiled into the application — so guidance can update without requiring app changes as ITIL evolves. For organisations running hybrid ITIL environments, adopt at the pace that suits your organisation.",
     "version_readiness": "Framework-version readiness: when AXELOS publish a new ITIL edition, updated definitions and version-aware notes will be added to this content file. The tool will surface them automatically via the content update mechanism. ITIL 4 attribution is retained as the current authoritative standard.",
@@ -75,9 +78,7 @@
     "problem_definition": "ITIL 4 (current edition): Problem — a cause, or potential cause, of one or more incidents. Problems require investigation to identify root cause and implement permanent fix.",
     "change_definition": "ITIL 4 (current edition): Change — the addition, modification, or removal of anything that could have a direct or indirect effect on services."
   },
-
   "glossary_additions": [],
-
   "platform_notes": {
     "servicenow_note": "ServiceNow field API names in this tool are validated against Washington DC / Xanadu releases. Core ITSM fields (short_description, description, urgency, impact, assignment_group, cmdb_ci) are stable across all releases. Verify custom field prefixes against your instance configuration.",
     "jira_note": "Jira REST API v3 field names current as of 2026. Project-specific field IDs (customfield_xxxxx) vary by instance — replace with your organisation's values.",
