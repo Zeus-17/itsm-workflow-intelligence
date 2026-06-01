@@ -7,11 +7,7 @@
     "next_review": "2026-04-15",
     "maintainer": "Update this file when FCA, EBA, ICO or AXELOS publish material changes. Increment content_version to YYYY-MM-DD of update. Add entry to changelog.",
     "last_checked_at": "2026-06-01",
-    "last_check_result": "clear",
-    "last_check_errors": [
-      "fca_ops: HTTP 422",
-      "ico_gdpr: HTTP 422"
-    ]
+    "last_check_result": "clear"
   },
   "content_warnings": [
     {
