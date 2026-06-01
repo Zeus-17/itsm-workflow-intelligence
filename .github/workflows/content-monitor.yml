@@ -114,9 +114,9 @@ jobs:
               name: 'FCA — operational resilience and incident notification',
               type: 'govuk',
               url:  'https://www.gov.uk/api/search.json' +
-                    '?filter_organisations=financial-conduct-authority' +
+                    '?filter_organisations[]=financial-conduct-authority' +
                     '&q=operational+resilience+incident+notification+SUP' +
-                    '&order=newest&count=10',
+                    '&order=-public_timestamp&count=10',
               keywords: [
                 'operational resilience', 'sup 15', 'notification',
                 'incident', 'important business service', 'dora',
@@ -131,9 +131,9 @@ jobs:
               name: 'ICO — data breach notification and GDPR',
               type: 'govuk',
               url:  'https://www.gov.uk/api/search.json' +
-                    '?filter_organisations=information-commissioners-office' +
+                    '?filter_organisations[]=information-commissioners-office' +
                     '&q=breach+notification+GDPR+data+protection+reporting' +
-                    '&order=newest&count=10',
+                    '&order=-public_timestamp&count=10',
               keywords: [
                 'breach', 'notification', 'gdpr', 'data protection',
                 'personal data', '72 hour', 'ico guidance', 'reporting'
