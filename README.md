@@ -1,5 +1,14 @@
 # ITSM Workflow Intelligence Tool — v25
 
+<!--
+[![Version](https://img.shields.io/badge/version-v25-10b981?style=flat-square)](https://zeus-17.github.io/itsm-workflow-intelligence/itsm-workflow-tool-v25.html)
+[![ITIL 4](https://img.shields.io/badge/ITIL_4-Current_Edition-6366f1?style=flat-square)](https://www.axelos.com/certifications/itil-service-management/itil-4-foundation)
+[![FCA](https://img.shields.io/badge/FCA-SUP_15_%7C_PS21%2F3-f59e0b?style=flat-square)](https://www.fca.org.uk/publications/policy-statements/ps21-3-building-operational-resilience)
+[![EU DORA](https://img.shields.io/badge/EU_DORA-Digital_Operational_Resilience_Act-f59e0b?style=flat-square)](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32022R2554)
+[![UK GDPR](https://img.shields.io/badge/UK_GDPR-Article_33_ICO_72h-38bdf8?style=flat-square)](https://ico.org.uk/for-organisations/report-a-breach/)
+[![Local First](https://img.shields.io/badge/Local--First-No_Signup_Required-10b981?style=flat-square)](https://zeus-17.github.io/itsm-workflow-intelligence/HOW-TO-RUN-LOCALLY.md)
+-->
+
 **Designed and built by [James Holford](https://www.linkedin.com/in/james-holford-z17/)**  
 Built with [Claude (Anthropic)](https://claude.ai) · © 2026 James Holford
 
@@ -134,16 +143,6 @@ This tool was designed and built as a demonstration of applied AI collaboration,
 
 ---
 
-
-## Related tools
-
-**[Release Management Intelligence Tool](https://zeus-17.github.io/release-management-intelligence/)** — also by James Holford.
-
-Release planning and governance from first planning to formal PIR sign-off. Quality gates, Go/No-Go wizard, Hypercare mode, risk register, deployment runbook, blackout calendar and golden thread traceability across 12 tools. ITIL 4, DORA Metrics and EU DORA aligned.
-
-The two tools work alongside each other. Use this tool for incidents and operational events; use the RM tool for release planning and governance. During Hypercare in the RM tool, a direct link opens this tool with the release context pre-filled in the incident observation field.
-
----
 ## Licence
 
 © 2026 James Holford. Personal and organisational use permitted. Commercial redistribution or use as the basis of a paid service requires written permission. See [LICENSE](LICENSE) for full terms.
