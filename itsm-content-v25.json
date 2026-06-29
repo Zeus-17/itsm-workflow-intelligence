@@ -6,7 +6,7 @@
     "changelog": "2026-06-03: Corrected DORA Article 18/19 attribution — reporting timelines (4h/72h/1 month) moved to Article 19 entry where they belong; Article 18 entry now correctly describes classification scope only. Updated next_review to Q3 2026. | Initial content layer 2026-01-15: Regulatory guidance validated against FCA Handbook Jan 2026, DORA Articles 17/18/19 (note: RTS under Article 18 pending final publication), UK GDPR/ICO guidance Jan 2026, ITIL 4 current edition.",
     "next_review": "2026-09-15",
     "maintainer": "Update this file when FCA, EBA, ICO or AXELOS publish material changes. Increment content_version to YYYY-MM-DD of update. Add entry to changelog.",
-    "last_checked_at": "2026-06-22",
+    "last_checked_at": "2026-06-29",
     "last_check_result": "notices_found"
   },
   "content_warnings": [
@@ -21,17 +21,17 @@
       "expires": "2026-12-31"
     },
     {
-      "id": "eba_dora_20260622",
+      "id": "eba_dora_20260629",
       "type": "info",
       "title": "EBA — EU DORA and operational resilience — new publication detected",
-      "text": "EU/EEA banks remain resilient amid rising geopolitical, market and technological risks. Review for relevance to your EU DORA obligations. Always verify at the authoritative source.",
+      "text": "The EBA publishes a roadmap on the delivery of its mandates under the revised Deposit Guarantee Schemes Directive. Review for relevance to your EU DORA obligations. Always verify at the authoritative source.",
       "authority": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
       "authorityName": "EU DORA — Digital Operational Resilience Act (EUR-Lex Official Journal)",
-      "detected": "2026-06-22",
+      "detected": "2026-06-29",
       "applies_to": [
         "eu_dora"
       ],
-      "expires": "2026-09-20"
+      "expires": "2026-09-27"
     }
   ],
   "intel_rules": {
