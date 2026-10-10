@@ -133,15 +133,89 @@
     try { return typeof root.localStorage !== 'undefined' && root.localStorage !== null; } catch (e) { return false; }
   }
 
-  /** localStorage adapter. Every call is individually guarded; construction itself touches nothing. */
-  function localStorageAdapter() {
+  /**
+   * localStorage adapter - the FALLBACK store. localStorage is a small (~5 MB) pool SHARED with the tool's own saved data, so
+   * this adapter carries a HARD CAP (`hardCap` bytes, default 1 MB): the log never grows past it, protecting the tool's own
+   * persistence. Every call is individually guarded; construction itself touches nothing.
+   */
+  function localStorageAdapter(hardCap) {
     function ls() { return root.localStorage; }
     return {
-      kind: 'localStorage',
+      kind: 'localStorage', hardCap: hardCap || 1000000,
       get: function (k) { return ls().getItem(k); },
       set: function (k, v) { ls().setItem(k, v); },
       remove: function (k) { ls().removeItem(k); }
     };
+  }
+
+  /** Is indexedDB reachable? Guarded because merely touching it can throw when storage is blocked. */
+  function hasIndexedDb() {
+    try { return typeof root.indexedDB !== 'undefined' && root.indexedDB !== null; } catch (e) { return false; }
+  }
+
+  /**
+   * IndexedDB adapter - the PRIMARY store. Its quota is separate from (and far larger than) localStorage, so a growing audit
+   * log can never crowd out the tool's own saved data.
+   *
+   * Because IndexedDB is asynchronous, the adapter keeps an in-memory MIRROR of every key: reads are synchronous against the
+   * mirror, writes update the mirror immediately and are flushed to the database in batches ("write-behind"). `open()` loads the
+   * mirror once (lazily - nothing is created or opened until the log is first used). A failed flush keeps the batch and reports
+   * through `onError`; the next flush retries and reports `onRecovered`.
+   * `factory` is an IDBFactory (window.indexedDB, or a test double).
+   */
+  function indexedDbAdapter(dbName, factory) {
+    var db = null, mirror = {}, ops = [], scheduled = false, ready = false, inflight = Promise.resolve(), failing = false;
+    var self = {
+      kind: 'indexedDB', async: true, onError: null, onRecovered: null,
+      isReady: function () { return ready; },
+      get: function (k) { return Object.prototype.hasOwnProperty.call(mirror, k) ? mirror[k] : null; },
+      set: function (k, v) { mirror[k] = String(v); ops.push(['put', k, String(v)]); schedule(); },
+      remove: function (k) { delete mirror[k]; ops.push(['del', k]); schedule(); },
+      /** Open (creating if needed) and load every key into the mirror. Rejects on any failure so the caller can fall back. */
+      open: function () {
+        return new Promise(function (resolve, reject) {
+          var req;
+          try { req = factory.open(dbName, 1); } catch (e) { reject(e); return; }
+          req.onupgradeneeded = function () { try { req.result.createObjectStore('kv'); } catch (e) { /* exists */ } };
+          req.onerror = function () { reject(req.error || new Error('indexedDB open failed')); };
+          req.onblocked = function () { reject(new Error('indexedDB open blocked')); };
+          req.onsuccess = function () {
+            db = req.result;
+            try {
+              var tx = db.transaction('kv', 'readonly'), st = tx.objectStore('kv'), rk = st.getAllKeys(), rv = st.getAll();
+              tx.oncomplete = function () { rk.result.forEach(function (k, i) { mirror[k] = rv.result[i]; }); ready = true; resolve(); };
+              tx.onerror = tx.onabort = function () { reject(tx.error || new Error('indexedDB read failed')); };
+            } catch (e) { reject(e); }
+          };
+        });
+      },
+      /** Resolve when every queued write has been attempted. Never rejects (failures go through onError). */
+      flush: function () { schedule(); return inflight; }
+    };
+    function schedule() {
+      if (scheduled) return;
+      scheduled = true;
+      inflight = inflight.then(function () { scheduled = false; return runBatch(); });
+    }
+    /** Write the queued operations in ONE transaction. On failure the batch is put back and onError is called. */
+    function runBatch() {
+      if (!ops.length || !db) return Promise.resolve();
+      var batch = ops.splice(0, ops.length);
+      return new Promise(function (resolve) {
+        function fail(err) {
+          ops = batch.concat(ops); failing = true;
+          if (self.onError) { try { self.onError(err); } catch (e) { /* ignore */ } }
+          resolve();
+        }
+        try {
+          var tx = db.transaction('kv', 'readwrite'), st = tx.objectStore('kv');
+          batch.forEach(function (op) { if (op[0] === 'put') st.put(op[2], op[1]); else st.delete(op[1]); });
+          tx.oncomplete = function () { if (failing) { failing = false; if (self.onRecovered) { try { self.onRecovered(); } catch (e) { /* ignore */ } } } resolve(); };
+          tx.onerror = tx.onabort = function () { fail(tx.error || new Error('indexedDB write failed')); };
+        } catch (e) { fail(e); }
+      });
+    }
+    return self;
   }
 
   /* ======================================================================================
@@ -162,20 +236,79 @@
   function create(opts) {
     if (!opts || !opts.schema || typeof opts.validate !== 'function') throw new Error('AgentAudit.create: schema and validate are required');
     var o = opts, prefix = o.prefix || 'agent_audit_v1', clock = o.clock || function () { return Date.now(); };
-    var store = o.storage || (hasLocalStorage() ? localStorageAdapter() : memoryStorage());
+    /* Storage choice: an explicit adapter wins; otherwise IndexedDB (primary, isolated from the tool's own data), then a CAPPED
+       localStorage, then memory. Nothing is opened or written until the log is first used. */
+    var store = (o.storage && typeof o.storage === 'object') ? o.storage
+      : (hasIndexedDb() && o.storage !== 'localStorage' && o.storage !== 'memory') ? indexedDbAdapter(prefix, root.indexedDB)
+      : (hasLocalStorage() && o.storage !== 'memory') ? localStorageAdapter(o.local_cap_bytes) : memoryStorage();
     var MAXTXT = o.maxTextChars || 4000;
 
     var sessionId = randomId('s'), interactionId = null, actor = null, provider = null;
     var started = false, loaded = false, degraded = null, pending = {};
     var cache = [];                       // all entries currently held (seq order)
     var meta = null;
+    var storeReady = !store.async, openStarted = false, opQueue = [], fellBackFrom = null, readyResolvers = [];
 
     /* ---------------- persistence helpers ---------------- */
+    function defaultLimit() { return store.kind === 'indexedDB' ? 52428800 : store.kind === 'localStorage' ? (store.hardCap || 1000000) : 5000000; }
     function defaultMeta() {
       return { store_version: 1, created: new Date(clock()).toISOString(), next_seq: 1, last_hash: GENESIS,
                anchor: { through_seq: 0, through_hash: GENESIS }, first_seq: 1, last_fingerprint: null,
                retention_days: o.retention_days || 365, warn_lead_days: o.warn_lead_days || 30,
-               limit_bytes: o.limit_bytes || 2000000, warn_pct: o.warn_pct || 80, bytes: 0 };
+               limit_bytes: o.limit_bytes || defaultLimit(), warn_pct: o.warn_pct || 80, bytes: 0, overflow: null };
+    }
+
+    /* ---------------- asynchronous store readiness ---------------- */
+    /** Called by an async adapter when a background write fails: degrade (entries stay in memory) and keep going. */
+    function onStoreError(e) {
+      degraded = degraded || { reason: (e && /quota/i.test(String(e.name) + String(e.message))) ? 'quota_exceeded' : 'storage_unavailable', since: new Date(clock()).toISOString() };
+    }
+    /** Called when a previously failing async store accepts writes again. */
+    function onStoreRecovered() { if (!Object.keys(pending).length && !(degraded && degraded.reason === 'limit_reached')) degraded = null; }
+    /** Replay everything that was queued while the store was opening, in order, then release anyone awaiting ready(). */
+    function finishOpen() {
+      storeReady = true;
+      var q = opQueue; opQueue = [];
+      q.forEach(function (f) { try { f(); } catch (e) { /* a queued event must never break the others */ } });
+      var r = readyResolvers; readyResolvers = [];
+      r.forEach(function (res) { res(true); });
+    }
+    /**
+     * Open an asynchronous store once (lazily). If it cannot be opened - private mode, blocked, or an error - fall back to a
+     * CAPPED localStorage (then memory) and note why, so the log keeps working with a smaller footprint.
+     */
+    function openStore() {
+      if (storeReady || openStarted) return;
+      openStarted = true;
+      store.onError = onStoreError; store.onRecovered = onStoreRecovered;
+      store.open().then(finishOpen, function (err) {
+        fellBackFrom = { kind: store.kind, reason: String(err && err.message ? err.message : err).slice(0, 120) };
+        store = hasLocalStorage() ? localStorageAdapter(o.local_cap_bytes) : memoryStorage();
+        finishOpen();
+      });
+    }
+    /** Run `fn` now if the store is ready; otherwise queue it (in order) and open the store. Used for event logging. */
+    function queued(fn) {
+      return function () {
+        if (storeReady) return fn.apply(null, arguments);
+        var args = arguments; openStore();
+        opQueue.push(function () { fn.apply(null, args); });
+        return { ok: true, queued: true };
+      };
+    }
+    /** For calls that must return a real answer (admin actions, reads): before the store is ready, say so instead of guessing. */
+    function needsReady(fn, notReadyValue) {
+      return function () {
+        if (storeReady) return fn.apply(null, arguments);
+        // Reading never opens (or creates) the database: only a real write, or an explicit ready(), does.
+        return typeof notReadyValue === 'function' ? notReadyValue() : notReadyValue;
+      };
+    }
+    /** Promise that resolves once the store is open and queued events have been written. Opens the store if needed. */
+    function whenReady() {
+      if (storeReady) return Promise.resolve(true);
+      openStore();
+      return new Promise(function (res) { readyResolvers.push(res); });
     }
     function ekey(seq) { return prefix + ':e:' + seq; }
     function mkey() { return prefix + ':meta'; }
@@ -208,7 +341,18 @@
         try { var r = store.get(ekey(s)); if (r) cache.push(JSON.parse(r)); } catch (e) { /* gap is reported by verify() */ }
       }
     }
-    function saveMeta() { persist(mkey(), JSON.stringify(meta)); }
+    /* Hard-cap handling (fallback localStorage only). Once the cap is hit the log STOPS persisting entries - protecting the
+       tool's own saved data - and keeps new entries in memory for this session. The persisted meta stays at the last
+       persisted entry (so the chain is still consistent after a reload) plus an overflow count that the next session reports. */
+    var persistFrozen = false, frozenSnapshot = null, overflowCount = 0;
+    function saveMeta() {
+      var m = meta;
+      if (persistFrozen) {
+        m = Object.assign({}, frozenSnapshot, { overflow: { count: overflowCount } });
+        ['retention_days', 'warn_lead_days', 'limit_bytes', 'warn_pct', 'last_fingerprint'].forEach(function (k) { m[k] = meta[k]; });
+      }
+      persist(mkey(), JSON.stringify(m));
+    }
 
     /* ---------------- hashing ---------------- */
     function entryHash(e) { var c = clone(e); delete c.hash; return sha256Hex(canon(c)); }
@@ -238,11 +382,21 @@
         entry.hash = entryHash(entry);                       // hash first: the schema requires a non-empty hash
         var errs = o.validate(o.schema, 'ev_' + type, entry);
         if (errs.length) return { ok: false, error: 'schema_invalid:' + type };
-        var json = JSON.stringify(entry);
+        var json = JSON.stringify(entry), size = json.length + ekey(entry.seq).length;
+        if (persistFrozen || (store.hardCap && meta.bytes + size > store.hardCap)) {
+          // Cap reached: keep this entry in memory only (see "Hard-cap handling"), flag it, tell the user to export.
+          if (!persistFrozen) { persistFrozen = true; frozenSnapshot = clone(meta); }
+          overflowCount++;
+          degraded = degraded && degraded.reason === 'limit_reached' ? degraded : { reason: 'limit_reached', since: new Date(clock()).toISOString() };
+          cache.push(entry);
+          meta.next_seq = entry.seq + 1; meta.last_hash = entry.hash; meta.bytes += size;
+          saveMeta();
+          return { ok: true, entry: clone(entry), persisted: false };
+        }
         flushPending();
         persist(ekey(entry.seq), json);
         cache.push(entry);
-        meta.next_seq = entry.seq + 1; meta.last_hash = entry.hash; meta.bytes += json.length + ekey(entry.seq).length;
+        meta.next_seq = entry.seq + 1; meta.last_hash = entry.hash; meta.bytes += size;
         saveMeta();
         if (degraded) { /* surfaced through status(); one marker event is written once storage recovers */ }
         return { ok: true, entry: clone(entry) };
@@ -255,7 +409,11 @@
     /** First event after load: session marker, and an engine_changed marker when the rule tables/logic differ from last use. */
     function startSession() {
       started = true;
-      write('session_started', 'n_a', { reason: cache.length ? 'first_event_after_load' : 'first_event_after_load' }, true);
+      write('session_started', 'n_a', { reason: 'first_event_after_load' }, true);
+      if (meta.overflow && meta.overflow.count) {   // a previous session hit the storage cap and could not persist some entries
+        write('audit_degraded', 'error', { reason: 'limit_reached', buffered: meta.overflow.count }, true);
+        meta.overflow = null; saveMeta();
+      }
       var fp = currentFingerprint();
       if (fp && meta.last_fingerprint !== fp) {
         write('engine_changed', 'n_a', { previous_fingerprint: meta.last_fingerprint, current_fingerprint: fp, label: String(o.engineVersion || 'unknown') }, true);
@@ -388,7 +546,8 @@
       var errors = [], c = cfg || {};
       if (c.retention_days !== undefined && !(isInt(c.retention_days) && c.retention_days >= 30 && c.retention_days <= 3650)) errors.push('retention_days must be 30-3650');
       if (c.warn_lead_days !== undefined && !(isInt(c.warn_lead_days) && c.warn_lead_days >= 1 && c.warn_lead_days <= 365)) errors.push('warn_lead_days must be 1-365');
-      if (c.limit_bytes !== undefined && !(isInt(c.limit_bytes) && c.limit_bytes >= 100000 && c.limit_bytes <= 4500000)) errors.push('limit_bytes must be 100000-4500000');
+      var maxLimit = store.kind === 'localStorage' ? 2000000 : 2000000000;   // localStorage is shared with the tool's own data: keep it small
+      if (c.limit_bytes !== undefined && !(isInt(c.limit_bytes) && c.limit_bytes >= 100000 && c.limit_bytes <= maxLimit)) errors.push('limit_bytes must be 100000-' + maxLimit + ' for ' + store.kind + ' storage');
       if (!by || !String(by).trim()) errors.push('"by" (who is changing this) is required');
       if (errors.length) return { ok: false, errors: errors };
       ['retention_days', 'warn_lead_days', 'limit_bytes'].forEach(function (k) { if (c[k] !== undefined) meta[k] = c[k]; });
@@ -415,7 +574,8 @@
       var hint = o.exportHints ? ' You can export first (' + o.exportHints + ', or the audit export).' : ' You can export first using the audit export.';
       var tail = " Please keep your organisation's own records-management policy in mind when deciding what to keep.";
       var prompt = null;
-      if (degraded) prompt = { level: 'urgent', code: 'audit_degraded', message: "The audit log couldn't be saved to this browser (" + degraded.reason.replace(/_/g, ' ') + "). Entries are being kept for this session only - export now so nothing is lost." + hint };
+      if (degraded && degraded.reason === 'limit_reached') prompt = { level: 'urgent', code: 'audit_limit_reached', message: "The audit log has reached the size this browser can safely hold alongside your saved tool data, so new entries are being kept for this session only. Please export now so nothing is lost, then clear out old entries." + hint + tail };
+      else if (degraded) prompt = { level: 'urgent', code: 'audit_degraded', message: "The audit log couldn't be saved to this browser (" + degraded.reason.replace(/_/g, ' ') + "). Entries are being kept for this session only - export now so nothing is lost." + hint };
       else if (expired > 0) prompt = { level: 'urgent', code: 'retention_expired', message: expired + ' audit ' + (expired === 1 ? 'entry is' : 'entries are') + ' past the ' + meta.retention_days + '-day retention period.' + hint + tail };
       else if (pct >= 100) prompt = { level: 'urgent', code: 'storage_full', message: 'The audit log has reached its storage limit (' + pct + '%). Nothing has been lost, but please export and clear out old entries soon.' + hint + tail };
       else if (soon > 0) prompt = { level: 'attention', code: 'retention_expiring', message: soon + ' audit ' + (soon === 1 ? 'entry reaches' : 'entries reach') + ' the ' + meta.retention_days + '-day retention period within ' + meta.warn_lead_days + ' days.' + hint + tail };
@@ -437,6 +597,7 @@
     function purgeExpired(by) {
       ensureLoaded();
       if (!by || !String(by).trim()) return { ok: false, error: 'by_required' };
+      if (persistFrozen) return { ok: false, error: 'reload_required_after_limit' };
       var now = clock(), n = 0;
       while (n < cache.length && expiresAt(cache[n]) <= now) n++;
       if (!n) return { ok: true, removed: 0 };
@@ -459,6 +620,7 @@
     function redactEntry(id, by, reason, fields) {
       ensureLoaded();
       if (!by || !String(by).trim() || !reason || !String(reason).trim()) return { ok: false, error: 'by_and_reason_required' };
+      if (persistFrozen) return { ok: false, error: 'reload_required_after_limit' };
       var idx = -1; cache.forEach(function (e, i) { if (e.id === id) idx = i; });
       if (idx < 0) return { ok: false, error: 'entry_not_found' };
       var e = cache[idx], allowed = redactableFields(e.type), todo = (fields && fields.length) ? fields : allowed;
@@ -504,7 +666,7 @@
       ensureLoaded();
       return { audit_version: VERSION, tool: o.tool, tool_version: o.toolVersion, deployed_tag: o.deployedTag || null,
                engine_version: o.engineVersion, engine_fingerprint: currentFingerprint(), session_id: sessionId,
-               storage_kind: store.kind, entries: cache.length, chain: verify(), retention: retentionStatus() };
+               storage_kind: store.kind, storage_fallback: fellBackFrom ? clone(fellBackFrom) : null, entries: cache.length, chain: verify(), retention: retentionStatus() };
     }
 
     /* ======================================================================================
@@ -546,15 +708,34 @@
       return true;
     }
 
+    var notReadyRead = function () { return { ok: false, loading: true }; };
+    var Q = queued;   // event logging: never lost, never reordered, never blocks the caller
+    var R = function (fn, v) { return needsReady(fn, v); };
     return Object.freeze({
       version: VERSION,
-      append: append, logInput: logInput, logAgentOutput: logAgentOutput, logEngineRun: logEngineRun, logDisplay: logDisplay,
-      logProviderCall: logProviderCall, logModeChange: logModeChange, logFailsafe: logFailsafe, logError: logError,
+      append: Q(append), logInput: Q(logInput), logAgentOutput: Q(logAgentOutput), logEngineRun: Q(logEngineRun), logDisplay: Q(logDisplay),
+      logProviderCall: Q(logProviderCall), logModeChange: Q(logModeChange), logFailsafe: Q(logFailsafe), logError: Q(logError),
       beginInteraction: beginInteraction, endInteraction: endInteraction, setActor: setActor, setProvider: setProvider,
-      verify: verify, entries: entries, exportAll: exportAll,
-      retention: { configure: configureRetention, status: retentionStatus, markPromptShown: markPromptShown, purgeExpired: purgeExpired, redact: redactEntry, redactableFields: redactableFields },
-      usage: { summary: usageSummary }, diagnostics: diagnostics, bridge: bridge,
-      status: function () { return { version: VERSION, started: started, loaded: loaded, degraded: degraded ? clone(degraded) : null, storage_kind: store.kind }; }
+      verify: R(verify, notReadyRead), entries: R(entries, function () { return []; }), exportAll: R(exportAll, notReadyRead),
+      retention: {
+        configure: R(configureRetention, function () { return { ok: false, error: 'storage_loading' }; }),
+        status: R(retentionStatus, function () { return { loading: true, prompt: null }; }),
+        markPromptShown: Q(markPromptShown),
+        purgeExpired: R(purgeExpired, function () { return { ok: false, error: 'storage_loading' }; }),
+        redact: R(redactEntry, function () { return { ok: false, error: 'storage_loading' }; }),
+        redactableFields: redactableFields },
+      usage: { summary: R(usageSummary, function () { return {}; }) },
+      diagnostics: R(diagnostics, function () { return { loading: true }; }), bridge: bridge,
+      /** Resolves when the store is open and every queued event has been written. */
+      ready: whenReady,
+      /** Resolves when pending background writes have been attempted (best effort before navigating away). */
+      flush: function () { return (store.flush ? store.flush() : Promise.resolve()).then(function () { return true; }); },
+      /** Browser storage quota/usage estimate (async; null where unsupported). */
+      storageEstimate: function () {
+        try { return (root.navigator && root.navigator.storage && root.navigator.storage.estimate) ? root.navigator.storage.estimate().then(function (x) { return { usage: x.usage, quota: x.quota }; }, function () { return null; }) : Promise.resolve(null); }
+        catch (e) { return Promise.resolve(null); }
+      },
+      status: function () { return { version: VERSION, started: started, loaded: loaded, ready: storeReady, degraded: degraded ? clone(degraded) : null, storage_kind: store.kind, storage_fallback: fellBackFrom ? clone(fellBackFrom) : null }; }
     });
   }
 
@@ -570,7 +751,7 @@
   function init(opts) { if (!instance) instance = create(opts); return instance; }
 
   return Object.freeze({
-    version: VERSION, create: create, init: init, memoryStorage: memoryStorage,
+    version: VERSION, create: create, init: init, memoryStorage: memoryStorage, indexedDbAdapter: indexedDbAdapter,
     log: function () { return instance; },
     util: Object.freeze({ sha256Hex: sha256Hex, canon: canon, redactSpans: redactSpans })
   });

@@ -2528,9 +2528,12 @@
        "enum": [
         "timeout",
         "malformed",
+        "validation_rejected",
         "soft_override",
+        "provider_error",
+        "connectivity",
         "emergency_revoke",
-        "connectivity"
+        "manual"
        ]
       },
       "reason_category": {
@@ -3753,6 +3756,220 @@
     }
    }
   },
+  "ev_provider_failure": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "provider_failure"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "provider_id",
+      "kind",
+      "diagnosis",
+      "http_status",
+      "message",
+      "counted"
+     ],
+     "properties": {
+      "provider_id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "kind": {
+       "enum": [
+        "timeout",
+        "malformed",
+        "validation_rejected",
+        "soft_override",
+        "guardrail_violation",
+        "provider_error",
+        "provider_unreachable",
+        "no_network"
+       ]
+      },
+      "diagnosis": {
+       "enum": [
+        "configuration",
+        "provider_side",
+        "guardrails_working",
+        "network",
+        "user_network"
+       ]
+      },
+      "http_status": {
+       "type": [
+        "integer",
+        "null"
+       ],
+       "minimum": 0
+      },
+      "message": {
+       "type": "string"
+      },
+      "counted": {
+       "type": "boolean"
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
   "ev_audit_degraded": {
    "type": "object",
    "additionalProperties": false,
@@ -3883,7 +4100,8 @@
        "enum": [
         "quota_exceeded",
         "storage_unavailable",
-        "serialisation_failed"
+        "serialisation_failed",
+        "limit_reached"
        ]
       },
       "buffered": {

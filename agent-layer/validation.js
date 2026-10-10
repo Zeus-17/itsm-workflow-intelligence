@@ -741,6 +741,8 @@
       setPolicy: setPiiPolicy, getPolicy: getPiiPolicy, addPiiPattern: addPiiPattern, addPaymentTerms: addPaymentTerms,
       /** The versioned responsibility statement an administrator must acknowledge before weakening any check. */
       responsibilityNotice: function () { return RESPONSIBILITY_NOTICE; },
+      /** PURE helper (no events, no clearance): the text with every personal-data match replaced by [REDACTED:category]. Used to make log excerpts safe. */
+      redactPii: function (text) { var t = String(text === null || text === undefined ? '' : text); return redact(t, scanPii(t)); },
       categories: function () { return PII_DETECTORS.concat(customPiiDetectors).map(function (d) { return { id: d.id, label: d.label }; }); }
     },
     guard: { assertCleared: assertCleared },

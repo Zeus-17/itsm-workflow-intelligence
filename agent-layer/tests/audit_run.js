@@ -301,6 +301,119 @@ section('L. default localStorage adapter');
   ok(noStore.status().storage_kind === 'memory' && noStore.logInput('x', null).ok, 'no localStorage at all -> memory fallback, still works');
 }
 
-console.log('');
-if (failures.length) { console.log(`FAILED: ${failures.length} problem(s); ${pass} assertions passed`); process.exit(1); }
-console.log(`ALL AUDIT TESTS PASSED (${pass} assertions)`);
+// ---------------------------------------------------------------- M. IndexedDB primary store + capped fallback
+// A faithful fake of the parts of the IndexedDB API the adapter uses: asynchronous callbacks, one transaction per batch,
+// injectable open/write failures. The REAL adapter code runs against it.
+function fakeIdb(existing) {
+  const f = { data: Object.assign({}, existing || {}), failOpen: false, failWrites: false, opens: 0, commits: 0 };
+  f.open = () => {
+    f.opens++; const req = {};
+    setTimeout(() => {
+      if (f.failOpen) { req.error = new Error('blocked by browser settings'); if (req.onerror) req.onerror(); return; }
+      const db = { transaction(store, mode) {
+        const tx = { oncomplete: null, onerror: null, onabort: null, error: null }, ops = [], reqs = [];
+        // Like real IndexedDB: every request's result is set BEFORE the transaction's complete event fires (deterministic, no timer race).
+        const st = {
+          getAllKeys() { const r = {}; reqs.push(() => { r.result = Object.keys(f.data); }); return r; },
+          getAll() { const r = {}; reqs.push(() => { r.result = Object.values(f.data); }); return r; },
+          put(v, k) { ops.push(() => { f.data[k] = v; }); }, delete(k) { ops.push(() => { delete f.data[k]; }); }
+        };
+        tx.objectStore = () => st;
+        setTimeout(() => {
+          if (mode === 'readwrite') {
+            if (f.failWrites) { tx.error = Object.assign(new Error('The quota has been exceeded'), { name: 'QuotaExceededError' }); if (tx.onabort) tx.onabort(); return; }
+            ops.forEach((fn) => fn()); f.commits++;
+          }
+          reqs.forEach((fn) => fn());
+          if (tx.oncomplete) tx.oncomplete();
+        }, 2);
+        return tx;
+      } };
+      req.result = db; if (req.onupgradeneeded) req.onupgradeneeded(); if (req.onsuccess) req.onsuccess();
+    }, 1);
+    return req;
+  };
+  return f;
+}
+const idbLog = (fake, extra) => AA.create(Object.assign({ tool: cfg.tool, toolVersion: 'tv1', engineVersion: 'eng-1', engineSources: () => [1], schema: auditSchema, validate: AL.validate.instance,
+  storage: AA.indexedDbAdapter('agent_audit_v1', fake), exportHints: 'the exports' }, extra || {}));
+
+async function asyncSuite() {
+  section('M. IndexedDB primary store');
+  {
+    const fake = fakeIdb(); const L = idbLog(fake);
+    L.status(); L.verify(); L.entries(); L.retention.status();
+    ok(fake.opens === 0 && Object.keys(fake.data).length === 0, 'IndexedDB is not even opened until the log is first used (inert)');
+    const a = L.logInput('first (queued)', null); const b = L.logInput('second (queued)', null); const c = L.logDisplay('decision', 'third (queued)', true);
+    ok(a.ok && a.queued && b.queued && c.queued, 'events arriving before the store has opened are accepted and queued, not lost');
+    ok(L.entries().length === 0 && L.verify().loading === true && L.retention.configure({ retention_days: 90 }, 'admin').error === 'storage_loading', 'reads and admin actions answer honestly ("loading") instead of guessing');
+    await L.ready();
+    const es = L.entries();
+    ok(es.map((e) => e.type).join() === 'session_started,engine_changed,input_received,input_received,display_rendered', 'queued events were written in their original order after the store opened');
+    ok(L.verify().ok && es.every((e, i) => e.seq === i + 1), 'hash chain and sequence are correct after queued replay');
+    await L.flush();
+    ok(Object.keys(fake.data).length === es.length + 1 && fake.commits >= 1, 'entries + meta reached the database (batched)');
+    ok(L.retention.status().storage.limit === 52428800, 'IndexedDB default soft limit is 50 MB (not the 1 MB localStorage cap)');
+    ok(L.retention.configure({ limit_bytes: 200000000 }, 'admin').ok, 'a larger limit is allowed on IndexedDB');
+
+    // reload: a NEW instance over the same database
+    const L2 = idbLog(fake); await L2.ready();
+    ok(L2.entries().length === es.length + 1 && L2.verify().ok, 'a fresh instance (page reload) reads the whole log back and it verifies');   // +1 = the config_changed above
+    L2.logInput('after reload', null); await L2.ready();
+    ok(L2.verify().ok && L2.entries().filter((e) => e.type === 'session_started').length === 2, 'chain continues across reload; each page load adds one session marker');
+  }
+  {
+    // write failure and recovery
+    const fake = fakeIdb(); const L = idbLog(fake); await L.ready(); L.logInput('kept', null); await L.flush();
+    fake.failWrites = true;
+    const r = L.logInput('during failure', null); await L.flush();
+    ok(r.ok && L.status().degraded && L.status().degraded.reason === 'quota_exceeded', 'background write failure -> degraded (quota), caller unaffected');
+    ok(L.retention.status().prompt.level === 'urgent' && L.exportAll('admin').entries.some((e) => e.detail && e.detail.text === 'during failure'), 'urgent prompt, and export still contains the unsaved entry');
+    fake.failWrites = false; L.logInput('after', null); await L.flush();
+    ok(L.status().degraded === null, 'degraded flag clears when the database accepts writes again');
+    const L2 = idbLog(fake); await L2.ready(); const texts = L2.entries({ type: 'input_received' }).map((e) => e.detail.text);
+    ok(['kept', 'during failure', 'after'].every((t) => texts.includes(t)) && L2.verify().ok, 'the batch that failed was retried: nothing missing after a reload');
+  }
+  {
+    // cannot open IndexedDB at all -> capped fallback, queue still replayed
+    const fake = fakeIdb(); fake.failOpen = true; const L = idbLog(fake);
+    const q = L.logInput('queued while opening', null);
+    await L.ready();
+    const st = L.status();
+    ok(q.queued && st.storage_kind === 'memory' && st.storage_fallback && /blocked/.test(st.storage_fallback.reason), 'IndexedDB unavailable -> falls back (here to memory) and says why');
+    ok(L.entries({ type: 'input_received' }).length === 1 && L.verify().ok, 'the queued event was still recorded');
+    ok(L.diagnostics().storage_fallback && L.diagnostics().storage_fallback.kind === 'indexedDB', 'diagnostics show the fallback for admins');
+  }
+
+  section('N. capped fallback store protects the tool\'s own data');
+  {
+    const store = AA.memoryStorage(); store.hardCap = 9000;      // a tiny cap standing in for "the share of localStorage we may use"
+    const mkL = () => AA.create({ tool: cfg.tool, toolVersion: 'tv1', engineVersion: 'eng-1', engineSources: () => [1], schema: auditSchema, validate: AL.validate.instance, storage: store, exportHints: 'the exports' });
+    const L = mkL(); let n = 0;
+    while (!L.status().degraded && n < 200) { L.logInput('capped store entry ' + n, null); n++; }
+    ok(L.status().degraded && L.status().degraded.reason === 'limit_reached', 'cap reached -> degraded with reason limit_reached');
+    const persistedBytes = Object.entries(store._dump()).filter(([k]) => k.includes(':e:')).reduce((a, [k, v]) => a + k.length + v.length, 0);
+    ok(persistedBytes <= 9000, 'the persisted audit data never exceeds the cap (' + persistedBytes + ' <= 9000)');
+    for (let i = 0; i < 5; i++) L.logInput('after the cap ' + i, null);
+    const persistedAfter = Object.entries(store._dump()).filter(([k]) => k.includes(':e:')).reduce((a, [k, v]) => a + k.length + v.length, 0);
+    ok(persistedAfter === persistedBytes, 'further entries are NOT written to the shared store');
+    ok(L.entries({ type: 'input_received' }).length === n + 5 && L.exportAll('admin').entries.length >= n + 5, 'but nothing is lost this session: they are in memory and in the export');
+    ok(L.retention.status().prompt.code === 'audit_limit_reached' && /export now/i.test(L.retention.status().prompt.message), 'urgent, calm prompt to export');
+    ok(L.retention.purgeExpired('admin').error === 'reload_required_after_limit' && L.retention.redact('x', 'a', 'b').error === 'reload_required_after_limit', 'purge/redact are refused while frozen (they would desynchronise the stored chain)');
+    ok(L.verify().ok, 'in-memory chain is intact');
+    const L2 = mkL(); L2.logInput('next session', null);
+    ok(L2.verify().ok, 'after a reload the persisted chain is consistent (continues from the last PERSISTED entry)');
+    ok(L2.entries({ type: 'audit_degraded' }).some((e) => e.detail.reason === 'limit_reached' && e.detail.buffered >= 5), 'the next session records how many entries could not be persisted');
+  }
+  {
+    const st = AA.memoryStorage(); st.kind = 'localStorage'; st.hardCap = 1000000;
+    const L = AA.create({ tool: cfg.tool, toolVersion: 'tv1', engineVersion: 'e', schema: auditSchema, validate: AL.validate.instance, storage: st });
+    ok(L.retention.configure({ limit_bytes: 3000000 }, 'admin').ok === false && L.retention.configure({ limit_bytes: 1500000 }, 'admin').ok, 'localStorage limit is capped at 2 MB (shared pool); smaller values allowed');
+  }
+}
+
+asyncSuite().then(() => {
+  console.log('');
+  if (failures.length) { console.log(`FAILED: ${failures.length} problem(s); ${pass} assertions passed`); process.exit(1); }
+  console.log(`ALL AUDIT TESTS PASSED (${pass} assertions)`);
+}).catch((e) => { console.log('SUITE ERROR:', e && e.stack || e); process.exit(1); });

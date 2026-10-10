@@ -1,4 +1,4 @@
-# Agent layer - validation and audit trail (Build Brief Steps 3-4)
+# Agent layer - validation, audit trail and failsafe (Build Brief Steps 3-4a)
 
 The gate between anything an AI provider says and the tool's deterministic rules engines. **Additive and inert:** it only defines
 `window.AgentLayer`, references no existing function or element, does nothing until called, and the tool behaves identically with it
@@ -60,3 +60,36 @@ Run `node agent-layer/tests/audit_run.js`.
 Any move away from the protective default (Block) - globally or per category - requires an attributable acknowledgement (`by`, `at`,
 `reason`, `noticeVersion`) of the current, versioned responsibility notice (`AgentLayer.prefilter.responsibilityNotice()`); the version
 travels with the logged configuration change. **The notice wording needs genuine legal review before use with personal data.**
+
+## Audit storage - IndexedDB first (Step 4 hardening)
+The log lives in **IndexedDB** (a separate, much larger quota), never in the small `localStorage` pool the tool uses for its own saved
+data - a growing audit log cannot crowd out the user's releases/incidents. Reads are served from an in-memory mirror; writes are batched
+("write-behind"); events logged before the database has opened are queued in order, so nothing is lost and the hash chain stays correct.
+Fallbacks: a **capped** `localStorage` (hard cap 1 MB; once reached the log stops persisting, keeps entries in memory for the session,
+prompts the user to export, and the next session records how many could not be saved), then memory. Measured in a real browser:
+22,000 entries append in under a second, reload to ready in ~170 ms, verify in ~0.6 s.
+
+## Failsafe / circuit breaker (`failsafe.js`) - Step 4a
+Watches a **pattern** of provider unreliability per session and, past a threshold, disables the agent layer and routes the user back into
+the proven-safe standard form - the same state as toggle-off.
+* **Triggers** (all count the same): timeouts, malformed responses, validation rejections, provider/HTTP errors, provider unreachable,
+  and **soft-override** (the assistant's narration contradicting the deterministic result - see `checkNarration`).
+  *Placeholder thresholds: 2 consecutive, or 3 within 120 s.* **They are not tuned on real provider data** and every diagnostic says so until an
+  administrator records a tuning source (`configureThresholds(..., {source, by})`).
+* **Standard Mode** is one call, no confirmation, and yields an **identical** hand-off to an automatic fallback. Only values with provenance
+  `form`/`user_confirmed` carry across; everything else is an *unconfirmed candidate*; the state is always `incomplete` - never a Go/No-Go.
+* **Reasons shown to the user** (calm, plain language): didn't respond in time / response couldn't be understood / explanation didn't match the
+  result / switched off by your administrator / no network connection / couldn't reach the service / isn't available right now. Network reasons link
+  straight to the IT guidance. Messages are written to be announced to assistive technology (`aria_live`).
+* **Admin diagnosis** separates *configuration* (fix the key/model/endpoint) from *provider-side* (outage, rate limit) from *guardrails working*
+  (the model contradicted the tool) from *network*; repeated trips on one provider are flagged as a pattern. Diagnostic text is PII-filtered.
+* **Connectivity**: "no network at all" and "network up but provider unreachable" are different reasons; the offline state appears only after a few
+  seconds of confirmed disconnection (no flicker on a Wi-Fi blip).
+* **Emergency revoke** is a separate admin control that **requires explicit confirmation** and a named admin, and survives a reload.
+* `FAILSAFE-EVIDENCE.md` (repo root) is an append-only, commit-stamped record: run `python agent-layer/evidence.py --step "<what changed>"`
+  after every major step. The provider x failure-type matrix is re-run each time.
+
+## Staying lean
+The embedded block is held to a **size budget** (`sizeBudgetKB` in `config.json`, gzipped, currently 60 KB; `python agent-layer/check_size.py`).
+Source files stay fully documented; `embed.py` strips comments from the *embedded* copy only. `node agent-layer/tests/artifact_run.js` tests the
+block exactly as shipped (compacted, with its bootstrap). Raising the budget is a deliberate decision, not a side-effect.

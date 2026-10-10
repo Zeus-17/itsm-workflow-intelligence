@@ -30,7 +30,7 @@ function throwsMsg(fn, re) { try { fn(); return false; } catch (e) { return re.t
 section('A. shared-file integrity');
 const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, f)).toString('utf8').replace(/\r\n/g, '\n')).digest('hex');
 const lock = {}; read('LOCK.sha256').trim().split(/\r?\n/).forEach((l) => { const [h, n] = l.split(/\s+/); lock[n] = h; });
-for (const f of ['validation.js', 'audit.js', 'audit-schema.json', 'build_audit_schema.py', 'embed.py', 'tests/run.js', 'tests/audit_run.js', 'tests/gen_diff_cases.py', 'tests/prefilter-cases.json']) {
+for (const f of ['validation.js', 'audit.js', 'failsafe.js', 'audit-schema.json', 'build_audit_schema.py', 'embed.py', 'check_size.py', 'evidence.py', 'tests/run.js', 'tests/audit_run.js', 'tests/failsafe_run.js', 'tests/artifact_run.js', 'tests/gen_diff_cases.py', 'tests/prefilter-cases.json']) {
   ok(lock[f] === sha(f), `${f} differs from LOCK.sha256 (the RM and ITSM copies must be identical; run agent-layer/lock.py)`);
 }
 

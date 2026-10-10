@@ -65,7 +65,7 @@ EVENTS = {
         duration_ms={"type": ["integer", "null"], "minimum": 0},
         result={"enum": ["ok", "timeout", "malformed", "error", "blocked_by_guard"]}),
     "failsafe_triggered": obj(
-        trigger={"enum": ["timeout", "malformed", "soft_override", "emergency_revoke", "connectivity"]},
+        trigger={"enum": ["timeout", "malformed", "validation_rejected", "soft_override", "provider_error", "connectivity", "emergency_revoke", "manual"]},
         reason_category=SNE, count=INT, window_seconds=INT, state_preserved=BOOL, source={"enum": ["auto", "manual"]}),
     "mode_changed": obj(
         from_mode={"enum": ["standard", "ai"]}, to_mode={"enum": ["standard", "ai"]},
@@ -80,7 +80,13 @@ EVENTS = {
         action={"enum": ["purge_expired", "redact", "warning_shown", "export", "configure"]},
         count=INT, by=SNE, reason=SN, target_id=SN),
     "engine_changed": obj(previous_fingerprint=SN, current_fingerprint=SNE, label=SNE),
-    "audit_degraded": obj(reason={"enum": ["quota_exceeded", "storage_unavailable", "serialisation_failed"]}, buffered=INT),
+    # one entry per provider failure signal (Step 4a): raw material for the admin diagnostic summary (Section 32.2)
+    "provider_failure": obj(
+        provider_id=SNE,
+        kind={"enum": ["timeout", "malformed", "validation_rejected", "soft_override", "guardrail_violation", "provider_error", "provider_unreachable", "no_network"]},
+        diagnosis={"enum": ["configuration", "provider_side", "guardrails_working", "network", "user_network"]},
+        http_status={"type": ["integer", "null"], "minimum": 0}, message=S, counted=BOOL),
+    "audit_degraded": obj(reason={"enum": ["quota_exceeded", "storage_unavailable", "serialisation_failed", "limit_reached"]}, buffered=INT),
 }
 
 ENVELOPE = {
