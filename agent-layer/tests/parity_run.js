@@ -399,4 +399,4 @@ if (require.main === module) {
   if (res.failed) { console.log('PARITY FAILED'); process.exit(1); }
   console.log('PARITY PASS: ' + res.pass + ' assertions');
 }
-module.exports = { runAll };
+module.exports = { runAll, makeContext, rng };

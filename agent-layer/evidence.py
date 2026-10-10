@@ -54,6 +54,10 @@ def main():
         checks += [("Engine parity: exports vs the tool's real engines (source)", ["node", "agent-layer/tests/parity_run.js", "--quiet"]),
                    ("Engine parity: embedded block as shipped", ["node", "agent-layer/tests/parity_run.js", "--embedded", "--quiet"]),
                    ("Engine parity: mutation check (the test can fail)", ["node", "agent-layer/tests/parity_mutants.js"])]
+    if os.path.exists(os.path.join(HERE, "tests", "invariants_run.js")):   # rule-quality workstream Q (per-tool): properties must hold; measurements must run
+        checks += [("Invariants / property tests (must-hold properties)", ["node", "agent-layer/tests/invariants_run.js"]),
+                   ("Rule-quality measurement runs (informational)", ["node", "agent-layer/tests/rule_quality.js"]),
+                   ("HTML-sink audit runs (informational)", ["node", "agent-layer/tests/sink_audit.js"])]
     results = [(name,) + run(cmd) for name, cmd in checks]
     _, head = run(["git", "rev-parse", "--short", "HEAD"])
     _, dirty = run(["git", "status", "--porcelain", "--untracked-files=no"])

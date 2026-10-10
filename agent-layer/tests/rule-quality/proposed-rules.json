@@ -1,0 +1,108 @@
+{
+ "status": "PROPOSED - not applied to the tool.",
+ "caution": "Authored by the same hand as the corpus; the measured gain is optimistic. Needs practitioner review before any change.",
+ "routing_suggestion": {
+  "A": {
+   "describe": "Join the two fields WITH a space and match whole words (plural -s / -es tolerated). No new keywords. Highest keyword count wins, ties to the earlier rule, exactly as today.",
+   "joinWithSpace": true,
+   "wholeWord": true,
+   "extraKeywords": {}
+  },
+  "B": {
+   "describe": "A plus extra keywords per team (recall).",
+   "joinWithSpace": true,
+   "wholeWord": true,
+   "extraKeywords": {
+    "0": [
+     "refund",
+     "payout",
+     "apple pay",
+     "google pay",
+     "stripe",
+     "visa",
+     "mastercard",
+     "direct debit",
+     "bacs",
+     "settlement",
+     "authorisation"
+    ],
+    "1": [
+     "sign in",
+     "sign-in",
+     "kerberos",
+     "active directory",
+     "saml",
+     "oauth",
+     "locked out",
+     "directory"
+    ],
+    "2": [
+     "502",
+     "rate limit",
+     "contract"
+    ],
+    "3": [
+     "tablespace",
+     "deadlock",
+     "primary election",
+     "oracle"
+    ],
+    "4": [
+     "bgp",
+     "packet loss",
+     "wan",
+     "switch",
+     "wifi",
+     "wi-fi",
+     "vlan",
+     "dhcp"
+    ],
+    "5": [
+     "s3",
+     "ec2",
+     "docker",
+     "helm",
+     "lambda",
+     "eks",
+     "gpu",
+     "scale set"
+    ],
+    "6": [
+     "kafka",
+     "spark",
+     "snowflake",
+     "warehouse",
+     "dashboard",
+     "etl"
+    ],
+    "7": [
+     "ransomware",
+     "ddos",
+     "siem",
+     "intrusion",
+     "data breach"
+    ],
+    "8": [
+     "x509",
+     "pki",
+     "handshake"
+    ],
+    "9": [
+     "jenkins",
+     "artifact",
+     "artifacts",
+     "ci/cd",
+     "deploy"
+    ]
+   }
+  }
+ },
+ "preflight_payment": {
+  "A": "\\b(payments?|transactions?|banking|cards?|pci|checkouts?|purchases?|funds?)\\b",
+  "B": "\\b(payments?|transactions?|banking|cards?|pci|checkouts?|purchases?|funds?|refunds?|payouts?|direct debits?|bacs|sepa|apple pay|google pay|merchants?|settlements?)\\b"
+ },
+ "preflight_pii": {
+  "A": "\\b(personal data|pii|gdpr|customer data|data breach(es)?|email addresses?|account numbers?)\\b",
+  "B": "\\b(personal data|personal information|pii|gdpr|customer data|data breach(es)?|email addresses?|account numbers?|passports?|home address(es)?|national insurance|date of birth|sort code)\\b"
+ }
+}

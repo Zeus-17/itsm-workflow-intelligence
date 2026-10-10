@@ -1,0 +1,548 @@
+{
+ "engine": "routing_suggestion",
+ "tool": "itsm",
+ "concepts": [
+  "Payment Operations",
+  "Identity and Access Management",
+  "API Platform Engineering",
+  "Database Administration",
+  "Network Operations",
+  "Cloud Platform Engineering",
+  "Data Engineering",
+  "Security Operations",
+  "Platform Operations (certificates / TLS)",
+  "Release Engineering"
+ ],
+ "labelling": "By intent, authored without consulting the rules' results; Claude's judgement, for human review. For routing, concepts are the teams that would reasonably take the incident; the FIRST listed is the best fit.",
+ "cases": [
+  {
+   "o": "Card payments failing with 503 at checkout",
+   "s": "Payment Gateway",
+   "c": [
+    0
+   ]
+  },
+  {
+   "o": "Merchant settlement file not produced overnight",
+   "s": "Merchant Services",
+   "c": [
+    0
+   ]
+  },
+  {
+   "o": "Customers cannot pay by Apple Pay",
+   "s": "Mobile Wallet",
+   "c": [
+    0
+   ]
+  },
+  {
+   "o": "Refunds stuck in pending state",
+   "s": "Refund Service",
+   "c": [
+    0
+   ]
+  },
+  {
+   "o": "Direct debit collection run failed",
+   "s": "Billing",
+   "c": [
+    0
+   ]
+  },
+  {
+   "o": "Acquiring bank rejecting transactions",
+   "s": "Card Processing",
+   "c": [
+    0
+   ]
+  },
+  {
+   "o": "Visa authorisations timing out",
+   "s": "Card Acquiring",
+   "c": [
+    0
+   ]
+  },
+  {
+   "o": "Users locked out after password reset",
+   "s": "Identity Platform",
+   "c": [
+    1
+   ]
+  },
+  {
+   "o": "Okta login loop for staff",
+   "s": "SSO",
+   "c": [
+    1
+   ]
+  },
+  {
+   "o": "MFA codes not delivered by SMS",
+   "s": "Authentication Service",
+   "c": [
+    1
+   ]
+  },
+  {
+   "o": "LDAP bind failures from app servers",
+   "s": "Directory Services",
+   "c": [
+    1
+   ]
+  },
+  {
+   "o": "Kerberos tickets failing for VPN users",
+   "s": "Active Directory",
+   "c": [
+    1
+   ]
+  },
+  {
+   "o": "Cannot sign in to customer portal",
+   "s": "Customer Portal",
+   "c": [
+    1
+   ]
+  },
+  {
+   "o": "Gateway returning 502 for partner calls",
+   "s": "API Gateway",
+   "c": [
+    2
+   ]
+  },
+  {
+   "o": "GraphQL endpoint timeouts",
+   "s": "Orders API",
+   "c": [
+    2
+   ]
+  },
+  {
+   "o": "REST endpoint rate limiting wrongly applied",
+   "s": "Public API",
+   "c": [
+    2
+   ]
+  },
+  {
+   "o": "Microservice mesh dropping requests",
+   "s": "Service Mesh",
+   "c": [
+    2
+   ]
+  },
+  {
+   "o": "Breaking change in v2 API contract",
+   "s": "Partner API",
+   "c": [
+    2
+   ]
+  },
+  {
+   "o": "Postgres replication lag over 10 minutes",
+   "s": "Orders DB",
+   "c": [
+    3
+   ]
+  },
+  {
+   "o": "Oracle tablespace full",
+   "s": "ERP Database",
+   "c": [
+    3
+   ]
+  },
+  {
+   "o": "Slow SQL queries after index drop",
+   "s": "Reporting Database",
+   "c": [
+    3
+   ]
+  },
+  {
+   "o": "MongoDB primary election flapping",
+   "s": "Catalogue Store",
+   "c": [
+    3
+   ]
+  },
+  {
+   "o": "Redis memory exhausted",
+   "s": "Session Cache",
+   "c": [
+    3
+   ]
+  },
+  {
+   "o": "Deadlocks on customer table",
+   "s": "CRM Database",
+   "c": [
+    3
+   ]
+  },
+  {
+   "o": "Packet loss between data centres",
+   "s": "WAN",
+   "c": [
+    4
+   ]
+  },
+  {
+   "o": "DNS resolution failing for internal zone",
+   "s": "Corporate DNS",
+   "c": [
+    4
+   ]
+  },
+  {
+   "o": "Firewall rule blocking vendor traffic",
+   "s": "Perimeter Firewall",
+   "c": [
+    4
+   ]
+  },
+  {
+   "o": "VPN tunnel dropping every hour",
+   "s": "Remote Access",
+   "c": [
+    4
+   ]
+  },
+  {
+   "o": "Load balancer health checks failing",
+   "s": "Edge Network",
+   "c": [
+    4
+   ]
+  },
+  {
+   "o": "BGP session flapping with provider",
+   "s": "Internet Edge",
+   "c": [
+    4
+   ]
+  },
+  {
+   "o": "High latency on the call routing platform",
+   "s": "Telephony",
+   "c": [
+    4
+   ]
+  },
+  {
+   "o": "Kubernetes pods crash-looping",
+   "s": "Container Platform",
+   "c": [
+    5
+   ]
+  },
+  {
+   "o": "AWS region degraded for S3",
+   "s": "Cloud Storage",
+   "c": [
+    5
+   ]
+  },
+  {
+   "o": "Azure VM scale set not scaling",
+   "s": "Compute",
+   "c": [
+    5
+   ]
+  },
+  {
+   "o": "GCP quota exceeded for GPUs",
+   "s": "ML Platform",
+   "c": [
+    5
+   ]
+  },
+  {
+   "o": "Docker registry unreachable",
+   "s": "Build Cloud",
+   "c": [
+    5
+   ]
+  },
+  {
+   "o": "EC2 instances unreachable in eu-west-1",
+   "s": "Cloud Hosting",
+   "c": [
+    5
+   ]
+  },
+  {
+   "o": "Nightly ETL batch did not finish",
+   "s": "Data Warehouse",
+   "c": [
+    6
+   ]
+  },
+  {
+   "o": "Reporting dashboards showing yesterday's data",
+   "s": "Analytics",
+   "c": [
+    6
+   ]
+  },
+  {
+   "o": "Kafka consumer lag growing",
+   "s": "Streaming Platform",
+   "c": [
+    6
+   ]
+  },
+  {
+   "o": "Spark job failing on schema change",
+   "s": "Data Pipeline",
+   "c": [
+    6
+   ]
+  },
+  {
+   "o": "Snowflake load stuck",
+   "s": "BI Platform",
+   "c": [
+    6
+   ]
+  },
+  {
+   "o": "Phishing campaign targeting finance staff",
+   "s": "Email Security",
+   "c": [
+    7
+   ]
+  },
+  {
+   "o": "Malware detected on a build server",
+   "s": "Endpoint Security",
+   "c": [
+    7
+   ]
+  },
+  {
+   "o": "Critical CVE in the web framework",
+   "s": "Application Security",
+   "c": [
+    7
+   ]
+  },
+  {
+   "o": "Suspected data breach in CRM",
+   "s": "CRM",
+   "c": [
+    7
+   ]
+  },
+  {
+   "o": "Ransomware alert on file server",
+   "s": "File Services",
+   "c": [
+    7
+   ]
+  },
+  {
+   "o": "DDoS against the public website",
+   "s": "Edge Protection",
+   "c": [
+    7
+   ]
+  },
+  {
+   "o": "SSL certificate expired on public site",
+   "s": "Web Platform",
+   "c": [
+    8
+   ]
+  },
+  {
+   "o": "TLS handshake failures after cert rotation",
+   "s": "API Edge",
+   "c": [
+    8
+   ]
+  },
+  {
+   "o": "Internal CA certificate nearing expiry",
+   "s": "PKI",
+   "c": [
+    8
+   ]
+  },
+  {
+   "o": "Expired cert breaking SFTP transfers",
+   "s": "File Transfer",
+   "c": [
+    8
+   ]
+  },
+  {
+   "o": "Deployment pipeline stuck at approval",
+   "s": "CI/CD",
+   "c": [
+    9
+   ]
+  },
+  {
+   "o": "Rollback of release 4.2 failed",
+   "s": "Release Pipeline",
+   "c": [
+    9
+   ]
+  },
+  {
+   "o": "Build artifacts missing from repository",
+   "s": "Build System",
+   "c": [
+    9
+   ]
+  },
+  {
+   "o": "Version mismatch between PROD and PRE-PROD",
+   "s": "Release Management",
+   "c": [
+    9
+   ]
+  },
+  {
+   "o": "Failed deploy left half the nodes on old version",
+   "s": "Deployment Tooling",
+   "c": [
+    9
+   ]
+  },
+  {
+   "o": "Users cannot restart their laptops after the update",
+   "s": "Endpoint Management",
+   "c": [],
+   "note": "rest in restart"
+  },
+  {
+   "o": "Interest rate calculation wrong on savings statement",
+   "s": "Savings Calculator",
+   "c": [],
+   "note": "rest in interest"
+  },
+  {
+   "o": "Rapid growth of log files on the app server",
+   "s": "Logging",
+   "c": [],
+   "note": "api in rapid"
+  },
+  {
+   "o": "Capital allocation report fails to open",
+   "s": "Finance Reporting",
+   "c": [
+    6
+   ],
+   "note": "api in capital; reporting problem"
+  },
+  {
+   "o": "Feedback form submissions failing",
+   "s": "Website",
+   "c": [],
+   "note": "db in feedback"
+  },
+  {
+   "o": "Mobile app crashes on startup for iOS users",
+   "s": "Mobile App",
+   "c": [],
+   "note": "bi in mobile"
+  },
+  {
+   "o": "Public website unavailable",
+   "s": "Web",
+   "c": [],
+   "note": "bi in public"
+  },
+  {
+   "o": "Ability to resize columns missing",
+   "s": "Grid Component",
+   "c": [],
+   "note": "bi in ability"
+  },
+  {
+   "o": "Laws and regulations page not loading",
+   "s": "Intranet",
+   "c": [],
+   "note": "aws in laws"
+  },
+  {
+   "o": "Podcast hosting site down",
+   "s": "Marketing Site",
+   "c": [],
+   "note": "pod in podcast"
+  },
+  {
+   "o": "Concert ticket booking page slow",
+   "s": "Events",
+   "c": [],
+   "note": "cert in concert"
+  },
+  {
+   "o": "Release notes page returns 404",
+   "s": "Documentation",
+   "c": [],
+   "note": "release is just a word here"
+  },
+  {
+   "o": "Building access card reader offline",
+   "s": "Facilities",
+   "c": [],
+   "note": "build + card"
+  },
+  {
+   "o": "Data centre air conditioning alarm",
+   "s": "Facilities",
+   "c": [],
+   "note": "data is just a word here"
+  },
+  {
+   "o": "Version of the handbook is outdated",
+   "s": "Intranet",
+   "c": [],
+   "note": "version"
+  },
+  {
+   "o": "Rest of the team cannot access the shared drive",
+   "s": "File Services",
+   "c": [],
+   "note": "rest as a whole word"
+  },
+  {
+   "o": "Reception gateway door is stuck",
+   "s": "Facilities",
+   "c": [],
+   "note": "gateway as a whole word"
+  },
+  {
+   "o": "Oracle quiz page is broken",
+   "s": "Intranet Games",
+   "c": [],
+   "note": "oracle as a whole word"
+  },
+  {
+   "o": "Login failures at payment gateway after SSO change",
+   "s": "Payment Gateway",
+   "c": [
+    0,
+    1,
+    2
+   ],
+   "note": "several teams plausible"
+  },
+  {
+   "o": "Database connection pool exhausted on payment service",
+   "s": "Payment API",
+   "c": [
+    3,
+    0,
+    2
+   ],
+   "note": "several teams plausible"
+  }
+ ]
+}

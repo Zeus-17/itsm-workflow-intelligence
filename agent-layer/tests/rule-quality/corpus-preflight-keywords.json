@@ -1,0 +1,199 @@
+{
+ "engine": "preflight",
+ "tool": "itsm",
+ "concepts": [
+  "payment-related",
+  "personal-data-related"
+ ],
+ "labelling": "By intent, authored without consulting the rules' results; Claude's judgement, for human review. For routing, concepts are the teams that would reasonably take the incident; the FIRST listed is the best fit.",
+ "cases": [
+  {
+   "t": "Card payments failing at checkout",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "Transaction timeouts on mobile banking",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "PCI scope question for new vendor",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "Customers unable to complete purchase",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "Funds transfer delayed",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "Refund processing stuck",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "Apple Pay declines",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "Direct debit run failed",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "BACS submission rejected",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "Payout batch late",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "Merchant settlement report missing",
+   "c": [
+    0
+   ]
+  },
+  {
+   "t": "Discard button misaligned",
+   "c": [],
+   "note": "card in discard"
+  },
+  {
+   "t": "Scorecard dashboard slow to load",
+   "c": [],
+   "note": "card in scorecard"
+  },
+  {
+   "t": "Cardiff office VPN down",
+   "c": [],
+   "note": "card in cardiff"
+  },
+  {
+   "t": "Fundamentals course page returns 404",
+   "c": [],
+   "note": "fund in fundamentals"
+  },
+  {
+   "t": "Cardinality alert noise in monitoring",
+   "c": [],
+   "note": "card in cardinality"
+  },
+  {
+   "t": "Purchase order PDF layout broken",
+   "c": [],
+   "note": "judgement: procurement document, not a payment flow"
+  },
+  {
+   "t": "Customer data exported to the wrong recipient",
+   "c": [
+    1
+   ]
+  },
+  {
+   "t": "Possible data breach on CRM",
+   "c": [
+    1
+   ]
+  },
+  {
+   "t": "GDPR subject request tool failing",
+   "c": [
+    1
+   ]
+  },
+  {
+   "t": "Email address list leaked",
+   "c": [
+    1
+   ]
+  },
+  {
+   "t": "Account number visible in logs",
+   "c": [
+    1
+   ]
+  },
+  {
+   "t": "Personal data in error messages",
+   "c": [
+    1
+   ]
+  },
+  {
+   "t": "Passport scans stored unencrypted",
+   "c": [
+    1
+   ]
+  },
+  {
+   "t": "Home address shown to other users",
+   "c": [
+    1
+   ]
+  },
+  {
+   "t": "National Insurance numbers in export",
+   "c": [
+    1
+   ]
+  },
+  {
+   "t": "Date of birth visible in URL",
+   "c": [
+    1
+   ]
+  },
+  {
+   "t": "Customer dataset loads slowly in the BI tool",
+   "c": [],
+   "note": "customer data in customer dataset"
+  },
+  {
+   "t": "Account numbering scheme document update",
+   "c": [],
+   "note": "account number in account numbering"
+  },
+  {
+   "t": "Piano lessons page returns 404",
+   "c": []
+  },
+  {
+   "t": "Intranet search ignores accents",
+   "c": []
+  },
+  {
+   "t": "Card data in logs after payment failure",
+   "c": [
+    0,
+    1
+   ]
+  },
+  {
+   "t": "Customer data in payment export sent to supplier",
+   "c": [
+    0,
+    1
+   ]
+  }
+ ]
+}
