@@ -1,0 +1,78 @@
+# Continuous checks for the single-file tool and its agent layer (Master Plan phase K). Identical file in both repositories.
+# Nothing here changes the repository or publishes anything: it only reads the code and reports pass / fail.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node-gates:
+    name: Rules engines, schemas, agent layer (Node + Python)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the one Python test dependency
+        run: pip install jsonschema
+      - name: Embedded agent layer is up to date and within its size budget
+        run: |
+          python agent-layer/embed.py --check
+          python agent-layer/check_size.py
+      - name: Schema package
+        run: python schemas/check_schemas.py
+      - name: Validation layer, audit trail, failsafe, shipped artifact
+        run: |
+          node agent-layer/tests/run.js
+          node agent-layer/tests/audit_run.js
+          node agent-layer/tests/failsafe_run.js
+          node agent-layer/tests/artifact_run.js
+      - name: Engine exports match the real engines (source and as shipped), and the test can fail
+        run: |
+          node agent-layer/tests/parity_run.js --quiet
+          node agent-layer/tests/parity_run.js --embedded --quiet
+          node agent-layer/tests/parity_mutants.js
+      - name: Property tests (must-hold invariants)
+        run: node agent-layer/tests/invariants_run.js
+      - name: Measurements that must keep running (rule quality, HTML sinks)
+        run: |
+          node agent-layer/tests/rule_quality.js
+          node agent-layer/tests/sink_audit.js
+
+  real-browsers:
+    name: Real browser - ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install the browser test tooling (Playwright, pinned in ci/package-lock.json)
+        working-directory: ci
+        run: npm ci --no-audit --no-fund
+      - name: Install ${{ matrix.browser }} and its system libraries
+        working-directory: ci
+        run: npx playwright-core install --with-deps ${{ matrix.browser }}
+      - name: Engine regression, parity, markup safety, escaping snapshot, and the downloaded-file (file://) check
+        working-directory: ci
+        run: node browser-tests.js --browser ${{ matrix.browser }}

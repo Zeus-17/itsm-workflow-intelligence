@@ -17616,12 +17616,12 @@ if('serviceWorker' in navigator){
         console.log('ITSM Tool: stale service worker unregistered');
       });
     });
-  });
+  }).catch(function(){ /* not available when the file is opened from disk (file://): nothing to clean up */ });
   // Also clear any SW-managed caches
   if('caches' in window){
     caches.keys().then(function(names){
       names.forEach(function(name){ caches.delete(name); });
-    });
+    }).catch(function(){ /* same: best-effort cleanup */ });
   }
 }
 </script>

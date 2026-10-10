@@ -1,0 +1,11 @@
+{
+  "name": "release-tool-ci",
+  "private": true,
+  "description": "Real-browser tests for the single-file tool (Playwright, no application dependencies). Not part of the shipped tool.",
+  "scripts": {
+    "test": "node browser-tests.js --browser chromium"
+  },
+  "devDependencies": {
+    "playwright-core": "1.63.0"
+  }
+}
