@@ -72,7 +72,11 @@ const note = (ok, name, detail, secs) => { results.push({ ok, name }); if (!ok) 
 async function httpTests(browser, base) {
   for (const [name, rel] of PAGES) {
     if (QUICK && /snapshot|probe/.test(rel)) continue;
-    const ctx = await browser.newContext(), page = await ctx.newPage();
+    // Deterministic runs: no service worker (RM's registers one that force-reloads every open page once it activates, which restarted the runner
+    // page in Firefox/WebKit) and no outside network (the tools fetch fonts and a GitHub-hosted content file whose arrival time changed what was on screen).
+    const ctx = await browser.newContext({ serviceWorkers: 'block' });
+    await ctx.route((u) => !u.href.startsWith(base + '/'), (r) => r.abort());
+    const page = await ctx.newPage();
     const t0 = Date.now(), seen = [];
     page.on('pageerror', (e) => seen.push('pageerror: ' + String(e.message).slice(0, 200)));
     page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') seen.push(m.type() + ': ' + m.text().slice(0, 200)); });
@@ -124,6 +128,8 @@ async function fileTests(browser) {
       return out;
     }, TOOL);
     const bad = [];
+    // WebKit refuses the web-app manifest link when the page is opened from disk (origin 'null'): a browser rule about installable web apps, not a tool fault.
+    if (failed.length && failed.every((f) => /manifest\.json/.test(f))) { for (let i = errors.length - 1; i >= 0; i--) if (/Access-Control-Allow-Origin/.test(errors[i])) errors.splice(i, 1); }
     if (!info.layers.every((l) => /:object$/.test(l))) bad.push('agent layer modules missing: ' + info.layers.join(' '));
     if (!info.engineReady || !info.engineReady.ok) bad.push('engine exports not ready: ' + JSON.stringify(info.engineReady));
     if (!/^\{/.test(info.engineProbe)) bad.push('engine probe failed: ' + info.engineProbe);
