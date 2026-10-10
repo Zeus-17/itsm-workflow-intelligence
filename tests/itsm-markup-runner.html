@@ -58,7 +58,7 @@ async function drive(win, doc){
   win.Date = RealDate;
   return {snaps, xss: win.__xss || 0, imgs: doc.querySelectorAll('img[data-probe]').length, called: names.length};
 }
-function bodyText(win){ const c=win.document.body.cloneNode(true); c.querySelectorAll('script,style,iframe').forEach(e=>e.remove()); const tc=c.querySelector('#toastContainer'); if(tc) tc.innerHTML=''; return c.innerHTML.replace(/\s+/g,' ').replace(/\b(?=[a-z0-9]*\d)(?=[a-z0-9]*[a-z])[a-z0-9]{10,13}\b/g,'ID').replace(/<(span|div) class="[^"]*save-status[^"]*" id="saveStatus">[^<]*<\/(span|div)>/,'<save-status/>').replace(/\b\d{1,2}:\d{2}(?::\d{2})?\b/g,'TT').replace(/<span class="content-freshness-dot [^"]*" id="regPanelDot"><\/span> <span id="regPanelStatus">[^<]*<\/span>/,'<fresh/>'); }
+function bodyText(win){ const c=win.document.body.cloneNode(true); c.querySelectorAll('script,style,iframe').forEach(e=>e.remove()); const tc=c.querySelector('#toastContainer'); if(tc) tc.innerHTML=''; return c.innerHTML.replace(/\s+/g,' ').replace(/\b(?=[a-z0-9]*\d)(?=[a-z0-9]*[a-z])[a-z0-9]{10,13}\b/g,'ID').replace(/<(span|div) class="[^"]*save-status[^"]*" id="saveStatus">[^<]*<\/(span|div)>/,'<save-status/>').replace(/\b\d{1,2}:\d{2}(?::\d{2})?\b/g,'TT').replace(/class="sla-health-fill [^"]*" id="slaHealthBar" style="[^"]*"/,'class="sla-health-fill" id="slaHealthBar"').replace(/<span class="content-freshness-dot [^"]*" id="regPanelDot"><\/span> <span id="regPanelStatus">[^<]*<\/span>/,'<fresh/>'); }
 
 async function freshTool(frame){
   let loaded = new Promise(r=>frame.addEventListener('load',r,{once:true}));
