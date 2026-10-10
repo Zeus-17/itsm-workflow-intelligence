@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ITSM Engine Parity Runner (real browser)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body{font-family:system-ui,sans-serif;margin:16px;max-width:900px;line-height:1.5}
+  #status{padding:8px 12px;border-radius:6px;background:#eee;font-weight:600}
+  .ok{background:#d1fae5!important}.bad{background:#fee2e2!important}
+  pre{background:#f6f6f6;padding:10px;overflow:auto;max-height:420px;font-size:12px}
+  iframe{width:1px;height:1px;border:0;position:absolute;left:-9999px}
+</style>
+</head>
+<body>
+<h1>ITSM Engine Parity Runner</h1>
+<p>Phase E. In a <strong>real browser, with the real DOM</strong>, drives the tool's real engines (<code>updateScore</code>, <code>calcRiskScore</code>,
+<code>showIntelHint</code>, <code>suggestRoutingGroup</code>, <code>assessCurrencyRisk</code>, <code>generatePreflightFindings</code>) and compares them with the embedded,
+read-only <code>AgentEngine</code> exports on the same inputs. Serve the repo root over HTTP and open this page. The Node suite
+(<code>agent-layer/tests/parity_run.js</code>) runs the larger corpus; this page proves the same against the real DOM. While it runs, the tool's own
+<code>setSev</code> and <code>autosave</code> are temporarily replaced by recorders so the test never changes the page's saved data. Result: <code>window.__PARITY__</code>.</p>
+<div id="status">Loading tool…</div>
+<pre id="out"></pre>
+<iframe id="tool"></iframe>
+<script>
+let pass = 0; const failures = [];
+function ok(c, m){ if(c) pass++; else failures.push(m); }
+const J = (v) => JSON.stringify(v);
+function rng(seed){ let a = seed>>>0; return ()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
+const pick = (r,a)=>a[Math.floor(r()*a.length)];
+const USERS=[1,2,3,4,5], BUSINESS=[0,1,2,3,4,5], WORKAROUND=[0,1,2], DURATION=[0,1,2,3,4], REGULATORY=[0,2,4,5], RECURRING=[0,2,4];
+const BLAST=[5,10,20,30], COMPLEXITY=[5,10,20,25], ROLLBACK=[2,8,15,20], TESTING=[2,8,15,20], HISTORY=[2,5,10,15], TIMING=[2,5,8,10];
+const TYPES=['','application','infrastructure','thirdparty','security','data','network','process','other'];
+const SCORE_IDS=['users','business','workaround','duration','regulatory','recurring'], RF=['blast','complexity','rollback','testing','history','timing'];
+const FILLER=['the','update','for','service','release','fix','a','tidy','incident','users','cannot','slow','error','team','queue','config'];
+const FIXED_NOW = Date.UTC(2026,9,10,12,0,0);
+const isoDate = (d)=> new Date(FIXED_NOW - d*86400000).toISOString().slice(0,10);
+const htmlNorm = (s)=>{ const d=document.createElement('div'); d.innerHTML=s; return d.innerHTML; };  // the browser re-serialises innerHTML
+
+async function runAll(win, doc){
+  const E = win.AgentEngine, $ = (id)=>doc.getElementById(id);
+  ok(!!E && E.ready().ok, 'AgentEngine is embedded and its tables are present: ' + (E ? J(E.ready()) : 'missing'));
+  const counts = {score:0, risk:0, intel:0, route:0, cur:0, pf:0};
+  // never let the test change the page's saved data or UI state
+  const realSetSev = win.setSev, realAutosave = win.autosave, RealDate = win.Date;
+  let setSevCalls = [];
+  win.setSev = (s)=>{ setSevCalls.push(s); }; win.autosave = ()=>{};
+  class FD extends RealDate { constructor(...a){ if(a.length) super(...a); else super(FIXED_NOW); } static now(){ return FIXED_NOW; } }
+  try{
+    // ---- incident_score (exhaustive)
+    for(const users of USERS) for(const business of BUSINESS) for(const workaround of WORKAROUND) for(const duration of DURATION) for(const regulatory of REGULATORY) for(const recurring of RECURRING){
+      const f={users,business,workaround,duration,regulatory,recurring}; counts.score++;
+      SCORE_IDS.forEach(k=>{ $('t1_'+k).value=String(f[k]); });
+      win.eval("selectedSev = ''"); setSevCalls=[];
+      win.updateScore();
+      const total=Number($('scoreNum').textContent), verdict=$('scoreVerdict').textContent, major=win.eval('isMajorIncident');
+      const env=E.run('incident_score',f);
+      ok(env.status==='computed' && env.output.total===total && env.output.verdict===verdict && env.output.is_major===major && setSevCalls.length===1 && setSevCalls[0]===env.output.suggested_tier,'score '+J(f)+' real='+total+'/'+setSevCalls+' export='+J(env));
+    }
+    win.eval("selectedSev = ''; isMajorIncident = false");
+
+    // ---- change_risk (exhaustive)
+    for(const blast of BLAST) for(const complexity of COMPLEXITY) for(const rollback of ROLLBACK) for(const testing of TESTING) for(const history of HISTORY) for(const timing of TIMING){
+      const f={blast,complexity,rollback,testing,history,timing}; counts.risk++;
+      RF.forEach(k=>{ $('rf_'+k).value=String(f[k]); });
+      win.calcRiskScore();
+      const total=Number($('riskScoreNum').textContent), level=(($('riskScoreNum').className.match(/risk-score-num (low|medium|high)/))||[])[1];
+      const env=E.run('change_risk',f);
+      ok(env.status==='computed' && env.output.total===total && env.output.level===level,'risk '+J(f)+' real='+total+'/'+level+' export='+J(env));
+    }
+
+    // ---- intel_hint
+    for(const t of TYPES){
+      counts.intel++;
+      $('t1_inctype').value=t; const h=$('intelHint'); h.classList.remove('show'); h.innerHTML='';
+      win.showIntelHint();
+      const shown=h.classList.contains('show'); const env=E.run('intel_hint',{incidentType:t});
+      ok(env.status==='computed' && env.output.matched===shown && (!shown || htmlNorm(env.output.hint_html)===h.innerHTML),'intel '+J(t));
+    }
+
+    // ---- routing_suggestion
+    const routing=win.eval('ROUTING_RULES'), kws=routing.map(r=>r.keywords), r=rng(20261010);
+    const savedCustom=win.eval('JSON.stringify(customRoutingRules)');
+    function route(obs,svc,label){
+      counts.route++;
+      const real=win.suggestRoutingGroup(obs,svc), env=E.run('routing_suggestion',{observation:obs,service:svc});
+      if(!((obs||'')+(svc||'')).toLowerCase().trim()){ ok(real===null && env.status==='not_assessed',label+' empty'); return; }
+      if(!real){ ok(env.status==='computed' && !env.output.matched,label+' nomatch '+J(env)); return; }
+      ok(env.status==='computed' && env.output.matched && env.output.group===real.group && env.output.rationale===real.rationale,label+' real='+real.group+' export='+J(env));
+    }
+    win.eval('customRoutingRules = []');
+    kws.forEach(ks=>ks.forEach(k=>{ [[k,''],['',k],[k.toUpperCase(),'svc'],['xx'+k+'yy',''],[k.slice(0,Math.ceil(k.length/2)),k.slice(Math.ceil(k.length/2))]].forEach(c=>route(c[0],c[1],'route '+J(c))); }));
+    for(let i=0;i<kws.length;i++) for(let j=0;j<kws.length;j++) route(pick(r,kws[i])+' '+pick(r,kws[i])+' '+pick(r,kws[j]),'','route-tie');
+    route('','','e1'); route('   ','  ','e2'); route('nothing relevant','Some Service','nomatch');
+    for(let k=0;k<800;k++){ const w=[]; const len=1+Math.floor(r()*6); for(let q=0;q<len;q++) w.push(r()<0.4?pick(r,pick(r,kws)):pick(r,FILLER)); route(w.slice(0,Math.ceil(len/2)).join(' '),w.slice(Math.ceil(len/2)).join(' '),'route-fuzz'+k); }
+    win.eval("customRoutingRules = [{id:'c1',keywords:['payment','zeta'],group:'Custom Payments',rationale:'Custom rule: payment, zeta'},{id:'c2',keywords:['zeta'],group:'Zeta Team',rationale:'Custom rule: zeta'}]");
+    [['payment zeta outage',''],['zeta only',''],['payment only',''],['network issue',''],['pay','ment zeta']].forEach(c=>route(c[0],c[1],'custom '+J(c)));
+    win.eval('customRoutingRules = ' + savedCustom);
+
+    // ---- currency_risk (clock fixed in the page for the duration)
+    win.Date = FD;
+    const CS=['unknown','expired','critical','warn','ok'], VS=['critical','high','medium','advisory'], SS=['','active','lts','maintenance','eol_soon','eol','unknown'];
+    const savedCerts=win.eval('JSON.stringify(certEntries)'), savedVulns=win.eval('JSON.stringify(vulnEntries)');
+    const cr=rng(31337);
+    function currency(inp,label){
+      counts.cur++;
+      win.eval('certEntries = '+J(inp.certificates)); win.eval('vulnEntries = '+J(inp.vulnerabilities));
+      $('sc_support_status').value=inp.supportStatus; $('sc_last_pentest').value=inp.lastPentest; $('sc_last_patched').value=inp.lastPatched;
+      win.assessCurrencyRisk();
+      const real=win.eval('JSON.stringify(window._currencyRisks)'); const env=E.run('currency_risk',inp,[],{now:FIXED_NOW});
+      ok(env.status==='computed' && J(env.output.risks)===real,label+' real='+real+' export='+J(env));
+    }
+    const edges=[0,1,179,180,181,364,365,366,400,730];
+    for(const a of edges) for(const b of edges) currency({certificates:[],vulnerabilities:[],supportStatus:'',lastPentest:isoDate(a),lastPatched:isoDate(b)},'cur-dates '+a+'/'+b);
+    for(let k=0;k<600;k++){
+      currency({certificates:Array.from({length:Math.floor(cr()*4)},()=>({name:pick(cr,['','api.example.com','vpn gateway']),status:pick(cr,CS),daysLeft:Math.floor(cr()*120)-10})),
+        vulnerabilities:Array.from({length:Math.floor(cr()*5)},()=>({severity:pick(cr,VS)})),supportStatus:pick(cr,SS),
+        lastPentest:cr()<0.3?'':isoDate(Math.floor(cr()*800)),lastPatched:cr()<0.3?'':isoDate(Math.floor(cr()*500))},'cur-fuzz'+k);
+    }
+    win.Date = RealDate;
+    win.eval('certEntries = '+savedCerts); win.eval('vulnEntries = '+savedVulns);
+
+    // ---- preflight
+    const TEXTS=['',' ','x','short one','ten chars!','ten chars!!','A reasonably long description of the incident that is over thirty characters','Card payment failures on checkout','Customer data breach suspected','Refund email template','Discard button','PCI scope question','personal data export failed','Email address leaked in logs','   padded text   ','Account number mismatch'];
+    const pr=rng(9001);
+    const savedTl=win.eval('timelineEvents.length'), savedDec=win.eval('decisionLog.length');
+    for(let k=0;k<1200;k++){
+      counts.pf++;
+      const c={shortDescription:pick(pr,TEXTS),observation:pick(pr,TEXTS),service:pick(pr,['','Mobile Banking','Payment Gateway','Intranet','card platform']),
+        startedAt:pick(pr,['','2026-10-10T09:00']),diagnosis:pick(pr,['','short','nineteen chars long','twenty characters!!!','A properly detailed diagnosis']),ci:pick(pr,['','PAY-GW-01']),
+        assignmentGroup:pick(pr,['','Platform Ops']),resolvedAt:pick(pr,['','2026-10-10T11:00']),resolution:pick(pr,['','Restarted the pool']),
+        rootCause:pick(pr,['','short','ten chars!!','Connection pool exhausted']),permanentFix:pick(pr,['','short','ten chars!!','Raise pool size']),
+        severity:pick(pr,['','P1','P2','P3','P4']),timelineCount:pick(pr,[0,1,3,4,5]),decisionCount:pick(pr,[0,1,4]),regulatoryFlagChecked:pr()<0.4,
+        fields:[pick(pr,[0,1,2,3,4,5]),pick(pr,BUSINESS),pick(pr,WORKAROUND),pick(pr,DURATION),pick(pr,REGULATORY),pick(pr,RECURRING)]};
+      if(k<40){ c.fields=[0,0,0,0,0,0]; }   // score 0 with a chosen tier
+      const set=(id,v)=>{ $(id).value=v; };
+      set('i_shortdesc',c.shortDescription); set('t1_observation',c.observation); set('t1_service',c.service); set('i_diagnosis',c.diagnosis); set('i_ci',c.ci);
+      set('i_assigngroup',c.assignmentGroup); set('i_started',c.startedAt); set('i_resolved',c.resolvedAt); set('i_resolution',c.resolution); set('rca_rootcause',c.rootCause); set('rca_fix',c.permanentFix);
+      $('sla_regulatory').checked=c.regulatoryFlagChecked;
+      SCORE_IDS.forEach((id,i)=>{ $('t1_'+id).value=String(c.fields[i]); });
+      win.eval('selectedSev = '+J(c.severity)); win.eval('timelineEvents = new Array('+c.timelineCount+').fill(0)'); win.eval('decisionLog = new Array('+c.decisionCount+').fill(0)');
+      const triage=win.calcScore();
+      const real=win.generatePreflightFindings().map(f=>({type:f.type,title:f.title}));
+      const env=E.run('preflight',{shortDescription:$('i_shortdesc').value.trim()===c.shortDescription.trim()?c.shortDescription:c.shortDescription,observation:c.observation,service:c.service,startedAt:$('i_started').value,diagnosis:c.diagnosis,
+        assignmentGroup:c.assignmentGroup,ci:c.ci,resolvedAt:$('i_resolved').value,resolution:c.resolution,rootCause:c.rootCause,permanentFix:c.permanentFix,severity:c.severity,triageScore:triage,
+        timelineCount:c.timelineCount,decisionCount:c.decisionCount,regulatoryFlagChecked:c.regulatoryFlagChecked});
+      ok(env.status==='computed' && J(env.output.findings)===J(real),'preflight#'+k+' '+J(c).slice(0,120)+'\n real='+J(real).slice(0,200)+'\n export='+J(env).slice(0,200));
+    }
+    win.eval('timelineEvents = new Array('+savedTl+').fill(0); decisionLog = new Array('+savedDec+').fill(0); selectedSev = ""');
+
+    // ---- sla_clock
+    for(const sev of ['P1','P2','P3','P4']){ const env=E.run('sla_clock',{severity:sev,startedAt:'2026-10-10T09:00',pausedMinutes:0}); ok(env.status==='computed' && env.output.limit_minutes===(win.eval('slaMins')[sev]||240),'sla '+sev+' '+J(env)); }
+    ok(/const limit=slaMins\[sev\]\|\|240;/.test(win.startSLAClock.toString()),'the tool still contains slaMins[sev]||240');
+    ok(E.run('severity_record',{severity:'P1'}).reason==='human_decision_only','severity_record is refused');
+  } finally {
+    win.setSev = realSetSev; win.autosave = realAutosave; win.Date = RealDate;
+  }
+  return counts;
+}
+
+async function main(){
+  const status=document.getElementById('status'), out=document.getElementById('out'), frame=document.getElementById('tool');
+  const fresh = await (await fetch('../itsm-workflow-tool-v25.html',{cache:'no-store'})).text();
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fresh));
+  const sha = Array.from(new Uint8Array(buf)).map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,12);
+  const loaded = new Promise(r=>frame.addEventListener('load',r,{once:true}));
+  frame.src='../itsm-workflow-tool-v25.html?cb='+Date.now(); await loaded;
+  await new Promise(r=>setTimeout(r,1200));
+  try{
+    const counts = await runAll(frame.contentWindow, frame.contentDocument);
+    window.__PARITY__ = {pass, failed: failures.length, failures: failures.slice(0,30), counts, toolSha: sha};
+    status.className = failures.length?'bad':'ok';
+    status.textContent = (failures.length? 'PARITY FAILED: '+failures.length+' difference(s)' : 'PARITY PASS: '+pass+' assertions')+'  [tool sha256:'+sha+']  '+J(counts);
+    out.textContent = failures.length? failures.slice(0,30).join('\n') : '';
+  }catch(err){ status.className='bad'; status.textContent='Runner error: '+err.message; out.textContent=err.stack; window.__PARITY__={error:err.message}; }
+}
+main();
+</script>
+</body>
+</html>

@@ -93,3 +93,27 @@ the proven-safe standard form - the same state as toggle-off.
 The embedded block is held to a **size budget** (`sizeBudgetKB` in `config.json`, gzipped, currently 60 KB; `python agent-layer/check_size.py`).
 Source files stay fully documented; `embed.py` strips comments from the *embedded* copy only. `node agent-layer/tests/artifact_run.js` tests the
 block exactly as shipped (compacted, with its bootstrap). Raising the budget is a deliberate decision, not a side-effect.
+
+## Engine exports - `engine-exports.js` (Phase E) - per tool, read-only
+The tool's deterministic engines read and write the page (some even overwrite fields), so an assistant cannot call them safely.
+`engine-exports.js` provides **read-only, side-effect-free versions** under `window.AgentEngine`:
+
+```js
+AgentEngine.engines()                       // the engines this tool exports
+AgentEngine.run(engine, input, caveats?)    // input already resolved + schema-valid -> output envelope
+AgentEngine.evaluate(engine, draft, opts?)  // agent DRAFT -> unresolved-input policy -> engine -> output envelope
+AgentEngine.ready()                         // {ok, missing[]}: are the tool tables this module reads present?
+```
+* **Not a second rules engine.** The rule tables are read *by reference* from the tool at call time; the few formulas/wording that live
+  inside engine functions are mirrored here and **proven identical** by `tests/parity_run.js` (Node; extracts the tool's real source into an
+  isolated VM with a fake DOM) and `tests/*-parity-runner.html` (real browser, real DOM). Every gate runs both, plus `parity_mutants.js`
+  (deliberate faults the parity test must catch).
+* **Output** always conforms to `schemas/engine-outputs.schema.json` (checked before return). A drifted tool (new rule, missing table)
+  fails closed with `status:'rejected'`, never a malformed answer.
+* **Human decisions are not exportable:** RM `decision_record` (GO / NO-GO) and ITSM `severity_record` (the tier) return `human_decision_only`.
+* **Legacy artefacts are refused, not reproduced:** RM zero gates / empty environment path; ITSM unset change-risk factors and the form's
+  `0` "Unknown" users value. The raw legacy arithmetic is reachable only through test hooks so parity can prove the mirror faithful.
+* **Never touches** the DOM, `STATE`, saved data, storage or the network; verified by tests (DOM access trapped, state compared before/after).
+* ITSM currency risk depends on today's date, so the clock is a parameter: `run('currency_risk', input, caveats, {now})`.
+* After the tool's engine or a rule table changes: run `node agent-layer/tests/parity_run.js`. A failure here means the mirror needs the same change
+  (or the change was unintended - roll back).

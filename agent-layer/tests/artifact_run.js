@@ -39,6 +39,15 @@ const { ctx, store } = pageContext(cfg.tool === 'rm'
 ok(Object.keys(store).length === 0, 'loading the page writes nothing to storage');
 ok(ctx.AgentLayer && ctx.AgentAudit && ctx.AgentFailsafe, 'all three modules are present as shipped (compacted)');
 ok(ctx.AgentLayer.status().configured === true && ctx.AgentLayer.status().enabled === false, 'validation layer configured but DISABLED');
+if (cfg.engineExports) {
+  // the per-tool engine exports, as shipped: present, inert, and fail closed when the tool's tables are missing or the input is junk
+  const EE = ctx.AgentEngine;
+  ok(EE && typeof EE.run === 'function' && typeof EE.evaluate === 'function' && EE.engines().length > 0, 'the shipped block exposes AgentEngine with engines');
+  ok(EE.engines().every((e) => { const r = EE.run(e, {}); return r.status === 'rejected'; }), 'every shipped engine export rejects an empty input (never computes, never throws)');
+  const humanOnly = cfg.tool === 'rm' ? 'decision_record' : 'severity_record';   // RM: the human GO / NO-GO; ITSM: the tier the human chooses
+  ok(EE.run(humanOnly, {}).reason === 'human_decision_only', 'the human-only decision (' + humanOnly + ') can never be run by the assistant (as shipped)');
+  ok(Object.keys(store).length === 0, 'running engine exports writes nothing to storage');
+}
 ok(ctx.AgentAudit.log() !== null && ctx.AgentFailsafe.instance() !== null, 'audit log and failsafe initialised by the bootstrap');
 ok(ctx.AgentFailsafe.instance().state().mode === 'standard', 'failsafe starts in Standard Mode');
 ok(code.length < fs.readFileSync(path.join(ROOT, 'validation.js'), 'utf8').length + fs.readFileSync(path.join(ROOT, 'audit.js'), 'utf8').length + fs.readFileSync(path.join(ROOT, 'failsafe.js'), 'utf8').length + 200000, 'embedded size is sane');

@@ -50,6 +50,10 @@ def main():
         ("Embedded block up to date", [py, "agent-layer/embed.py", "--check"]),
         ("Size budget", [py, "agent-layer/check_size.py"]),
     ]
+    if os.path.exists(os.path.join(HERE, "tests", "parity_run.js")):      # per-tool engine parity (Phase E onward)
+        checks += [("Engine parity: exports vs the tool's real engines (source)", ["node", "agent-layer/tests/parity_run.js", "--quiet"]),
+                   ("Engine parity: embedded block as shipped", ["node", "agent-layer/tests/parity_run.js", "--embedded", "--quiet"]),
+                   ("Engine parity: mutation check (the test can fail)", ["node", "agent-layer/tests/parity_mutants.js"])]
     results = [(name,) + run(cmd) for name, cmd in checks]
     _, head = run(["git", "rev-parse", "--short", "HEAD"])
     _, dirty = run(["git", "status", "--porcelain", "--untracked-files=no"])
