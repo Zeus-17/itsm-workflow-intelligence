@@ -1,0 +1,45 @@
+{
+ "payment_flagged": [
+  {"id": "pay-stripe-redteam6", "text": "Stripe webhook listener update", "expect_terms": ["stripe"]},
+  {"id": "pay-gateway", "text": "Payment gateway upgrade for the retail platform", "expect_terms": ["payment gateway"]},
+  {"id": "pay-credential-removal", "text": "Remove old test credential from docs (Adyen sandbox)", "expect_terms": ["adyen"]},
+  {"id": "pay-card-checkout", "text": "Card declined at checkout for all users", "expect_terms": ["card", "checkout"]},
+  {"id": "pay-bacs", "text": "BACS file rejected by the bank overnight", "expect_terms": ["bacs"]},
+  {"id": "pay-pci", "text": "PCI-DSS scope review before go-live", "expect_terms": ["pci-dss"]},
+  {"id": "pay-refund", "text": "Refund email template shows wrong footer text", "expect_terms": ["refund"]},
+  {"id": "pay-case-insensitive", "text": "PAYPAL button misaligned on mobile", "expect_terms": ["paypal"]},
+  {"id": "pay-apple-pay-spaces", "text": "Apple   Pay sheet not appearing", "expect_terms": ["apple pay"]},
+  {"id": "pay-punctuation", "text": "Fix (transaction),checkout;settlement", "expect_terms": ["transaction", "checkout", "settlement"]}
+ ],
+ "payment_not_flagged": [
+  {"id": "neg-discard", "text": "Discard button misaligned on the settings page"},
+  {"id": "neg-housekeeping", "text": "Quarterly housekeeping and log rotation"},
+  {"id": "neg-fundamental", "text": "Fundamental redesign of the dashboard layout"},
+  {"id": "neg-substrings", "text": "Scorecard and cardiology study with prepayment-free promotional wording"},
+  {"id": "neg-empty", "text": ""},
+  {"id": "neg-mexico", "text": "Mexico office wifi upgrade and screen scaling"}
+ ],
+ "pii_flagged": [
+  {"id": "pii-email", "text": "Please contact jane.doe@example.com about the outage", "category": "email"},
+  {"id": "pii-ni-spaced", "text": "Customer NI number AB 12 34 56 C was in the ticket", "category": "national_insurance"},
+  {"id": "pii-ni-compact", "text": "ni ab123456c", "category": "national_insurance"},
+  {"id": "pii-phone-intl", "text": "Call +44 7911 123456 for access", "category": "phone"},
+  {"id": "pii-phone-mobile", "text": "Mobile 07911 123456", "category": "phone"},
+  {"id": "pii-phone-landline", "text": "Office line 020 7946 0958", "category": "phone"},
+  {"id": "pii-card", "text": "Paid with 4111 1111 1111 1111 yesterday", "category": "payment_card"},
+  {"id": "pii-iban", "text": "Refund to GB82 WEST 1234 5698 7654 32 please", "category": "iban"},
+  {"id": "pii-sort-code", "text": "Sort code 20-45-77 for the supplier", "category": "sort_code_account"},
+  {"id": "pii-account", "text": "account no: 12345678 needs updating", "category": "sort_code_account"}
+ ],
+ "pii_not_flagged": [
+  {"id": "ok-release-note", "text": "Release 2026-10-10 deploy to PROD at 09:00, rollback tested"},
+  {"id": "ok-incident-id", "text": "INC0012345 resolved by restarting the auth pods"},
+  {"id": "ok-version", "text": "Version 1.2.3.4 build 20261010 promoted to UAT"},
+  {"id": "ok-date-dmy", "text": "Change window 10-10-26 overnight"},
+  {"id": "ok-ticket", "text": "See PROJ-1234 and REL-2026-Q2 for scope"},
+  {"id": "ok-luhn-invalid-16-digits", "text": "Order reference 4111111111111112 failed validation"},
+  {"id": "ok-extension", "text": "Call extension 5521 for the service desk"},
+  {"id": "ok-ip", "text": "Host 192.168.0.1 unreachable from 10.0.0.12"},
+  {"id": "ok-plain", "text": "Rollback script exists, should be fine"}
+ ]
+}

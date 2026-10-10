@@ -1,0 +1,5 @@
+{
+ "tool": "itsm",
+ "html": "../itsm-workflow-tool-v25.html",
+ "paymentLabel": "Payment-related terms detected. Assess notification obligations under FCA SUP 15 and the Payment Services Regulations 2017, and under DORA Article 19 (reporting of major ICT-related incidents) or Article 23 (payment-related incidents) where your entity is in scope. Flagged for human review - the tool has not classified this incident."
+}

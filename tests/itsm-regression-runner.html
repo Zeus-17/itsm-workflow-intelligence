@@ -239,7 +239,10 @@ async function runAll(){
 
   // --- DORA statements: tool source + content layer, as text snapshots ---
   const src = await (await fetch('../itsm-workflow-tool-v25.html', {cache:'no-store'})).text();
-  R.doraSource = articleSnippets(src);
+  // The embedded agent-layer block has its own tests (agent-layer/tests); this snapshot is about the TOOL's own statements.
+  const aBegin = src.indexOf('<!-- AGENT-LAYER:BEGIN'), aEndMark = '<!-- AGENT-LAYER:END -->', aEnd = src.lastIndexOf(aEndMark);
+  const toolSrc = (aBegin >= 0 && aEnd > aBegin) ? src.slice(0, aBegin) + src.slice(aEnd + aEndMark.length) : src;
+  R.doraSource = articleSnippets(toolSrc);
   try{
     const cj = await (await fetch('../itsm-content-v25.json', {cache:'no-store'})).json();
     const refs = cj.regulatory_references || {};
