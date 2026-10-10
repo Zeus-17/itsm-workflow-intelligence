@@ -22,9 +22,8 @@
  *   `severity_record` (the tier the HUMAN chooses) is deliberately NOT exportable: the engine only SUGGESTS a tier.
  *
  * KNOWN LEGACY QUIRKS (characterised, mirrored for parity, NOT fixed here - engine fixes are a separate signed-off workstream):
- *   - routing joins the two text fields WITHOUT a space; keyword matching is by substring ('db' matches 'feedback');
- *   - an 'unknown' support status raises no currency risk; an unparseable date silently skips its check (this module adds a
- *     caveat so the result is marked incomplete rather than reading as an all-clear).
+ *   - (Q-1/Q-4/Q-11/Q-14, adopted 2026-10-10: routing now joins with a space and matches whole words; an unknown support status and an unreadable
+ *     date each raise a prompt. The export mirrors the tool exactly and ALSO marks an unreadable date as an incomplete result.)
  *
  * INERT UNTIL USED. No listeners, timers, storage or network. Never throws for bad input (returns a status instead).
  */
@@ -40,21 +39,21 @@
   var DAY_MS = 1000 * 60 * 60 * 24;
 
   /** The tool's own tables, referenced BY NAME in the global scope at call time (never copied). */
-  var REQUIRED = ['intelRules', 'ROUTING_RULES', 'slaMins'];
+  var REQUIRED = ['intelRules', 'ROUTING_RULES', 'slaMins', 'suggestRoutingGroup'];
 
   function table(name) {
     switch (name) {
       case 'intelRules': return typeof intelRules !== 'undefined' ? intelRules : null;          // eslint-disable-line no-undef
       case 'ROUTING_RULES': return typeof ROUTING_RULES !== 'undefined' ? ROUTING_RULES : null; // eslint-disable-line no-undef
       case 'slaMins': return typeof slaMins !== 'undefined' ? slaMins : null;                   // eslint-disable-line no-undef
-      case 'customRoutingRules': return typeof customRoutingRules !== 'undefined' ? customRoutingRules : null; // eslint-disable-line no-undef
+      case 'suggestRoutingGroup': return typeof suggestRoutingGroup === 'function' ? suggestRoutingGroup : null; // eslint-disable-line no-undef
       default: return null;
     }
   }
 
   /** Are all the tool tables this module depends on present? Fail closed if the tool changed shape. */
   function ready() {
-    var missing = REQUIRED.filter(function (n) { var t = table(n); return !t || typeof t !== 'object'; });
+    var missing = REQUIRED.filter(function (n) { var t = table(n); return !t || (typeof t !== 'object' && typeof t !== 'function'); });
     return { ok: missing.length === 0, missing: missing };
   }
 
@@ -137,10 +136,10 @@
       var suggested = score >= 17 ? 'P1' : score >= 11 ? 'P2' : score >= 6 ? 'P3' : 'P4';
       if (sev !== suggested) f('pf-warn', 'Severity override: score suggests ' + suggested + ', you selected ' + sev);
     }
-    var paymentKeywords = /payment|transaction|banking|card|pci|checkout|purchase|fund/i;
+    var paymentKeywords = /\b(payments?|transactions?|banking|cards?|pci|checkouts?|purchases?|funds?|refunds?|payouts?|direct debits?|bacs|sepa|apple pay|google pay|merchants?|settlements?)\b/i;   // Q-1/Q-2 (mirrors generatePreflightFindings)
     var flagged = !!input.regulatoryFlagChecked;
     if (paymentKeywords.test(obs + ' ' + svc) && !flagged) f('pf-warn', 'Payment keyword detected — regulatory flag not set');
-    var piiKeywords = /personal data|pii|gdpr|customer data|data breach|email address|account number/i;
+    var piiKeywords = /\b(personal data|personal information|pii|gdpr|customer data|data breach(es)?|email addresses?|account numbers?|passports?|home address(es)?|national insurance|date of birth|sort code)\b/i;   // Q-1/Q-2
     if (piiKeywords.test(obs + ' ' + svc) && !flagged) f('pf-warn', 'Possible data incident — regulatory flag not set');
     if ((sev === 'P1' || sev === 'P2') && (!rcaRoot || rcaRoot.trim().length < 10)) f('pf-warn', 'Root cause not completed for ' + sev + ' incident');
     if ((sev === 'P1' || sev === 'P2') && (!rcaFix || rcaFix.trim().length < 10)) f('pf-warn', 'Permanent fix not documented');
@@ -165,28 +164,18 @@
   }
 
   /* ---------------------------------------------------------------------------------------------- routing_suggestion
-   * Mirrors suggestRoutingGroup(): the two texts are joined WITHOUT a space, lower-cased, matched by substring. The user's own
-   * custom rules are consulted first (best keyword count wins); then the built-in rules (highest count wins, ties to the earlier
-   * rule). No text at all is not an answer ("not assessed"), because silence must not read as "nothing to route". */
-
-  function bestRule(rules, text) {
-    var best = null, bestScore = 0;
-    rules.forEach(function (rule) {
-      var score = rule.keywords.filter(function (kw) { return text.indexOf(kw) !== -1; }).length;
-      if (score > bestScore) { bestScore = score; best = rule; }
-    });
-    return bestScore > 0 ? best : null;
-  }
+   * suggestRoutingGroup() is a PURE function of its two arguments (plus the user's own custom routing rules), so the export calls the tool's own
+   * function rather than mirroring it: parity is then true by construction. Since Q-1/Q-4 it joins the two texts WITH a space and matches whole words.
+   * No text at all is not an answer ("not assessed"), because silence must not read as "nothing to route". */
 
   function routing(input, caveats) {
-    var text = ((input.observation || '') + (input.service || '')).toLowerCase();
+    var text = ((input.observation || '') + ' ' + (input.service || '')).toLowerCase();
     if (!text.trim()) return nonAnswer('routing_suggestion', 'not_assessed', [{ field: 'observation+service', reason_code: 'routing_text_missing' }]);
-    var rule = null;
-    var custom = table('customRoutingRules');
-    if (custom && custom.length) rule = bestRule(custom, text);
-    if (!rule) rule = bestRule(table('ROUTING_RULES'), text);
+    var rule = table('suggestRoutingGroup')(input.observation, input.service);
     if (!rule) return computed('routing_suggestion', { matched: false, complete: complete(caveats) }, caveats);
-    return computed('routing_suggestion', { matched: true, group: rule.group, rationale: rule.rationale, complete: complete(caveats) }, caveats);
+    var out = { matched: true, group: rule.group, rationale: rule.rationale, complete: complete(caveats) };
+    if (rule.matched && rule.matched.length) out.matched_keywords = rule.matched.slice();   // Q-5: which words triggered it
+    return computed('routing_suggestion', out, caveats);
   }
 
   /* ---------------------------------------------------------------------------------------------- currency_risk
@@ -204,17 +193,18 @@
     if (critVulns.length) risks.push(critVulns.length + ' critical/high severity vulnerabilities unaddressed');
     if (input.supportStatus === 'eol') risks.push('Component is END OF LIFE — no security patches available');
     else if (input.supportStatus === 'eol_soon') risks.push('Component approaching end of support');
+    else if (input.supportStatus === 'unknown') risks.push('Vendor support status is unknown — confirm whether this component is still supported');   // Q-11
     var lastPentest = T(input.lastPentest);
     if (lastPentest) {
       var daysSince = Math.floor((now - new Date(lastPentest)) / DAY_MS);
       if (daysSince > 365) risks.push('Last penetration test was ' + Math.floor(daysSince / 30) + ' months ago — consider scheduling review');
-      if (isNaN(daysSince)) extra.push({ code: 'pentest_date_not_assessed', field: 'lastPentest' });
+      if (isNaN(daysSince)) { risks.push('The last penetration test date could not be read — check it'); extra.push({ code: 'pentest_date_not_assessed', field: 'lastPentest' }); }   // Q-14
     }
     var lastPatched = T(input.lastPatched);
     if (lastPatched) {
       var daysSinceP = Math.floor((now - new Date(lastPatched)) / DAY_MS);
       if (daysSinceP > 180) risks.push('No patching activity in ' + Math.floor(daysSinceP / 30) + ' months');
-      if (isNaN(daysSinceP)) extra.push({ code: 'patch_date_not_assessed', field: 'lastPatched' });
+      if (isNaN(daysSinceP)) { risks.push('The last patching date could not be read — check it'); extra.push({ code: 'patch_date_not_assessed', field: 'lastPatched' }); }   // Q-14
     }
     var all = (caveats || []).concat(extra);
     return computed('currency_risk', { risks: risks, complete: complete(all) }, all);
@@ -231,7 +221,7 @@
   /* ---------------------------------------------------------------------------------------------- public API */
 
   var IMPL = { incident_score: incidentScore, intel_hint: intelHint, preflight: preflight, change_risk: changeRisk, routing_suggestion: routing, currency_risk: null, sla_clock: slaClock };
-  var DEPENDS = { incident_score: [], intel_hint: ['intelRules'], preflight: [], change_risk: [], routing_suggestion: ['ROUTING_RULES'], currency_risk: [], sla_clock: ['slaMins'] };
+  var DEPENDS = { incident_score: [], intel_hint: ['intelRules'], preflight: [], change_risk: [], routing_suggestion: ['suggestRoutingGroup'], currency_risk: [], sla_clock: ['slaMins'] };
 
   /**
    * Run engine `engine` on an already-resolved, schema-valid engine input. `caveats` are those produced by the unresolved-input

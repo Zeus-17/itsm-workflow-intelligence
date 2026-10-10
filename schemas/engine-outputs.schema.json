@@ -662,6 +662,14 @@
          "type": "string",
          "minLength": 1
         },
+        "matched_keywords": {
+         "type": "array",
+         "items": {
+          "type": "string",
+          "minLength": 1
+         },
+         "description": "The keywords that triggered the suggestion (Q-5): it is a keyword match, not an assessment."
+        },
         "complete": {
          "type": "boolean",
          "description": "False whenever a fallback or skipped check means 'nothing found' must NOT be read as 'all clear'."

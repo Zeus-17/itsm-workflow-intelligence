@@ -75,7 +75,7 @@ calcRiskScore() - six factors summed; low <= 30, medium <= 60, high above. Since
 
 ## `routing_suggestion`
 
-suggestRoutingGroup() - 10 keyword rules (custom rules take priority). Highest keyword count wins, ties go to the earlier rule. The two text fields are joined WITHOUT a space before matching.
+suggestRoutingGroup() - 10 keyword rules (custom rules take priority). Highest keyword count wins, ties go to the earlier rule. Since Q-1/Q-4 (2026-10-10) the two text fields are joined WITH a space and built-in keywords match whole words (a user's own custom keywords still match as substrings).
 
 *Engine-level rule:* at least one of `observation`, `service` must carry real content, otherwise the result is **not_assessed** (`routing_text_missing`).
 

@@ -216,7 +216,6 @@
    "pf-good | Core fields complete — outputs will be paste-ready"
   ],
   "pf-T12-fp-discard": [
-   "pf-warn | Payment keyword detected — regulatory flag not set",
    "pf-info | Incident timeline is empty",
    "pf-good | Core fields complete — outputs will be paste-ready"
   ],
@@ -262,7 +261,7 @@
   "route-cert": "Platform Operations | Certificate/TLS keywords detected",
   "route-release": "Release Engineering | Deployment keywords detected",
   "route-multi-rule-highest-count": "API Platform Engineering | API/integration keywords detected",
-  "route-boundary-join": "API Platform Engineering | API/integration keywords detected",
+  "route-boundary-join": null,
   "route-data-substring": "Database Administration | Database keywords detected",
   "route-empty": null,
   "route-no-keyword": null
@@ -285,7 +284,9 @@
   "cur-eol-soon": [
    "Component approaching end of support"
   ],
-  "cur-support-unknown": [],
+  "cur-support-unknown": [
+   "Vendor support status is unknown — confirm whether this component is still supported"
+  ],
   "cur-old-pentest": [
    "Last penetration test was N months ago — consider scheduling review"
   ],

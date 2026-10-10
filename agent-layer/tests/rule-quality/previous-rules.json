@@ -1,0 +1,135 @@
+{
+ "status": "The ORIGINAL ITSM routing rules (substring matching, fields joined without a space) and pre-flight regexes, before the Q change set of 2026-10-10.",
+ "routing": [
+  {
+   "keywords": [
+    "payment",
+    "card",
+    "transaction",
+    "checkout",
+    "merchant",
+    "acquiring"
+   ],
+   "group": "Payment Operations",
+   "rationale": "Payment-related keywords detected"
+  },
+  {
+   "keywords": [
+    "auth",
+    "login",
+    "sso",
+    "okta",
+    "ldap",
+    "password",
+    "mfa",
+    "2fa"
+   ],
+   "group": "Identity and Access Management",
+   "rationale": "Authentication/identity keywords detected"
+  },
+  {
+   "keywords": [
+    "api",
+    "gateway",
+    "endpoint",
+    "rest",
+    "graphql",
+    "microservice"
+   ],
+   "group": "API Platform Engineering",
+   "rationale": "API/integration keywords detected"
+  },
+  {
+   "keywords": [
+    "database",
+    "db",
+    "sql",
+    "postgres",
+    "oracle",
+    "mongo",
+    "redis",
+    "replication"
+   ],
+   "group": "Database Administration",
+   "rationale": "Database keywords detected"
+  },
+  {
+   "keywords": [
+    "network",
+    "dns",
+    "firewall",
+    "load balancer",
+    "vpn",
+    "routing",
+    "latency"
+   ],
+   "group": "Network Operations",
+   "rationale": "Network infrastructure keywords detected"
+  },
+  {
+   "keywords": [
+    "cloud",
+    "aws",
+    "azure",
+    "gcp",
+    "kubernetes",
+    "k8s",
+    "container",
+    "pod"
+   ],
+   "group": "Cloud Platform Engineering",
+   "rationale": "Cloud/container keywords detected"
+  },
+  {
+   "keywords": [
+    "batch",
+    "pipeline",
+    "etl",
+    "data",
+    "reporting",
+    "bi",
+    "analytics"
+   ],
+   "group": "Data Engineering",
+   "rationale": "Data/batch keywords detected"
+  },
+  {
+   "keywords": [
+    "security",
+    "vulnerability",
+    "cve",
+    "breach",
+    "malware",
+    "phishing"
+   ],
+   "group": "Security Operations",
+   "rationale": "Security keywords detected — route to SecOps not standard IT"
+  },
+  {
+   "keywords": [
+    "certificate",
+    "ssl",
+    "tls",
+    "expired",
+    "cert"
+   ],
+   "group": "Platform Operations",
+   "rationale": "Certificate/TLS keywords detected"
+  },
+  {
+   "keywords": [
+    "deploy",
+    "release",
+    "build",
+    "ci/cd",
+    "pipeline",
+    "version",
+    "rollback"
+   ],
+   "group": "Release Engineering",
+   "rationale": "Deployment keywords detected"
+  }
+ ],
+ "preflight_payment": "payment|transaction|banking|card|pci|checkout|purchase|fund",
+ "preflight_pii": "personal data|pii|gdpr|customer data|data breach|email address|account number"
+}

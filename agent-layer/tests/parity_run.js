@@ -93,7 +93,7 @@ function makeContext(opts) {
   ctx.window = ctx;
   const src = toolSource();
   const tableNames = ['intelRules', 'ROUTING_RULES'];
-  const fnNames = ['g', 'calcScore', 'updateScore', 'showIntelHint', 'calcRiskScore', 'suggestRoutingGroup', 'generatePreflightFindings', 'assessCurrencyRisk', 'updateCurrencyRiskSummary', 'startSLAClock'];
+  const fnNames = ['g', 'escHtml', 'calcScore', 'updateScore', 'showIntelHint', 'calcRiskScore', 'routingKeywordRegExp', 'routingMatches', 'suggestRoutingGroup', 'generatePreflightFindings', 'assessCurrencyRisk', 'updateCurrencyRiskSummary', 'startSLAClock'];
   const parts = [
     'var selectedSev = ""; var isMajorIncident = false; var __setSev = []; function setSev(s) { __setSev.push(s); } function autosave() {}',
     'var timelineEvents = []; var decisionLog = []; var certEntries = []; var vulnEntries = []; var customRoutingRules = [];',
@@ -224,7 +224,7 @@ function runAll() {
     dom.guard = true; let env; try { env = E.run('routing_suggestion', { observation: obs, service: svc }); } finally { dom.guard = false; }
     if (!((obs || '') + (svc || '')).toLowerCase().trim()) { ok(real === null && env.status === 'not_assessed', label + ' empty text'); return; }
     if (!real) { ok(env.status === 'computed' && !env.output.matched, label + ' no match: ' + J(env)); return; }
-    ok(env.status === 'computed' && env.output.matched && env.output.group === real.group && env.output.rationale === real.rationale, label + ' real=' + real.group + ' export=' + J(env));
+    ok(env.status === 'computed' && env.output.matched && env.output.group === real.group && env.output.rationale === real.rationale && J(env.output.matched_keywords) === J(real.matched), label + ' real=' + real.group + ' export=' + J(env));
   }
   const kws = routing.map((r) => r.keywords);
   const routeCases = [];
@@ -270,13 +270,19 @@ function runAll() {
     const vulns = Array.from({ length: Math.floor(cr() * 5) }, () => ({ severity: pick(cr, VULN) }));
     checkCurrency({ certificates: certs, vulnerabilities: vulns, supportStatus: pick(cr, SUPPORT), lastPentest: cr() < 0.3 ? '' : isoDate(msDays(Math.floor(cr() * 800))), lastPatched: cr() < 0.3 ? '' : isoDate(msDays(Math.floor(cr() * 500))) }, 'currency-fuzz#' + k);
   }
+  for (const bad of ['2026-13-45', '2026-00-10', '9999-99-99']) for (const good of ['', isoDate(msDays(10)), isoDate(msDays(400))]) {   // Q-14: unreadable dates raise a prompt in the tool; the export must say the same
+    nCur++;
+    checkCurrency({ certificates: [], vulnerabilities: [], supportStatus: 'active', lastPentest: bad, lastPatched: good }, 'currency bad pentest date ' + bad + '/' + good);
+    nCur++;
+    checkCurrency({ certificates: [], vulnerabilities: [], supportStatus: 'active', lastPentest: good, lastPatched: bad }, 'currency bad patch date ' + good + '/' + bad);
+  }
   { // an unparseable date: the legacy check silently skips it; the export adds a caveat so the result is marked incomplete
     const inp = { certificates: [], vulnerabilities: [], supportStatus: 'active', lastPentest: '2026-13-45', lastPatched: '2026-00-10' };
     const env = E.run('currency_risk', inp, [], { now: FIXED_NOW });
     ok(env.status === 'computed' && env.output.complete === false && env.caveats.some((c) => c.code === 'pentest_date_not_assessed') && env.caveats.some((c) => c.code === 'patch_date_not_assessed'), 'unparseable dates are flagged incomplete, never an all-clear: ' + J(env));
   }
   { const env = E.run('currency_risk', { certificates: [], vulnerabilities: [], supportStatus: 'unknown', lastPentest: '', lastPatched: '' }, [], { now: FIXED_NOW });
-    ok(env.output.risks.length === 0, 'sanity: an "unknown" support status raises no risk (characterised, not changed)'); }
+    ok(env.output.risks.length === 1 && /support status is unknown/.test(env.output.risks[0]), 'Q-11: an "unknown" support status now raises a prompt to confirm it: ' + J(env.output.risks)); }
   log('   ' + nCur + ' currency cases');
 
   // ------------------------------------------------------------------------------------------ G. preflight

@@ -6,9 +6,8 @@
    "expected": [
     0
    ],
-   "current": 0,
-   "A": 0,
-   "B": 0
+   "before": 0,
+   "now": 0
   },
   {
    "o": "Merchant settlement file not produced overnight",
@@ -16,9 +15,8 @@
    "expected": [
     0
    ],
-   "current": 0,
-   "A": 0,
-   "B": 0
+   "before": 0,
+   "now": 0
   },
   {
    "o": "Customers cannot pay by Apple Pay",
@@ -26,9 +24,8 @@
    "expected": [
     0
    ],
-   "current": 6,
-   "A": null,
-   "B": 0
+   "before": 6,
+   "now": 0
   },
   {
    "o": "Refunds stuck in pending state",
@@ -36,9 +33,8 @@
    "expected": [
     0
    ],
-   "current": null,
-   "A": null,
-   "B": 0
+   "before": null,
+   "now": 0
   },
   {
    "o": "Direct debit collection run failed",
@@ -46,9 +42,8 @@
    "expected": [
     0
    ],
-   "current": 3,
-   "A": null,
-   "B": 0
+   "before": 3,
+   "now": 0
   },
   {
    "o": "Acquiring bank rejecting transactions",
@@ -56,9 +51,8 @@
    "expected": [
     0
    ],
-   "current": 0,
-   "A": 0,
-   "B": 0
+   "before": 0,
+   "now": 0
   },
   {
    "o": "Visa authorisations timing out",
@@ -66,9 +60,8 @@
    "expected": [
     0
    ],
-   "current": 0,
-   "A": 0,
-   "B": 0
+   "before": 0,
+   "now": 0
   },
   {
    "o": "Users locked out after password reset",
@@ -76,9 +69,8 @@
    "expected": [
     1
    ],
-   "current": 1,
-   "A": 1,
-   "B": 1
+   "before": 1,
+   "now": 1
   },
   {
    "o": "Okta login loop for staff",
@@ -86,9 +78,8 @@
    "expected": [
     1
    ],
-   "current": 1,
-   "A": 1,
-   "B": 1
+   "before": 1,
+   "now": 1
   },
   {
    "o": "MFA codes not delivered by SMS",
@@ -96,9 +87,8 @@
    "expected": [
     1
    ],
-   "current": 1,
-   "A": 1,
-   "B": 1
+   "before": 1,
+   "now": 1
   },
   {
    "o": "LDAP bind failures from app servers",
@@ -106,9 +96,8 @@
    "expected": [
     1
    ],
-   "current": 1,
-   "A": 1,
-   "B": 1
+   "before": 1,
+   "now": 1
   },
   {
    "o": "Kerberos tickets failing for VPN users",
@@ -116,9 +105,8 @@
    "expected": [
     1
    ],
-   "current": 4,
-   "A": 4,
-   "B": 1
+   "before": 4,
+   "now": 1
   },
   {
    "o": "Cannot sign in to customer portal",
@@ -126,9 +114,8 @@
    "expected": [
     1
    ],
-   "current": null,
-   "A": null,
-   "B": 1
+   "before": null,
+   "now": 1
   },
   {
    "o": "Gateway returning 502 for partner calls",
@@ -136,9 +123,8 @@
    "expected": [
     2
    ],
-   "current": 2,
-   "A": 2,
-   "B": 2
+   "before": 2,
+   "now": 2
   },
   {
    "o": "GraphQL endpoint timeouts",
@@ -146,9 +132,8 @@
    "expected": [
     2
    ],
-   "current": 2,
-   "A": 2,
-   "B": 2
+   "before": 2,
+   "now": 2
   },
   {
    "o": "REST endpoint rate limiting wrongly applied",
@@ -156,9 +141,8 @@
    "expected": [
     2
    ],
-   "current": 2,
-   "A": 2,
-   "B": 2
+   "before": 2,
+   "now": 2
   },
   {
    "o": "Microservice mesh dropping requests",
@@ -166,9 +150,8 @@
    "expected": [
     2
    ],
-   "current": 2,
-   "A": 2,
-   "B": 2
+   "before": 2,
+   "now": 2
   },
   {
    "o": "Breaking change in v2 API contract",
@@ -176,9 +159,8 @@
    "expected": [
     2
    ],
-   "current": 2,
-   "A": 2,
-   "B": 2
+   "before": 2,
+   "now": 2
   },
   {
    "o": "Postgres replication lag over 10 minutes",
@@ -186,9 +168,8 @@
    "expected": [
     3
    ],
-   "current": 3,
-   "A": 3,
-   "B": 3
+   "before": 3,
+   "now": 3
   },
   {
    "o": "Oracle tablespace full",
@@ -196,9 +177,8 @@
    "expected": [
     3
    ],
-   "current": 3,
-   "A": 3,
-   "B": 3
+   "before": 3,
+   "now": 3
   },
   {
    "o": "Slow SQL queries after index drop",
@@ -206,9 +186,8 @@
    "expected": [
     3
    ],
-   "current": 3,
-   "A": 3,
-   "B": 3
+   "before": 3,
+   "now": 3
   },
   {
    "o": "MongoDB primary election flapping",
@@ -216,9 +195,8 @@
    "expected": [
     3
    ],
-   "current": 3,
-   "A": null,
-   "B": 3
+   "before": 3,
+   "now": 3
   },
   {
    "o": "Redis memory exhausted",
@@ -226,9 +204,8 @@
    "expected": [
     3
    ],
-   "current": 3,
-   "A": 3,
-   "B": 3
+   "before": 3,
+   "now": 3
   },
   {
    "o": "Deadlocks on customer table",
@@ -236,9 +213,8 @@
    "expected": [
     3
    ],
-   "current": 3,
-   "A": 3,
-   "B": 3
+   "before": 3,
+   "now": 3
   },
   {
    "o": "Packet loss between data centres",
@@ -246,9 +222,8 @@
    "expected": [
     4
    ],
-   "current": 6,
-   "A": 6,
-   "B": 4
+   "before": 6,
+   "now": 4
   },
   {
    "o": "DNS resolution failing for internal zone",
@@ -256,9 +231,8 @@
    "expected": [
     4
    ],
-   "current": 4,
-   "A": 4,
-   "B": 4
+   "before": 4,
+   "now": 4
   },
   {
    "o": "Firewall rule blocking vendor traffic",
@@ -266,9 +240,8 @@
    "expected": [
     4
    ],
-   "current": 4,
-   "A": 4,
-   "B": 4
+   "before": 4,
+   "now": 4
   },
   {
    "o": "VPN tunnel dropping every hour",
@@ -276,9 +249,8 @@
    "expected": [
     4
    ],
-   "current": 4,
-   "A": 4,
-   "B": 4
+   "before": 4,
+   "now": 4
   },
   {
    "o": "Load balancer health checks failing",
@@ -286,9 +258,8 @@
    "expected": [
     4
    ],
-   "current": 4,
-   "A": 4,
-   "B": 4
+   "before": 4,
+   "now": 4
   },
   {
    "o": "BGP session flapping with provider",
@@ -296,9 +267,8 @@
    "expected": [
     4
    ],
-   "current": null,
-   "A": null,
-   "B": 4
+   "before": null,
+   "now": 4
   },
   {
    "o": "High latency on the call routing platform",
@@ -306,9 +276,8 @@
    "expected": [
     4
    ],
-   "current": 4,
-   "A": 4,
-   "B": 4
+   "before": 4,
+   "now": 4
   },
   {
    "o": "Kubernetes pods crash-looping",
@@ -316,9 +285,8 @@
    "expected": [
     5
    ],
-   "current": 5,
-   "A": 5,
-   "B": 5
+   "before": 5,
+   "now": 5
   },
   {
    "o": "AWS region degraded for S3",
@@ -326,9 +294,8 @@
    "expected": [
     5
    ],
-   "current": 5,
-   "A": 5,
-   "B": 5
+   "before": 5,
+   "now": 5
   },
   {
    "o": "Azure VM scale set not scaling",
@@ -336,9 +303,8 @@
    "expected": [
     5
    ],
-   "current": 5,
-   "A": 5,
-   "B": 5
+   "before": 5,
+   "now": 5
   },
   {
    "o": "GCP quota exceeded for GPUs",
@@ -346,9 +312,8 @@
    "expected": [
     5
    ],
-   "current": 5,
-   "A": 5,
-   "B": 5
+   "before": 5,
+   "now": 5
   },
   {
    "o": "Docker registry unreachable",
@@ -356,9 +321,8 @@
    "expected": [
     5
    ],
-   "current": 5,
-   "A": 5,
-   "B": 5
+   "before": 5,
+   "now": 5
   },
   {
    "o": "EC2 instances unreachable in eu-west-1",
@@ -366,9 +330,8 @@
    "expected": [
     5
    ],
-   "current": 5,
-   "A": 5,
-   "B": 5
+   "before": 5,
+   "now": 5
   },
   {
    "o": "Nightly ETL batch did not finish",
@@ -376,9 +339,8 @@
    "expected": [
     6
    ],
-   "current": 6,
-   "A": 6,
-   "B": 6
+   "before": 6,
+   "now": 6
   },
   {
    "o": "Reporting dashboards showing yesterday's data",
@@ -386,9 +348,8 @@
    "expected": [
     6
    ],
-   "current": 6,
-   "A": 6,
-   "B": 6
+   "before": 6,
+   "now": 6
   },
   {
    "o": "Kafka consumer lag growing",
@@ -396,9 +357,8 @@
    "expected": [
     6
    ],
-   "current": null,
-   "A": null,
-   "B": 6
+   "before": null,
+   "now": 6
   },
   {
    "o": "Spark job failing on schema change",
@@ -406,9 +366,8 @@
    "expected": [
     6
    ],
-   "current": 6,
-   "A": 6,
-   "B": 6
+   "before": 6,
+   "now": 6
   },
   {
    "o": "Snowflake load stuck",
@@ -416,9 +375,8 @@
    "expected": [
     6
    ],
-   "current": 6,
-   "A": 6,
-   "B": 6
+   "before": 6,
+   "now": 6
   },
   {
    "o": "Phishing campaign targeting finance staff",
@@ -426,9 +384,8 @@
    "expected": [
     7
    ],
-   "current": 7,
-   "A": 7,
-   "B": 7
+   "before": 7,
+   "now": 7
   },
   {
    "o": "Malware detected on a build server",
@@ -436,9 +393,8 @@
    "expected": [
     7
    ],
-   "current": 7,
-   "A": 7,
-   "B": 7
+   "before": 7,
+   "now": 7
   },
   {
    "o": "Critical CVE in the web framework",
@@ -446,9 +402,8 @@
    "expected": [
     7
    ],
-   "current": 7,
-   "A": 7,
-   "B": 7
+   "before": 7,
+   "now": 7
   },
   {
    "o": "Suspected data breach in CRM",
@@ -456,9 +411,8 @@
    "expected": [
     7
    ],
-   "current": 6,
-   "A": 6,
-   "B": 7
+   "before": 6,
+   "now": 7
   },
   {
    "o": "Ransomware alert on file server",
@@ -466,9 +420,8 @@
    "expected": [
     7
    ],
-   "current": null,
-   "A": null,
-   "B": 7
+   "before": null,
+   "now": 7
   },
   {
    "o": "DDoS against the public website",
@@ -476,9 +429,8 @@
    "expected": [
     7
    ],
-   "current": null,
-   "A": null,
-   "B": 7
+   "before": null,
+   "now": 7
   },
   {
    "o": "SSL certificate expired on public site",
@@ -486,9 +438,8 @@
    "expected": [
     8
    ],
-   "current": 8,
-   "A": 8,
-   "B": 8
+   "before": 8,
+   "now": 8
   },
   {
    "o": "TLS handshake failures after cert rotation",
@@ -496,9 +447,8 @@
    "expected": [
     8
    ],
-   "current": 8,
-   "A": 8,
-   "B": 8
+   "before": 8,
+   "now": 8
   },
   {
    "o": "Internal CA certificate nearing expiry",
@@ -506,9 +456,8 @@
    "expected": [
     8
    ],
-   "current": 8,
-   "A": 8,
-   "B": 8
+   "before": 8,
+   "now": 8
   },
   {
    "o": "Expired cert breaking SFTP transfers",
@@ -516,9 +465,8 @@
    "expected": [
     8
    ],
-   "current": 8,
-   "A": 8,
-   "B": 8
+   "before": 8,
+   "now": 8
   },
   {
    "o": "Deployment pipeline stuck at approval",
@@ -526,9 +474,8 @@
    "expected": [
     9
    ],
-   "current": 9,
-   "A": 9,
-   "B": 9
+   "before": 9,
+   "now": 9
   },
   {
    "o": "Rollback of release 4.2 failed",
@@ -536,9 +483,8 @@
    "expected": [
     9
    ],
-   "current": 9,
-   "A": 9,
-   "B": 9
+   "before": 9,
+   "now": 9
   },
   {
    "o": "Build artifacts missing from repository",
@@ -546,9 +492,8 @@
    "expected": [
     9
    ],
-   "current": 9,
-   "A": 9,
-   "B": 9
+   "before": 9,
+   "now": 9
   },
   {
    "o": "Version mismatch between PROD and PRE-PROD",
@@ -556,9 +501,8 @@
    "expected": [
     9
    ],
-   "current": 9,
-   "A": 9,
-   "B": 9
+   "before": 9,
+   "now": 9
   },
   {
    "o": "Failed deploy left half the nodes on old version",
@@ -566,33 +510,29 @@
    "expected": [
     9
    ],
-   "current": 9,
-   "A": 9,
-   "B": 9
+   "before": 9,
+   "now": 9
   },
   {
    "o": "Users cannot restart their laptops after the update",
    "s": "Endpoint Management",
    "expected": [],
-   "current": 2,
-   "A": 2,
-   "B": 2
+   "before": 2,
+   "now": 2
   },
   {
    "o": "Interest rate calculation wrong on savings statement",
    "s": "Savings Calculator",
    "expected": [],
-   "current": 2,
-   "A": null,
-   "B": null
+   "before": 2,
+   "now": null
   },
   {
    "o": "Rapid growth of log files on the app server",
    "s": "Logging",
    "expected": [],
-   "current": 2,
-   "A": null,
-   "B": null
+   "before": 2,
+   "now": null
   },
   {
    "o": "Capital allocation report fails to open",
@@ -600,121 +540,106 @@
    "expected": [
     6
    ],
-   "current": 2,
-   "A": 6,
-   "B": 6
+   "before": 2,
+   "now": 6
   },
   {
    "o": "Feedback form submissions failing",
    "s": "Website",
    "expected": [],
-   "current": 3,
-   "A": null,
-   "B": null
+   "before": 3,
+   "now": null
   },
   {
    "o": "Mobile app crashes on startup for iOS users",
    "s": "Mobile App",
    "expected": [],
-   "current": 6,
-   "A": null,
-   "B": null
+   "before": 6,
+   "now": null
   },
   {
    "o": "Public website unavailable",
    "s": "Web",
    "expected": [],
-   "current": null,
-   "A": null,
-   "B": null
+   "before": null,
+   "now": null
   },
   {
    "o": "Ability to resize columns missing",
    "s": "Grid Component",
    "expected": [],
-   "current": 6,
-   "A": null,
-   "B": null
+   "before": 6,
+   "now": null
   },
   {
    "o": "Laws and regulations page not loading",
    "s": "Intranet",
    "expected": [],
-   "current": 5,
-   "A": null,
-   "B": null
+   "before": 5,
+   "now": null
   },
   {
    "o": "Podcast hosting site down",
    "s": "Marketing Site",
    "expected": [],
-   "current": 5,
-   "A": null,
-   "B": null
+   "before": 5,
+   "now": null
   },
   {
    "o": "Concert ticket booking page slow",
    "s": "Events",
    "expected": [],
-   "current": 8,
-   "A": null,
-   "B": null
+   "before": 8,
+   "now": null
   },
   {
    "o": "Release notes page returns 404",
    "s": "Documentation",
    "expected": [],
-   "current": 9,
-   "A": 9,
-   "B": 9
+   "before": 9,
+   "now": 9
   },
   {
    "o": "Building access card reader offline",
    "s": "Facilities",
    "expected": [],
-   "current": 0,
-   "A": 0,
-   "B": 0
+   "before": 0,
+   "now": 0
   },
   {
    "o": "Data centre air conditioning alarm",
    "s": "Facilities",
    "expected": [],
-   "current": 1,
-   "A": 6,
-   "B": 6
+   "before": 1,
+   "now": 6
   },
   {
    "o": "Version of the handbook is outdated",
    "s": "Intranet",
    "expected": [],
-   "current": 3,
-   "A": 9,
-   "B": 9
+   "before": 3,
+   "now": 9
   },
   {
    "o": "Rest of the team cannot access the shared drive",
    "s": "File Services",
    "expected": [],
-   "current": 2,
-   "A": 2,
-   "B": 2
+   "before": 2,
+   "now": 2
   },
   {
    "o": "Reception gateway door is stuck",
    "s": "Facilities",
    "expected": [],
-   "current": 2,
-   "A": 2,
-   "B": 2
+   "before": 2,
+   "now": 2
   },
   {
    "o": "Oracle quiz page is broken",
    "s": "Intranet Games",
    "expected": [],
-   "current": 3,
-   "A": 3,
-   "B": 3
+   "before": 3,
+   "now": 3
   },
   {
    "o": "Login failures at payment gateway after SSO change",
@@ -724,9 +649,8 @@
     1,
     2
    ],
-   "current": 1,
-   "A": 1,
-   "B": 1
+   "before": 1,
+   "now": 1
   },
   {
    "o": "Database connection pool exhausted on payment service",
@@ -736,9 +660,8 @@
     0,
     2
    ],
-   "current": 0,
-   "A": 0,
-   "B": 0
+   "before": 0,
+   "now": 0
   }
  ]
 }

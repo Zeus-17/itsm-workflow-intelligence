@@ -268,7 +268,7 @@
    }
   },
   "routing_suggestion": {
-   "doc": "suggestRoutingGroup() - 10 keyword rules (custom rules take priority). Highest keyword count wins, ties go to the earlier rule. The two text fields are joined WITHOUT a space before matching.",
+   "doc": "suggestRoutingGroup() - 10 keyword rules (custom rules take priority). Highest keyword count wins, ties go to the earlier rule. Since Q-1/Q-4 (2026-10-10) the two text fields are joined WITH a space and built-in keywords match whole words (a user's own custom keywords still match as substrings).",
    "_engine": {
     "requires_any_of": [
      {

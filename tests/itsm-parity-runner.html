@@ -86,7 +86,7 @@ async function runAll(win, doc){
       const real=win.suggestRoutingGroup(obs,svc), env=E.run('routing_suggestion',{observation:obs,service:svc});
       if(!((obs||'')+(svc||'')).toLowerCase().trim()){ ok(real===null && env.status==='not_assessed',label+' empty'); return; }
       if(!real){ ok(env.status==='computed' && !env.output.matched,label+' nomatch '+J(env)); return; }
-      ok(env.status==='computed' && env.output.matched && env.output.group===real.group && env.output.rationale===real.rationale,label+' real='+real.group+' export='+J(env));
+      ok(env.status==='computed' && env.output.matched && env.output.group===real.group && env.output.rationale===real.rationale && J(env.output.matched_keywords)===J(real.matched),label+' real='+real.group+' export='+J(env));
     }
     win.eval('customRoutingRules = []');
     kws.forEach(ks=>ks.forEach(k=>{ [[k,''],['',k],[k.toUpperCase(),'svc'],['xx'+k+'yy',''],[k.slice(0,Math.ceil(k.length/2)),k.slice(Math.ceil(k.length/2))]].forEach(c=>route(c[0],c[1],'route '+J(c))); }));
@@ -111,6 +111,7 @@ async function runAll(win, doc){
       ok(env.status==='computed' && J(env.output.risks)===real,label+' real='+real+' export='+J(env));
     }
     const edges=[0,1,179,180,181,364,365,366,400,730];
+    // (unreadable dates are not tested here: a real <input type=date> refuses them, so the Q-14 prompt is reachable only by imported / assistant-supplied values - covered in the Node suite)
     for(const a of edges) for(const b of edges) currency({certificates:[],vulnerabilities:[],supportStatus:'',lastPentest:isoDate(a),lastPatched:isoDate(b)},'cur-dates '+a+'/'+b);
     for(let k=0;k<600;k++){
       currency({certificates:Array.from({length:Math.floor(cr()*4)},()=>({name:pick(cr,['','api.example.com','vpn gateway']),status:pick(cr,CS),daysLeft:Math.floor(cr()*120)-10})),

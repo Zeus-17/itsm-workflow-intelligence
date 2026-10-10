@@ -87,3 +87,34 @@ Each cell asserts: breaker trips; correct plain-language reason; calm, accessibl
 
 Each cell asserts: breaker trips; correct plain-language reason; calm, accessible message; confirmed entries preserved; no unconfirmed value carried; audit entry names the provider; correct admin diagnosis and recommended action; PII-filtered diagnostics; audit chain intact. Provider ids are simulated until the real adapters exist (Step 5) - adapter-specific causes are tested then.
 
+## 2026-10-10 16:47 UTC - Workstream Q engine-change set Q-1..Q-17 (routing, scans, currency prompts, escaping, API-test gate; engine q1)
+
+* Commit `8df6215` (+ uncommitted changes in tracked files) - overall: **PASS**
+* Failsafe suite: **585 assertions passed, 0 failed**; thresholds: placeholder
+* Validation + differential suite: PASS - `ALL TESTS PASSED (2232 assertions)`
+* Audit-trail suite: PASS - `ALL AUDIT TESTS PASSED (124 assertions)`
+* Embedded artifact (as shipped): PASS - `ALL ARTIFACT TESTS PASSED (45 assertions)`
+* Schema package checks: PASS - `ALL CHECKS PASSED`
+* Embedded block up to date: PASS - `agent-layer block is up to date`
+* Size budget: PASS - `budget: 60 KB gzip  ->  OK (62% used)`
+* Engine parity: exports vs the tool's real engines (source): PASS - `PARITY PASS: 20110 assertions`
+* Engine parity: embedded block as shipped: PASS - `PARITY PASS: 20110 assertions`
+* Engine parity: mutation check (the test can fail): PASS - `mutants: 32/32 killed`
+* Invariants / property tests (must-hold properties): PASS - `F-ITSM-4 holds  0/1  An "unknown" support status raises a risk or a prompt`
+* Rule-quality measurement runs (informational): PASS - `ref: B        handled correctly  30/33 (91%)  | payment-scan FP 1 FN 0; personal-data-scan FP 0 FN 2`
+* HTML-sink audit runs (informational): PASS - `escape helper present: true; dynamic-code sites: 4`
+
+| Failure type \ Provider | claude | openai | gemini | custom |
+|---|---|---|---|---|
+| repeated timeouts | PASS | PASS | PASS | PASS |
+| repeated malformed | PASS | PASS | PASS | PASS |
+| repeated validation rejects | PASS | PASS | PASS | PASS |
+| repeated soft override | PASS | PASS | PASS | PASS |
+| provider unreachable | PASS | PASS | PASS | PASS |
+| provider auth error | PASS | PASS | PASS | PASS |
+| provider outage or rate | PASS | PASS | PASS | PASS |
+| no network | PASS | PASS | PASS | PASS |
+| emergency revoke | PASS | PASS | PASS | PASS |
+
+Each cell asserts: breaker trips; correct plain-language reason; calm, accessible message; confirmed entries preserved; no unconfirmed value carried; audit entry names the provider; correct admin diagnosis and recommended action; PII-filtered diagnostics; audit chain intact. Provider ids are simulated until the real adapters exist (Step 5) - adapter-specific causes are tested then.
+

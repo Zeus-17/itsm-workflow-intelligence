@@ -147,9 +147,10 @@ def engines(E):
         "input": {"type": "object", "additionalProperties": False, "required": ["observation", "service"],
                   "properties": {"observation": s_any, "service": s_any}},
         "output": {"type": "object", "additionalProperties": False, "required": ["matched"],
-                   "properties": {"matched": {"type": "boolean"}, "group": s_ne, "rationale": s_ne}},
+                   "properties": {"matched": {"type": "boolean"}, "group": s_ne, "rationale": s_ne,
+                                  "matched_keywords": {"type": "array", "items": s_ne, "description": "The keywords that triggered the suggestion (Q-5): it is a keyword match, not an assessment."}}},
         "completeness": True,
-        "doc": "suggestRoutingGroup() - 10 keyword rules (custom rules take priority). Highest keyword count wins, ties go to the earlier rule. The two text fields are joined WITHOUT a space before matching.",
+        "doc": "suggestRoutingGroup() - 10 keyword rules (custom rules take priority). Highest keyword count wins, ties go to the earlier rule. Since Q-1/Q-4 (2026-10-10) the two text fields are joined WITH a space and built-in keywords match whole words (a user's own custom keywords still match as substrings).",
     }
 
     currency = {
@@ -162,7 +163,7 @@ def engines(E):
                       "vulnerabilities": {"type": "array", "items": {
                           "type": "object", "additionalProperties": False, "required": ["severity"],
                           "properties": {"severity": {"enum": E["VULN_SEVERITY"]}}}},
-                      "supportStatus": {"enum": E["SUPPORT_STATUS"], "description": "'' = Not checked. 'unknown' raises no risk (current behaviour)."},
+                      "supportStatus": {"enum": E["SUPPORT_STATUS"], "description": "'' = Not checked. Since Q-11 (2026-10-10) 'unknown' raises a prompt to confirm the support status."},
                       "lastPentest": date_or_blank, "lastPatched": date_or_blank}},
         "output": {"type": "object", "additionalProperties": False, "required": ["risks"],
                    "properties": {"risks": {"type": "array", "items": s_ne}}},

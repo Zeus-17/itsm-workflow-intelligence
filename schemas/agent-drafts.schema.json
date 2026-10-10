@@ -1297,7 +1297,7 @@
        "$ref": "#/$defs/Unresolved"
       }
      ],
-     "description": "'' = Not checked. 'unknown' raises no risk (current behaviour)."
+     "description": "'' = Not checked. Since Q-11 (2026-10-10) 'unknown' raises a prompt to confirm the support status."
     },
     "lastPentest": {
      "oneOf": [
