@@ -4905,11 +4905,11 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
     <div class="card-title">Risk Assessment
       <span class="tooltip-wrap"><span class="tooltip-icon">?</span><span class="tooltip-box">Risk assessment determines the approval path for this change. ServiceNow can calculate risk automatically based on these factors. Score each factor honestly — understating risk to get faster approval is a governance failure and puts production at risk. The CAB will challenge unrealistic risk assessments.<br><br>Risk score: 0-30 = Low (expedited review), 31-60 = Medium (standard CAB), 61-100 = High (full CAB + senior approval)</span></span>
     </div>
-    <div id="riskScoreDisplay" class="risk-score-display low">
-      <div class="risk-score-num low" id="riskScoreNum">0</div>
+    <div id="riskScoreDisplay" class="risk-score-display">
+      <div class="risk-score-num" id="riskScoreNum">0</div>
       <div>
         <div class="risk-score-verdict" id="riskScoreVerdict">Complete the risk factors below</div>
-        <div class="risk-score-label" id="riskScoreLabel">Score: 0 / 100 — Low risk → expedited CAB review path</div>
+        <div class="risk-score-label" id="riskScoreLabel">Score so far: 0 — set all six factors to see the risk level and approval path.</div>
       </div>
     </div>
     <div id="riskFactors">
@@ -5686,7 +5686,7 @@ function updateScore(){
   else if(score<=10){num.classList.add('score-low');verdict.textContent='Moderate impact — P3 likely';}
   else if(score<=16){num.classList.add('score-med');verdict.textContent='High impact — P2 recommended';}
   else{num.classList.add('score-high');verdict.textContent='Critical — P1 / Major Incident threshold reached';}
-  detail.textContent='Score '+score+' / 24. Thresholds: P4=0-5, P3=6-10, P2=11-16, P1/Major=17+';
+  detail.textContent='Score '+score+' / 25. Thresholds: P4=0-5, P3=6-10, P2=11-16, P1/Major=17+';
   isMajorIncident=score>=17||selectedSev==='P1';
   document.getElementById('majorIncidentAlert').style.display=(score>=17)?'flex':'none';
   document.getElementById('nearMissAlert').style.display=(score<=5)?'flex':'none';
@@ -9882,11 +9882,13 @@ function checkChangeFreezeWindow(){
 function calcRiskScore(){
   var factors=['rf_blast','rf_complexity','rf_rollback','rf_testing','rf_history','rf_timing'];
   var total=0;
+  var unset=0; // factors still at "Select..." - they add 0, which would LOWER the risk
   factors.forEach(function(id){
     var el=document.getElementById(id);
     var scoreEl=document.getElementById('rfs_'+id.replace('rf_',''));
     var val=parseInt(el?.value)||0;
     total+=val;
+    if(!val)unset++;
     if(scoreEl){
       scoreEl.textContent=val;
       scoreEl.style.color=val>=20?'var(--red)':val>=10?'var(--amber)':'var(--green)';
@@ -9897,12 +9899,23 @@ function calcRiskScore(){
   var verdictEl=document.getElementById('riskScoreVerdict');
   var labelEl=document.getElementById('riskScoreLabel');
   if(!display||!numEl)return;
+  if(unset>0){
+    // Incomplete: show NO risk level or approval path until all six factors are set (an unset factor must never read as "Low Risk").
+    display.className='risk-score-display';
+    numEl.className='risk-score-num';
+    numEl.style.color='var(--text3)';
+    numEl.textContent=total;
+    if(verdictEl)verdictEl.textContent='Incomplete — '+unset+' of 6 risk factors not set';
+    if(labelEl)labelEl.textContent='Score so far: '+total+' — set all six factors to see the risk level and approval path.';
+    autosave();
+    return;
+  }
   var level=total<=30?'low':total<=60?'medium':'high';
   var verdicts={low:'Low Risk — expedited review path',medium:'Medium Risk — standard CAB approval required',high:'High Risk — full CAB + senior approval required'};
   var labels={
-    low:'Score: '+total+'/100 — Standard CAB or expedited review.',
-    medium:'Score: '+total+'/100 — Full CAB review. Submit RFC at least 5 business days before planned window.',
-    high:'Score: '+total+'/100 — Senior management approval required in addition to CAB.'
+    low:'Score: '+total+'/120 — Standard CAB or expedited review.',
+    medium:'Score: '+total+'/120 — Full CAB review. Submit RFC at least 5 business days before planned window.',
+    high:'Score: '+total+'/120 — Senior management approval required in addition to CAB.'
   };
   display.className='risk-score-display '+level;
   numEl.className='risk-score-num '+level;
@@ -16012,6 +16025,16 @@ function initContentLayer(){
   fetchContentUpdate(false);
 }
 
+// Last content version + notice IDs this browser has seen (null if none stored/unreadable).
+var CONTENT_SEEN_KEY='itsm_content_seen_v1';
+function readSeenContent(){
+  try{var s=JSON.parse(localStorage.getItem(CONTENT_SEEN_KEY)||'null');if(s&&Array.isArray(s.warningIds))return s;}catch(e){}
+  return null;
+}
+function writeSeenContent(version,warningIds){
+  try{localStorage.setItem(CONTENT_SEEN_KEY,JSON.stringify({version:version,warningIds:warningIds}));}catch(e){}
+}
+
 function fetchContentUpdate(manual){
   var customUrl='';
   try{customUrl=localStorage.getItem('itsm_content_url')||'';}catch(e){}
@@ -16024,12 +16047,20 @@ function fetchContentUpdate(manual){
       try{
         localStorage.setItem(CONTENT_CACHE_KEY,JSON.stringify({fetched_at:Date.now(),data:data,url:url}));
       }catch(e){}
-      var isNew=!_contentLayer||(data.meta.content_version&&_contentLayer.meta&&data.meta.content_version!==_contentLayer.meta.content_version);
+      // Compare with the content this browser last SAW (persisted). Using the in-memory layer made a fresh load
+      // look "updated" and a manual refresh after a cache clear unreliable.
+      var prev=readSeenContent();
+      var newIds=(data.content_warnings||[]).map(function(w){return w.id;}).filter(Boolean);
+      var addedIds=prev?newIds.filter(function(id){return prev.warningIds.indexOf(id)<0;}):[];
+      var versionBump=!!(prev&&prev.version&&prev.version!==data.meta.content_version);
+      var isNew=versionBump||addedIds.length>0;
+      var what=versionBump?('to '+data.meta.content_version):('('+addedIds.length+' new notice'+(addedIds.length===1?'':'s')+')');
+      writeSeenContent(data.meta.content_version,newIds);
       applyContentLayer(data,isOrg?'org':'live');
       if(manual){
-        showToast(isNew?'Content updated to '+data.meta.content_version+' — regulatory guidance refreshed.':'Content is current — no updates available.','success',3500);
-      } else if(isNew&&_contentLayer){
-        showToast('Regulatory guidance updated to '+data.meta.content_version+'.','info',3000);
+        showToast(isNew?'Content updated '+what+' — regulatory guidance refreshed.':'Content is current — no updates available.','success',3500);
+      } else if(isNew){
+        showToast('Regulatory guidance updated '+what+'.','info',3000);
       }
     })
     .catch(function(){
@@ -16600,7 +16631,7 @@ function generatePreflightFindings(){
   if(sev&&score>0){
     var suggested=score>=17?'P1':score>=11?'P2':score>=6?'P3':'P4';
     if(sev!==suggested)
-      findings.push(f('pf-warn','⚠️','Severity override: score suggests '+suggested+', you selected '+sev,'Your triage score ('+score+'/24) points to '+suggested+'. This is recorded in the timeline — ensure you can justify the override if questioned during the PIR.'));
+      findings.push(f('pf-warn','⚠️','Severity override: score suggests '+suggested+', you selected '+sev,'Your triage score ('+score+'/25) points to '+suggested+'. This is recorded in the timeline — ensure you can justify the override if questioned during the PIR.'));
   }
   // Payment/regulatory
   var paymentKeywords=/payment|transaction|banking|card|pci|checkout|purchase|fund/i;

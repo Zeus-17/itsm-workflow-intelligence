@@ -15,7 +15,8 @@
    "Critical — P1 / Major Incident threshold reached",
    "Moderate impact — P3 likely",
    "High impact — P2 recommended"
-  ]
+  ],
+  "scoreDisplayedMax": "25"
  },
  "score": {
   "score-all-zero": "0|P4|0|score-low|-Y-|V0|=",
@@ -243,14 +244,14 @@
   ]
  },
  "changeRisk": {
-  "risk-total-18": "18 | low | Low Risk — expedited review path | Score: 18/100 — Standard CAB or expedited review.",
-  "risk-total-30": "30 | low | Low Risk — expedited review path | Score: 30/100 — Standard CAB or expedited review.",
-  "risk-total-31": "31 | medium | Medium Risk — standard CAB approval required | Score: 31/100 — Full CAB review. Submit RFC at least 5 business days before planned window.",
-  "risk-total-60": "60 | medium | Medium Risk — standard CAB approval required | Score: 60/100 — Full CAB review. Submit RFC at least 5 business days before planned window.",
-  "risk-total-61": "61 | high | High Risk — full CAB + senior approval required | Score: 61/100 — Senior management approval required in addition to CAB.",
-  "risk-total-120": "120 | high | High Risk — full CAB + senior approval required | Score: 120/100 — Senior management approval required in addition to CAB.",
-  "risk-unset-all": "0 | low | Low Risk — expedited review path | Score: 0/100 — Standard CAB or expedited review.",
-  "risk-one-unset": "45 | medium | Medium Risk — standard CAB approval required | Score: 45/100 — Full CAB review. Submit RFC at least 5 business days before planned window."
+  "risk-total-18": "18 | low | Low Risk — expedited review path | Score: 18/120 — Standard CAB or expedited review.",
+  "risk-total-30": "30 | low | Low Risk — expedited review path | Score: 30/120 — Standard CAB or expedited review.",
+  "risk-total-31": "31 | medium | Medium Risk — standard CAB approval required | Score: 31/120 — Full CAB review. Submit RFC at least 5 business days before planned window.",
+  "risk-total-60": "60 | medium | Medium Risk — standard CAB approval required | Score: 60/120 — Full CAB review. Submit RFC at least 5 business days before planned window.",
+  "risk-total-61": "61 | high | High Risk — full CAB + senior approval required | Score: 61/120 — Senior management approval required in addition to CAB.",
+  "risk-total-120": "120 | high | High Risk — full CAB + senior approval required | Score: 120/120 — Senior management approval required in addition to CAB.",
+  "risk-unset-all": "0 |  | Incomplete — 6 of 6 risk factors not set | Score so far: 0 — set all six factors to see the risk level and approval path.",
+  "risk-one-unset": "45 |  | Incomplete — 1 of 6 risk factors not set | Score so far: 45 — set all six factors to see the risk level and approval path."
  },
  "routing": {
   "route-payment": "Payment Operations | Payment-related keywords detected",

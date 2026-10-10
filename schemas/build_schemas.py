@@ -89,7 +89,7 @@ def engines(E):
                       "recurring": {"enum": E["SCORE_RECURRING"]}}},
         "output": {"type": "object", "additionalProperties": False, "required": ["total", "suggested_tier", "is_major", "verdict"],
                    "properties": {"total": {"type": "integer", "minimum": 0, "maximum": 25,
-                                            "description": "Maximum is 25 although the tool displays 'x / 24'."},
+                                            "description": "Maximum is 25 (the tool displayed 'x / 24' before the 2026-10-10 display fix)."},
                                   "suggested_tier": {"enum": E["SEVERITY"]},
                                   "is_major": {"type": "boolean"},
                                   "verdict": s_ne}},
@@ -138,9 +138,9 @@ def engines(E):
                                  "history": {"enum": E["RF_HISTORY"]}, "timing": {"enum": E["RF_TIMING"]}}},
         "output": {"type": "object", "additionalProperties": False, "required": ["total", "level"],
                    "properties": {"total": {"type": "integer", "minimum": 18, "maximum": 120,
-                                            "description": "Real range is 18-120 (the tool displays 'x/100'). A total of 0 can only arise from unset factors and is not a valid computed result."},
+                                            "description": "Real range is 18-120 (the tool displayed 'x/100' before the 2026-10-10 display fix and now shows 'x/120'). A total of 0 can only arise from unset factors and is not a valid computed result."},
                                   "level": {"enum": ["low", "medium", "high"]}}},
-        "doc": "calcRiskScore() - six factors summed; low <= 30, medium <= 60, high above. With every factor left at 'Select...' the tool shows 'Low Risk - expedited review path'.",
+        "doc": "calcRiskScore() - six factors summed; low <= 30, medium <= 60, high above. Since the 2026-10-10 fix, any factor left at 'Select...' shows 'Incomplete' instead of a risk level (previously: 'Low Risk - expedited review path').",
     }
 
     routing = {
@@ -234,7 +234,7 @@ def policy():
         "regulatoryFlagChecked": F(False, "regulatory_flag_treated_as_unset", "Conservative: an unset flag makes the payment / personal-data warnings fire."),
     }
     P["change_risk"] = {
-        k: B(f"change_risk_{k}_unset", "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe.")
+        k: B(f"change_risk_{k}_unset", "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe.")
         for k in ["blast", "complexity", "rollback", "testing", "history", "timing"]
     }
     P["routing_suggestion"] = {

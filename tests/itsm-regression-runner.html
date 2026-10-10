@@ -150,7 +150,9 @@ async function runAll(){
     const total = win.calcScore();
     const verdict = doc.getElementById('scoreVerdict').textContent.trim();
     const detail  = doc.getElementById('scoreDetail').textContent.trim();
-    const detailStd = `Score ${total} / 24. Thresholds: P4=0-5, P3=6-10, P2=11-16, P1/Major=17+`;
+    // The displayed maximum is recorded explicitly in meta so a change to it is a visible, intended diff.
+    if(R.meta.scoreDisplayedMax === undefined){ const mm = detail.match(/ \/ (\d+)\./); R.meta.scoreDisplayedMax = mm ? mm[1] : null; }
+    const detailStd = `Score ${total} / ${R.meta.scoreDisplayedMax}. Thresholds: P4=0-5, P3=6-10, P2=11-16, P1/Major=17+`;
     if(!R.meta.verdicts.includes(verdict)) R.meta.verdicts.push(verdict);
     const flags = ['majorIncidentAlert','nearMissAlert','recurringAlert'].map(id => doc.getElementById(id).style.display === 'none' ? '-' : 'Y').join('');
     // compact row: total | suggestedSev | isMajor | numClass | alerts(major,nearMiss,recurring) | verdictIndex | detail ('=' means standard text)

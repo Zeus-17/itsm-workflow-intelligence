@@ -99,7 +99,7 @@
          "type": "integer",
          "minimum": 0,
          "maximum": 25,
-         "description": "Maximum is 25 although the tool displays 'x / 24'."
+         "description": "Maximum is 25 (the tool displayed 'x / 24' before the 2026-10-10 display fix)."
         },
         "suggested_tier": {
          "enum": [
@@ -556,7 +556,7 @@
          "type": "integer",
          "minimum": 18,
          "maximum": 120,
-         "description": "Real range is 18-120 (the tool displays 'x/100'). A total of 0 can only arise from unset factors and is not a valid computed result."
+         "description": "Real range is 18-120 (the tool displayed 'x/100' before the 2026-10-10 display fix and now shows 'x/120'). A total of 0 can only arise from unset factors and is not a valid computed result."
         },
         "level": {
          "enum": [

@@ -62,16 +62,16 @@ generatePreflightFindings() - completeness checks, severity-override warning, an
 
 ## `change_risk`
 
-calcRiskScore() - six factors summed; low <= 30, medium <= 60, high above. With every factor left at 'Select...' the tool shows 'Low Risk - expedited review path'.
+calcRiskScore() - six factors summed; low <= 30, medium <= 60, high above. Since the 2026-10-10 fix, any factor left at 'Select...' shows 'Incomplete' instead of a risk level (previously: 'Low Risk - expedited review path').
 
 | Input | If unresolved | Result | Agent may write | Why |
 |---|---|---|---|---|
-| `blast` | **Block** (`change_risk_blast_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe. |
-| `complexity` | **Block** (`change_risk_complexity_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe. |
-| `rollback` | **Block** (`change_risk_rollback_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe. |
-| `testing` | **Block** (`change_risk_testing_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe. |
-| `history` | **Block** (`change_risk_history_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe. |
-| `timing` | **Block** (`change_risk_timing_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe. |
+| `blast` | **Block** (`change_risk_blast_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe. |
+| `complexity` | **Block** (`change_risk_complexity_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe. |
+| `rollback` | **Block** (`change_risk_rollback_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe. |
+| `testing` | **Block** (`change_risk_testing_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe. |
+| `history` | **Block** (`change_risk_history_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe. |
+| `timing` | **Block** (`change_risk_timing_unset`) | cannot be determined | yes | The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe. |
 
 ## `routing_suggestion`
 

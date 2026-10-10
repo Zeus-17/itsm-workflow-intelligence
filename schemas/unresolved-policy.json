@@ -215,7 +215,7 @@
    }
   },
   "change_risk": {
-   "doc": "calcRiskScore() - six factors summed; low <= 30, medium <= 60, high above. With every factor left at 'Select...' the tool shows 'Low Risk - expedited review path'.",
+   "doc": "calcRiskScore() - six factors summed; low <= 30, medium <= 60, high above. Since the 2026-10-10 fix, any factor left at 'Select...' shows 'Incomplete' instead of a risk level (previously: 'Low Risk - expedited review path').",
    "inputs": {
     "blast": {
      "on_unresolved": "block",
@@ -223,7 +223,7 @@
      "block_status": "cannot_be_determined",
      "agent_writable": "yes",
      "on_invalid": "reject",
-     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe."
     },
     "complexity": {
      "on_unresolved": "block",
@@ -231,7 +231,7 @@
      "block_status": "cannot_be_determined",
      "agent_writable": "yes",
      "on_invalid": "reject",
-     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe."
     },
     "rollback": {
      "on_unresolved": "block",
@@ -239,7 +239,7 @@
      "block_status": "cannot_be_determined",
      "agent_writable": "yes",
      "on_invalid": "reject",
-     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe."
     },
     "testing": {
      "on_unresolved": "block",
@@ -247,7 +247,7 @@
      "block_status": "cannot_be_determined",
      "agent_writable": "yes",
      "on_invalid": "reject",
-     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe."
     },
     "history": {
      "on_unresolved": "block",
@@ -255,7 +255,7 @@
      "block_status": "cannot_be_determined",
      "agent_writable": "yes",
      "on_invalid": "reject",
-     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe."
     },
     "timing": {
      "on_unresolved": "block",
@@ -263,7 +263,7 @@
      "block_status": "cannot_be_determined",
      "agent_writable": "yes",
      "on_invalid": "reject",
-     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk (before the 2026-10-10 display fix, all six unset showed 'Low Risk'). No default is safe."
     }
    }
   },
