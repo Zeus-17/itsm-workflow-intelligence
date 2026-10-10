@@ -1,0 +1,252 @@
+{
+ "meta": {
+  "toolFile": "itsm-workflow-tool-v25.html",
+  "intelRuleKeys": [
+   "security",
+   "thirdparty",
+   "data",
+   "process",
+   "infrastructure",
+   "application",
+   "network"
+  ],
+  "verdicts": [
+   "Low impact — P4 or near miss likely",
+   "Critical — P1 / Major Incident threshold reached",
+   "Moderate impact — P3 likely",
+   "High impact — P2 recommended"
+  ]
+ },
+ "score": {
+  "score-all-zero": "0|P4|0|score-low|-Y-|V0|=",
+  "score-all-max": "25|P1|1|score-high|Y-Y|V1|=",
+  "score-single-t1_users-0": "0|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_users-1": "1|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_users-2": "2|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_users-3": "3|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_users-4": "4|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_users-5": "5|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_business-0": "0|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_business-1": "1|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_business-2": "2|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_business-3": "3|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_business-4": "4|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_business-5": "5|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_workaround-0": "0|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_workaround-1": "1|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_workaround-2": "2|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_duration-0": "0|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_duration-1": "1|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_duration-2": "2|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_duration-3": "3|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_duration-4": "4|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_regulatory-0": "0|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_regulatory-2": "2|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_regulatory-4": "4|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_regulatory-5": "5|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_recurring-0": "0|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_recurring-2": "2|P4|0|score-low|-Y-|V0|=",
+  "score-single-t1_recurring-4": "4|P4|0|score-low|-YY|V0|=",
+  "score-target-00-got-0": "0|P4|0|score-low|-Y-|V0|=",
+  "score-target-01-got-1": "1|P4|0|score-low|-Y-|V0|=",
+  "score-target-02-got-2": "2|P4|0|score-low|-Y-|V0|=",
+  "score-target-03-got-3": "3|P4|0|score-low|-Y-|V0|=",
+  "score-target-04-got-4": "4|P4|0|score-low|-Y-|V0|=",
+  "score-target-05-got-5": "5|P4|0|score-low|-Y-|V0|=",
+  "score-target-06-got-6": "6|P3|0|score-low|---|V2|=",
+  "score-target-07-got-7": "7|P3|0|score-low|---|V2|=",
+  "score-target-08-got-8": "8|P3|0|score-low|---|V2|=",
+  "score-target-09-got-9": "9|P3|0|score-low|---|V2|=",
+  "score-target-10-got-10": "10|P3|0|score-low|---|V2|=",
+  "score-target-11-got-11": "11|P2|0|score-med|---|V3|=",
+  "score-target-12-got-12": "12|P2|0|score-med|---|V3|=",
+  "score-target-13-got-13": "13|P2|0|score-med|---|V3|=",
+  "score-target-14-got-14": "14|P2|0|score-med|---|V3|=",
+  "score-target-15-got-15": "15|P2|0|score-med|---|V3|=",
+  "score-target-16-got-16": "16|P2|0|score-med|---|V3|=",
+  "score-target-17-got-17": "17|P1|1|score-high|Y--|V1|=",
+  "score-target-18-got-18": "18|P1|1|score-high|Y--|V1|=",
+  "score-target-19-got-19": "19|P1|1|score-high|Y--|V1|=",
+  "score-target-20-got-20": "20|P1|1|score-high|Y--|V1|=",
+  "score-target-21-got-21": "21|P1|1|score-high|Y--|V1|=",
+  "score-target-22-got-22": "22|P1|1|score-high|Y--|V1|=",
+  "score-target-23-got-23": "23|P1|1|score-high|Y-Y|V1|=",
+  "score-target-24-got-24": "24|P1|1|score-high|Y-Y|V1|=",
+  "score-target-25-got-25": "25|P1|1|score-high|Y-Y|V1|=",
+  "score-T3-unknown-users": "7|P3|0|score-low|---|V2|=",
+  "score-T4-double-recurrence": "8|P3|0|score-low|--Y|V2|=",
+  "score-rand-00": "17|P1|1|score-high|Y-Y|V1|=",
+  "score-rand-01": "20|P1|1|score-high|Y-Y|V1|=",
+  "score-rand-02": "16|P2|0|score-med|--Y|V3|=",
+  "score-rand-03": "14|P2|0|score-med|---|V3|=",
+  "score-rand-04": "13|P2|0|score-med|--Y|V3|=",
+  "score-rand-05": "10|P3|0|score-low|---|V2|=",
+  "score-rand-06": "13|P2|0|score-med|---|V3|=",
+  "score-rand-07": "18|P1|1|score-high|Y--|V1|=",
+  "score-rand-08": "14|P2|0|score-med|---|V3|=",
+  "score-rand-09": "11|P2|0|score-med|---|V3|=",
+  "score-rand-10": "12|P2|0|score-med|---|V3|=",
+  "score-rand-11": "9|P3|0|score-low|---|V2|=",
+  "score-rand-12": "17|P1|1|score-high|Y-Y|V1|=",
+  "score-rand-13": "13|P2|0|score-med|---|V3|=",
+  "score-rand-14": "18|P1|1|score-high|Y-Y|V1|=",
+  "score-rand-15": "10|P3|0|score-low|---|V2|=",
+  "score-rand-16": "14|P2|0|score-med|--Y|V3|=",
+  "score-rand-17": "10|P3|0|score-low|---|V2|=",
+  "score-rand-18": "8|P3|0|score-low|---|V2|=",
+  "score-rand-19": "9|P3|0|score-low|--Y|V2|=",
+  "score-rand-20": "16|P2|0|score-med|---|V3|=",
+  "score-rand-21": "13|P2|0|score-med|---|V3|=",
+  "score-rand-22": "17|P1|1|score-high|Y--|V1|=",
+  "score-rand-23": "15|P2|0|score-med|---|V3|=",
+  "score-rand-24": "15|P2|0|score-med|---|V3|=",
+  "score-rand-25": "12|P2|0|score-med|---|V3|=",
+  "score-rand-26": "11|P2|0|score-med|--Y|V3|=",
+  "score-rand-27": "7|P3|0|score-low|--Y|V2|=",
+  "score-rand-28": "11|P2|0|score-med|---|V3|=",
+  "score-rand-29": "11|P2|0|score-med|--Y|V3|=",
+  "score-rand-30": "16|P2|0|score-med|--Y|V3|=",
+  "score-rand-31": "12|P2|0|score-med|---|V3|=",
+  "score-rand-32": "11|P2|0|score-med|---|V3|=",
+  "score-rand-33": "17|P1|1|score-high|Y-Y|V1|=",
+  "score-rand-34": "9|P3|0|score-low|---|V2|=",
+  "score-rand-35": "9|P3|0|score-low|---|V2|=",
+  "score-rand-36": "16|P2|0|score-med|---|V3|=",
+  "score-rand-37": "8|P3|0|score-low|---|V2|=",
+  "score-rand-38": "15|P2|0|score-med|--Y|V3|=",
+  "score-rand-39": "14|P2|0|score-med|---|V3|="
+ },
+ "severity": {
+  "T5-manual-P3-sticks-at-score-25": {
+   "selectedSev": "P3",
+   "isMajor": true
+  }
+ },
+ "intel": {
+  "(none)": null,
+  "application": "<strong>Application incident.</strong> In ServiceNow, check if there is an existing Problem Record for this application — recurring application incidents often indicate an unresolved known error. Use the Agent Assist suggestions that appear when you enter the Short Description in ServiceNow.",
+  "infrastructure": "<strong>Infrastructure incident.</strong> In ServiceNow, ensure the affected CI is linked accurately — the CMDB dependency map will show downstream services that may be impacted but not yet reporting issues. Check for any recent changes in the <code>caused_by</code> field.<br><br><a href=\"https://www.servicenow.com/community/itsm-articles/best-practice-incident-management-to-extend-or-not-to-extend-and/ta-p/3486025\" target=\"_blank\">ServiceNow CMDB impact ↗</a>",
+  "thirdparty": "<strong>Third-party/Supplier incident.</strong> In ServiceNow, populate the <code>caused_by</code> field with any relevant change and raise a Supplier Management record if this represents a service level failure. Consider whether your supplier SLA requires formal notification — many do within 2 hours for P1. Ensure your vendor escalation contact is in the escalation matrix.<br><br><a href=\"https://www.servicenow.com/community/itsm-articles/servicenow-incident-workflow-how-incident-management-really-runs/ta-p/3469448\" target=\"_blank\">Supplier incident handling ↗</a>",
+  "security": "<strong>Security incident detected.</strong> In ServiceNow, route to your Security Operations team, not standard IT Ops. Consider raising a Security Incident record (sn_si_incident table) separately from the standard incident. Engage your CISO or security lead immediately. DORA and FCA SUP 15 require rapid escalation of security incidents in regulated environments.<br><br><a href=\"https://www.servicenow.com/community/security-operations/ct-p/security-ops\" target=\"_blank\">ServiceNow Security Operations ↗</a>",
+  "data": "<strong>Data/Database incident.</strong> If personal data may be affected, your Data Protection Officer must be notified within 72 hours under UK GDPR. In ServiceNow, flag the Privacy Impact field if available. Consider whether DORA operational incident reporting thresholds are met for financial services.<br><br><a href=\"https://ico.org.uk/for-organisations/report-a-breach/\" target=\"_blank\">ICO breach reporting ↗</a>",
+  "network": "<strong>Network incident.</strong> Network incidents often have multiple downstream application impacts not immediately visible. In ServiceNow, use the CMDB CI dependency view to identify affected services before closing. Consider whether monitoring needs tuning to catch similar issues earlier.",
+  "process": "<strong>Process/Human factor incident.</strong> The root cause involves a process or human element. In the RCA stage, focus the Fishbone analysis on the People and Process categories. In the problem record, consider whether a Knowledge Article or updated runbook would prevent recurrence — not a technical fix.",
+  "other": null
+ },
+ "doraSource": [
+  "Article 17 covers major ICT incident classification and reporting.",
+  "Article 9 covers ICT asset management and software currency.",
+  "DORA Article 17 requires that ICT incident management processes include appropriate human oversight.",
+  "DORA Article 9 requires ICT risk management to include patching and update policies."
+ ],
+ "doraContent": {
+  "refs": {
+   "dora_article_17": {
+    "title": "DORA Article 17 — ICT-related incident management",
+    "summary": "Requires financial entities to establish a sound ICT-related incident management process. Incident classification, notification, and escalation procedures must be documented and tested. Human oversight is required — autonomous incident closure without human confirmation is not compliant.",
+    "url": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
+    "validated": "2026-01-15"
+   },
+   "dora_article_18": {
+    "title": "DORA Article 18 — Classification of ICT-related incidents",
+    "summary": "Establishes the criteria by which ICT-related incidents are classified as major. Classification determines whether Article 19 reporting obligations are triggered. Specific classification thresholds are set out in RTS — pending final publication by EBA/ESMA/EIOPA. Until the RTS are finalised, thresholds shown in this tool are indicative only.",
+    "url": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
+    "validated": "2026-06-03",
+    "note": "RTS under Article 18 pending final publication — thresholds indicative only"
+   },
+   "dora_article_19": {
+    "title": "DORA Article 19 — Reporting of major ICT-related incidents",
+    "summary": "Financial entities must report major ICT-related incidents to their competent authority in three stages: initial notification within 4 hours of classification as major (and no later than 24 hours from detection); intermediate report within 72 hours of the initial notification; final report within 1 month of the intermediate report. Reporting applies once an incident is classified as major under Article 18.",
+    "url": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
+    "validated": "2026-06-03"
+   }
+  },
+  "dora_note": null,
+  "warnings": [
+   {
+    "id": "dora_rts_pending",
+    "title": "DORA Article 18 RTS — pending final publication",
+    "text": "Regulatory Technical Standards governing ICT incident reporting thresholds under DORA Article 18 are pending final publication by EBA/ESMA/EIOPA. Incident classification thresholds shown in this tool are indicative. Verify with your compliance team before making regulatory notifications."
+   },
+   {
+    "id": "eba_dora_20261005",
+    "title": "EBA — EU DORA and operational resilience — new publication detected",
+    "text": "​The EBA publishes its 2027 Work Programme. Review for relevance to your EU DORA obligations. Always verify at the authoritative source."
+   }
+  ],
+  "articleSnippets": [
+   "Article 18.",
+   "Article 19 reporting obligations are triggered.",
+   "DORA Article 17 and FCA SUP 15 require rapid escalation of security incidents in regulated environments.",
+   "DORA Article 17 — ICT-related incident management\",\"summary\":\"Requires financial entities to establish a sound ICT-related incident management process.",
+   "DORA Article 18 RTS thresholds are pending final publication.",
+   "DORA Article 18 RTS — pending final publication\",\"text\":\"Regulatory Technical Standards governing ICT incident reporting thresholds under DORA Article 18 are pending final publication by EBA/ESMA/EIOPA.",
+   "DORA Article 18 — Classification of ICT-related incidents\",\"summary\":\"Establishes the criteria by which ICT-related incidents are classified as major.",
+   "DORA Article 18/19 attribution — reporting timelines (4h/72h/1 month) moved to Article 19 entry where they belong; Article 18 entry now correctly describes classification scope only.",
+   "DORA Article 19 requires notification to competent authority for major ICT-related incidents.",
+   "DORA Article 28 requires contractual arrangements with ICT third-party service providers to include incident notification obligations.",
+   "DORA Articles 17/18/19 (note: RTS under Article 18 pending final publication), UK GDPR/ICO guidance Jan 2026, ITIL 4 current edition."
+  ],
+  "contentVersion": "2026-06-03"
+ },
+ "preflight": {
+  "pf-empty": [
+   "pf-block | Short description is missing or too brief",
+   "pf-block | No service name entered",
+   "pf-warn | Start time not set — SLA and MTTR will be incorrect",
+   "pf-warn | Configuration item (CI) not specified",
+   "pf-warn | Assignment group not set",
+   "pf-info | Incident timeline is empty"
+  ],
+  "pf-complete": [
+   "pf-info | Incident timeline is empty",
+   "pf-good | Core fields complete — outputs will be paste-ready"
+  ],
+  "pf-T11-payment-desc": [
+   "pf-warn | Payment keyword detected — regulatory flag not set",
+   "pf-info | Incident timeline is empty",
+   "pf-good | Core fields complete — outputs will be paste-ready"
+  ],
+  "pf-T11-payment-checked": [
+   "pf-info | Incident timeline is empty",
+   "pf-good | Core fields complete — outputs will be paste-ready"
+  ],
+  "pf-T11-payment-svc-only": [
+   "pf-warn | Payment keyword detected — regulatory flag not set",
+   "pf-info | Incident timeline is empty",
+   "pf-good | Core fields complete — outputs will be paste-ready"
+  ],
+  "pf-T12-fp-refund": [
+   "pf-warn | Payment keyword detected — regulatory flag not set",
+   "pf-info | Incident timeline is empty",
+   "pf-good | Core fields complete — outputs will be paste-ready"
+  ],
+  "pf-T12-fp-discard": [
+   "pf-warn | Payment keyword detected — regulatory flag not set",
+   "pf-info | Incident timeline is empty",
+   "pf-good | Core fields complete — outputs will be paste-ready"
+  ],
+  "pf-T13-pii": [
+   "pf-warn | Possible data incident — regulatory flag not set",
+   "pf-info | Incident timeline is empty",
+   "pf-good | Core fields complete — outputs will be paste-ready"
+  ],
+  "pf-T14-override": [
+   "pf-warn | Severity override: score suggests P1, you selected P4",
+   "pf-info | Incident timeline is empty",
+   "pf-good | Core fields complete — outputs will be paste-ready"
+  ],
+  "pf-T15-p1-no-rca": [
+   "pf-warn | Root cause not completed for P1 incident",
+   "pf-warn | Permanent fix not documented",
+   "pf-info | Incident timeline is empty",
+   "pf-info | No decisions logged in the Decision Log",
+   "pf-good | Core fields complete — outputs will be paste-ready"
+  ],
+  "pf-T16-resolved-no-notes": [
+   "pf-info | Incident timeline is empty",
+   "pf-info | Resolution time is set but resolution notes are empty",
+   "pf-good | Core fields complete — outputs will be paste-ready"
+  ]
+ }
+}

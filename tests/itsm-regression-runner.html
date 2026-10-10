@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ITSM Regression Runner</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body{font-family:system-ui,sans-serif;margin:16px;max-width:900px;line-height:1.5}
+  #status{padding:8px 12px;border-radius:6px;background:#eee;font-weight:600}
+  .ok{background:#d1fae5!important}.bad{background:#fee2e2!important}
+  pre{background:#f6f6f6;padding:10px;overflow:auto;max-height:420px;font-size:12px}
+  iframe{width:1px;height:1px;border:0;position:absolute;left:-9999px}
+</style>
+</head>
+<body>
+<h1>ITSM Regression Runner</h1>
+<p>Drives the <strong>real</strong> deterministic functions of <code>itsm-workflow-tool-v25.html</code>
+(<code>updateScore</code> / <code>calcScore</code> and <code>showIntelHint</code>) and snapshots every DORA-article statement in the tool source and content layer.
+Serve the repo root over HTTP and open this page. Compares against <code>itsm-baseline.json</code>.</p>
+<div id="status">Loading tool…</div>
+<pre id="out"></pre>
+<iframe id="tool"></iframe>
+
+<script>
+/* ---------------------------------------------------------------
+   Fixtures. Each runs through the tool's own functions; the harness never
+   re-implements scoring or rule logic. See ITSM matrix section 29 (T1-T10).
+---------------------------------------------------------------- */
+const FIELDS = ['t1_users','t1_business','t1_workaround','t1_duration','t1_regulatory','t1_recurring'];
+const OPTS = {  // valid option values per field, taken from the tool's own <select> options
+  t1_users:[0,1,2,3,4,5], t1_business:[0,1,2,3,4,5], t1_workaround:[0,1,2],
+  t1_duration:[0,1,2,3,4], t1_regulatory:[0,2,4,5], t1_recurring:[0,2,4]
+};
+
+function scoreFixtures(){
+  const out = [];
+  const zero = ()=>Object.fromEntries(FIELDS.map(f=>[f,0]));
+  out.push({id:'score-all-zero', v:zero()});
+  out.push({id:'score-all-max',  v:Object.fromEntries(FIELDS.map(f=>[f, Math.max(...OPTS[f])]))});   // T2: max = 25
+  // each field alone at each option value
+  FIELDS.forEach(f=>OPTS[f].forEach(o=>{ const v=zero(); v[f]=o; out.push({id:`score-single-${f}-${o}`, v}); }));
+  // one fixture for every reachable total 0..25 (greedy fill, deterministic) -> exercises every threshold edge (T1)
+  for(let target=0; target<=25; target++){
+    const v=zero(); let left=target;
+    for(const f of ['t1_business','t1_users','t1_regulatory','t1_duration','t1_recurring','t1_workaround']){
+      const best = Math.max(...OPTS[f].filter(o=>o<=left)); v[f]=best; left-=best;
+    }
+    out.push({id:`score-target-${String(target).padStart(2,'0')}-got-${FIELDS.reduce((s,f)=>s+v[f],0)}`, v});
+  }
+  // T3/T4: unknown users and double-counted recurrence
+  out.push({id:'score-T3-unknown-users', v:{...zero(), t1_business:3, t1_workaround:2, t1_duration:2}});
+  out.push({id:'score-T4-double-recurrence', v:{...zero(), t1_duration:4, t1_recurring:4}});
+  // deterministic pseudo-random sample (LCG, fixed seed)
+  let seed = 20261010; const rnd = ()=> (seed = (seed*1664525 + 1013904223) % 4294967296) / 4294967296;
+  for(let i=0;i<40;i++){
+    const v={}; FIELDS.forEach(f=>{ const a=OPTS[f]; v[f]=a[Math.floor(rnd()*a.length)]; });
+    out.push({id:`score-rand-${String(i).padStart(2,'0')}`, v});
+  }
+  return out;
+}
+
+
+/* Pre-flight review fixtures (T11-T16). generatePreflightFindings() is the tool's own deterministic
+   quality + payment/PII keyword check; it reads the form via g() and the globals selectedSev,
+   timelineEvents, decisionLog. */
+const PF_FIELDS = ['i_shortdesc','t1_observation','t1_service','i_started','i_diagnosis','i_assigngroup','i_ci','i_resolved','i_resolution','rca_rootcause','rca_fix'];
+const PF_OK = {i_shortdesc:'Intermittent login failures for retail users', t1_service:'Auth Service', i_started:'2026-01-01T10:00', i_diagnosis:'Auth pods restarting due to memory pressure on node pool', i_assigngroup:'Platform-Ops', i_ci:'auth-prod-01'};
+function pf(over, extra){ return Object.assign({fields:Object.assign({}, PF_OK, over||{})}, extra||{}); }
+const PREFLIGHT_FIXTURES = {
+  'pf-empty':               {fields:{}},
+  'pf-complete':            pf({}),
+  'pf-T11-payment-desc':    pf({i_shortdesc:'Card payment failures at checkout for all users'}),
+  'pf-T11-payment-checked': pf({i_shortdesc:'Card payment failures at checkout for all users'}, {regChecked:true}),
+  'pf-T11-payment-svc-only':pf({t1_service:'Payments API'}),
+  'pf-T12-fp-refund':       pf({i_shortdesc:'Refund email template shows wrong footer text'}),   // "fund" substring
+  'pf-T12-fp-discard':      pf({i_shortdesc:'Discard button misaligned on the settings page'}),  // "card" substring
+  'pf-T13-pii':             pf({i_shortdesc:'Possible data breach of customer data in export job'}),
+  'pf-T14-override':        pf({}, {sev:'P4', score:'max'}),
+  'pf-T15-p1-no-rca':       pf({}, {sev:'P1'}),
+  'pf-T16-resolved-no-notes': pf({i_resolved:'2026-01-01T12:00'})
+};
+
+/* Snippet collector: every place the source text makes a statement about a numbered
+   article of DORA / the content layer. Normalised so line-ending changes do not matter. */
+function articleSnippets(text){
+  const t = text.replace(/\r/g,'').replace(/<[^>]+>/g,' ').replace(/\\u[0-9a-f]{4}/gi,' ').replace(/\s+/g,' ');
+  const found = new Set();
+  const re = /DORA[^.]{0,80}?Article\s*\d+[^.]{0,200}\.|Article\s*(9|17|18|19|23|28)\b[^.]{0,220}\./g;
+  let m; while((m = re.exec(t))) found.add(m[0].trim());
+  return [...found].sort();
+}
+
+async function runAll(){
+  const frame = document.getElementById('tool');
+  const win = frame.contentWindow, doc = frame.contentDocument;
+  const R = {meta:{}, score:{}, severity:{}, intel:{}, doraSource:[], doraContent:{}};
+  R.meta.toolFile = 'itsm-workflow-tool-v25.html';
+  R.meta.intelRuleKeys = win.eval('Object.keys(intelRules)');
+  R.meta.verdicts = [];
+
+  // --- scoring via the real DOM + updateScore() ---
+  for(const f of scoreFixtures()){
+    win.eval("selectedSev = ''");           // so the auto-suggest path runs (T5 handled separately)
+    FIELDS.forEach(k => { doc.getElementById(k).value = String(f.v[k]); });
+    win.updateScore();
+    const total = win.calcScore();
+    const verdict = doc.getElementById('scoreVerdict').textContent.trim();
+    const detail  = doc.getElementById('scoreDetail').textContent.trim();
+    const detailStd = `Score ${total} / 24. Thresholds: P4=0-5, P3=6-10, P2=11-16, P1/Major=17+`;
+    if(!R.meta.verdicts.includes(verdict)) R.meta.verdicts.push(verdict);
+    const flags = ['majorIncidentAlert','nearMissAlert','recurringAlert'].map(id => doc.getElementById(id).style.display === 'none' ? '-' : 'Y').join('');
+    // compact row: total | suggestedSev | isMajor | numClass | alerts(major,nearMiss,recurring) | verdictIndex | detail ('=' means standard text)
+    R.score[f.id] = [ total, win.eval('selectedSev'), win.eval('isMajorIncident') ? 1 : 0,
+      doc.getElementById('scoreNum').className.replace('score-number','').trim(), flags,
+      'V' + R.meta.verdicts.indexOf(verdict), detail === detailStd ? '=' : detail ].join('|');
+  }
+
+  // --- T5: a manual severity must NOT be changed by a later score change ---
+  FIELDS.forEach(k => { doc.getElementById(k).value = '0'; });
+  win.eval("selectedSev = 'P3'");
+  FIELDS.forEach(k => { doc.getElementById(k).value = String(Math.max(...OPTS[k])); });
+  win.updateScore();
+  R.severity['T5-manual-P3-sticks-at-score-25'] = {selectedSev: win.eval('selectedSev'), isMajor: win.eval('isMajorIncident')};
+  win.eval("selectedSev = ''");
+
+  // --- intel hints via real DOM + showIntelHint() (T9) ---
+  // The tool overrides intelRules at runtime from live GitHub content; to keep this test hermetic we
+  // re-run the pristine `var intelRules={...}` statement from the file on disk, then drive the real function.
+  const srcForRules = await (await fetch('../itsm-workflow-tool-v25.html', {cache:'no-store'})).text();
+  const i0 = srcForRules.indexOf('var intelRules={'), i1 = srcForRules.indexOf('function showIntelHint');
+  win.eval(srcForRules.slice(i0, i1));
+  const sel = doc.getElementById('t1_inctype'), hintEl = doc.getElementById('intelHint');
+  for(const val of ['', ...[...sel.options].map(o=>o.value).filter(Boolean)]){
+    sel.value = val; hintEl.className = 'intel-hint'; hintEl.innerHTML = '';
+    win.showIntelHint();
+    R.intel[val || '(none)'] = hintEl.classList.contains('show') ? hintEl.innerHTML : null;
+  }
+
+
+  // --- pre-flight findings via the real generatePreflightFindings() ---
+  R.preflight = {};
+  const regBox = doc.getElementById('sla_regulatory');
+  for(const [id, fx] of Object.entries(PREFLIGHT_FIXTURES)){
+    PF_FIELDS.forEach(k => { const el = doc.getElementById(k); if(el) el.value = (fx.fields[k] || ''); });
+    if(regBox) regBox.checked = !!fx.regChecked;
+    FIELDS.forEach(k => { doc.getElementById(k).value = fx.score === 'max' ? String(Math.max(...OPTS[k])) : '0'; });
+    win.eval('selectedSev = ' + JSON.stringify(fx.sev || ''));
+    R.preflight[id] = win.generatePreflightFindings().map(f => f.type + ' | ' + f.title);
+  }
+  win.eval("selectedSev = ''");
+  if(regBox) regBox.checked = false;
+  PF_FIELDS.forEach(k => { const el = doc.getElementById(k); if(el) el.value = ''; });
+
+  // --- DORA statements: tool source + content layer, as text snapshots ---
+  const src = await (await fetch('../itsm-workflow-tool-v25.html', {cache:'no-store'})).text();
+  R.doraSource = articleSnippets(src);
+  try{
+    const cj = await (await fetch('../itsm-content-v25.json', {cache:'no-store'})).json();
+    const refs = cj.regulatory_references || {};
+    R.doraContent.refs = Object.fromEntries(Object.entries(refs).filter(([k])=>/dora/i.test(k)));
+    R.doraContent.dora_note = (cj.ai_hints_extra && cj.ai_hints_extra.dora_note) || null;
+    R.doraContent.warnings = (cj.content_warnings||[]).filter(w=>/dora/i.test(JSON.stringify(w))).map(w=>({id:w.id,title:w.title,text:w.text}));
+    R.doraContent.articleSnippets = articleSnippets(JSON.stringify(cj));
+    R.doraContent.contentVersion = cj.meta && cj.meta.content_version;
+  }catch(e){ R.doraContent.error = e.message; }
+  return R;
+}
+
+function diff(a, b, path=''){
+  const out = [];
+  if(typeof a !== typeof b || (a===null)!==(b===null)){ out.push({path, baseline:a, current:b}); return out; }
+  if(a && typeof a === 'object'){
+    for(const k of new Set([...Object.keys(a), ...Object.keys(b)])) out.push(...diff(a[k], b[k], path ? path+'.'+k : k));
+    return out;
+  }
+  if(a !== b) out.push({path, baseline:a, current:b});
+  return out;
+}
+
+async function main(){
+  const status = document.getElementById('status'), out = document.getElementById('out');
+  const frame = document.getElementById('tool');
+  // Always test the file as it is on disk NOW: cache-bust the load and display its hash.
+  const fresh = await (await fetch('../itsm-workflow-tool-v25.html', {cache:'no-store'})).text();
+  const hashBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fresh));
+  window.__TOOLSHA__ = Array.from(new Uint8Array(hashBuf)).map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,12);
+  const loaded = new Promise(r => frame.addEventListener('load', r, {once:true}));
+  frame.src = '../itsm-workflow-tool-v25.html?cb=' + Date.now();
+  await loaded;
+  await new Promise(r => setTimeout(r, 1500)); // let the tool's own init finish
+  try{
+    window.__RESULT__ = await runAll();
+    let base = null;
+    try{ const resp = await fetch('itsm-baseline.json', {cache:'no-store'}); if(resp.ok) base = await resp.json(); }catch(e){}
+    if(!base){
+      window.__DIFF__ = null;
+      status.textContent = 'Recorded (no baseline file to compare). ' + Object.keys(window.__RESULT__.score).length + ' score fixtures. [tool sha256:' + window.__TOOLSHA__ + ']';
+      out.textContent = JSON.stringify(window.__RESULT__, null, 1).slice(0, 3000) + '\n… (full object at window.__RESULT__)';
+    } else {
+      window.__DIFF__ = diff(base, window.__RESULT__);
+      const n = window.__DIFF__.length;
+      status.className = n ? 'bad' : 'ok';
+      status.textContent = (n ? ('DIFF: ' + n + ' difference(s) from baseline') : 'PASS: identical to baseline') + '  [tool sha256:' + window.__TOOLSHA__ + ']';
+      out.textContent = n ? JSON.stringify(window.__DIFF__, null, 1) : '';
+    }
+  }catch(err){
+    status.className = 'bad'; status.textContent = 'Runner error: ' + err.message; out.textContent = err.stack;
+    window.__ERROR__ = err.message;
+  }
+}
+main();
+</script>
+</body>
+</html>
