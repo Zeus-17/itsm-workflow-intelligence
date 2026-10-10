@@ -329,7 +329,10 @@
     bp('agent_output_received', { engine: engine });
     var result = resolveDraft(engine, draft, engPol, pol, supplied);
     bp('validation_result', { engine: engine, status: result.status });
-    emit('validation_result', { engine: engine, status: result.status, missing: (result.missing || []).length, caveats: (result.caveats || []).length, reason: result.reason || null });
+    emit('validation_result', { engine: engine, status: result.status, missing: (result.missing || []).length, caveats: (result.caveats || []).length, reason: result.reason || null,
+      // field NAMES and codes only (never values) so the audit trail can record exactly what was missing or defaulted
+      missing_detail: (result.missing || []).map(function (m) { return { field: m.field, reason_code: m.reason_code }; }),
+      caveat_detail: (result.caveats || []).map(function (c) { return { code: c.code, field: c.field }; }) });
     return result;
   }
 
@@ -529,6 +532,22 @@
     return { ok: true };
   }
 
+  /**
+   * The responsibility statement an administrator must acknowledge before moving ANY personal-data check away from the
+   * protective default (Block). Versioned: the version id travels with every acknowledgement so a later wording change
+   * is never confused with an earlier acceptance. WORDING NEEDS GENUINE LEGAL REVIEW before use with personal data.
+   */
+  var RESPONSIBILITY_NOTICE = deepFreeze({
+    version: 'rn-1',
+    title: "Your organisation's responsibility for these settings",
+    paragraphs: [
+      'This tool includes technical safeguards that run on your device before any text is sent to an AI provider: a personal-data filter and a flag for payment-related or regulatory-relevant terms. They are aids, not guarantees. They work by pattern matching, so they can miss information and can flag text that is harmless.',
+      'The tool starts in its most protective setting (Block). Choosing a less protective setting, or turning a check off, is a decision of your organisation. By making that choice you confirm that your organisation has assessed it and remains responsible for ensuring that how this tool is configured and used - including your agreement with the AI provider you select - meets your data-protection obligations and your own policies.',
+      'Rules you add are applied in addition to the defaults. This tool does not itself store, process or transmit your data to any service: text you choose to send goes directly from your browser to your chosen provider, under the terms agreed between your organisation and that provider.',
+      'This statement describes how the tool works; it is not legal advice. It has been prepared with UK and EU requirements in mind - organisations elsewhere should obtain their own review.'
+    ]
+  });
+
   var MODES = { block: 1, warn: 1, off: 1 };
   /* Default policy is FAIL-CLOSED: until an administrator chooses otherwise, any personal-data match blocks. */
   var piiPolicy = { mode: 'block', categories: {}, acknowledgements: {} };
@@ -549,13 +568,17 @@
       if (known.indexOf(c) < 0) errors.push('unknown category "' + c + '"');
       if (!MODES[cats[c]]) errors.push('category "' + c + '" has an invalid mode');
     });
-    function acked(key) { var a = acks[key]; return !!(a && a.by && a.at && a.reason); }
-    if (mode === 'off' && !acked('*')) errors.push('mode "off" requires an acknowledgement (by, at, reason) under "*"');
-    Object.keys(cats).forEach(function (c) { if (cats[c] === 'off' && !acked(c) && !acked('*')) errors.push('category "' + c + '" set to off requires an acknowledgement'); });
+    // ANY move away from Block (warn OR off, globally or per category) needs an attributable acknowledgement of the CURRENT
+    // responsibility notice: who, when, why, and the notice version they accepted. Block never needs one.
+    function acked(key) { var a = acks[key]; return !!(a && a.by && a.at && a.reason && a.noticeVersion === RESPONSIBILITY_NOTICE.version); }
+    if (mode !== 'block' && MODES[mode] && !acked('*')) errors.push('mode "' + mode + '" requires an acknowledgement (by, at, reason, noticeVersion "' + RESPONSIBILITY_NOTICE.version + '") under "*"');
+    Object.keys(cats).forEach(function (c) { if (cats[c] !== 'block' && MODES[cats[c]] && !acked(c) && !acked('*')) errors.push('category "' + c + '" set to ' + cats[c] + ' requires an acknowledgement of the responsibility notice'); });
     if (errors.length) { emit('pii_policy_rejected', { errors: errors.length }); return { ok: false, errors: errors }; }
     piiPolicy = { mode: mode, categories: JSON.parse(JSON.stringify(cats)), acknowledgements: JSON.parse(JSON.stringify(acks)) };
-    // Recorded so Step 4 can persist "the organisation's own logged choice" with its timestamp and author.
-    emit('pii_policy_set', { mode: mode, categoryOverrides: Object.keys(cats).length, offChoices: (mode === 'off' ? 1 : 0) + Object.keys(cats).filter(function (c) { return cats[c] === 'off'; }).length });
+    // Recorded so Step 4 can persist "the organisation's own logged choice" with its timestamp, author and notice version.
+    var weakened = (mode !== 'block' ? 1 : 0) + Object.keys(cats).filter(function (c) { return cats[c] !== 'block'; }).length;
+    var who = acks['*'] ? acks['*'].by : (Object.keys(acks).length ? acks[Object.keys(acks)[0]].by : null);
+    emit('pii_policy_set', { mode: mode, categoryOverrides: Object.keys(cats).length, weakened: weakened, offChoices: (mode === 'off' ? 1 : 0) + Object.keys(cats).filter(function (c) { return cats[c] === 'off'; }).length, noticeVersion: weakened ? RESPONSIBILITY_NOTICE.version : null, acknowledgedBy: weakened ? (who || null) : null });
     return { ok: true };
   }
 
@@ -633,7 +656,7 @@
     });
     // 'off' categories are not actioned; they are still reported (with mode 'off') for the audit trail.
     var flagged = payment.length > 0, flagId = null;
-    if (flagged) { flagId = 'rv' + (++clearanceSeq); reviewFlags.push({ id: flagId, at: new Date().toISOString(), tool: state.tool, terms: payment.length, acknowledged: null }); }
+    if (flagged) { flagId = 'rv' + (++clearanceSeq); reviewFlags.push({ id: flagId, at: new Date().toISOString(), tool: state.tool, terms: payment.length, acknowledged: null }); emit('review_flag', { flagId: flagId, terms: payment.length }); }
     var clearance = null;
     if (decision !== 'block') {
       var id = 'cl' + (++clearanceSeq) + '-' + Math.floor(Math.random() * 1e9).toString(36);
@@ -647,7 +670,8 @@
       pii: { findings: findings, byCategory: byCategory },
       clearance: clearance
     };
-    emit('prefilter_decision', { decision: decision, paymentFlagged: flagged, paymentTerms: payment.length, pii: byCategory });
+    emit('prefilter_decision', { decision: decision, paymentFlagged: flagged, paymentTerms: payment.length, pii: byCategory,
+      piiDetail: Object.keys(byCategory).map(function (c) { return { category: c, count: byCategory[c], mode: modeFor(c) }; }) });
     return result;
   }
 
@@ -685,7 +709,7 @@
     var f = reviewFlags.filter(function (x) { return x.id === flagId; })[0];
     if (!f || !by || !String(by).trim()) return false;
     f.acknowledged = { by: String(by).trim(), at: new Date().toISOString() };
-    emit('review_acknowledged', { flagId: flagId });
+    emit('review_acknowledged', { flagId: flagId, by: String(by).trim() });
     return true;
   }
 
@@ -708,11 +732,15 @@
       draft: validateDraft,
       engines: function () { requireConfigured(); return Object.keys(state.inputs.$defs); },
       /** Validate any instance against a definition of the configured schema documents (used by tests/adapters). */
-      against: function (doc, def, inst) { requireConfigured(); return validateAgainst(state[doc], def, inst); }
+      against: function (doc, def, inst) { requireConfigured(); return validateAgainst(state[doc], def, inst); },
+      /** Validate `inst` against definition `def` of an explicitly supplied schema document (used by the audit log). Returns an error array. */
+      instance: function (doc, def, inst) { return validateAgainst(doc, def, inst); }
     },
     prefilter: {
       check: preflight, confirmWarn: confirmWarn, redact: redact,
       setPolicy: setPiiPolicy, getPolicy: getPiiPolicy, addPiiPattern: addPiiPattern, addPaymentTerms: addPaymentTerms,
+      /** The versioned responsibility statement an administrator must acknowledge before weakening any check. */
+      responsibilityNotice: function () { return RESPONSIBILITY_NOTICE; },
       categories: function () { return PII_DETECTORS.concat(customPiiDetectors).map(function (d) { return { id: d.id, label: d.label }; }); }
     },
     guard: { assertCleared: assertCleared },

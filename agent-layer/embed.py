@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
 """
-Embed the agent-layer validation module into the tool's single HTML file (Build Brief Step 3).
+Embed the agent layer (validation + audit) into the tool's single HTML file (Build Brief Steps 3-4).
 
 IDENTICAL COPY in both repos (hash-locked by LOCK.sha256).  Reads:
-    validation.js                       the shared module
-    config.json                         {tool, html, paymentLabel}  (per tool)
-    ../schemas/*.json                   engine inputs / drafts / outputs / unresolved policy (Step 2)
+    validation.js, audit.js, audit-schema.json     the shared modules / log schema
+    config.json                                    per tool: html path, labels, engine sources, versions
+    ../schemas/*.json                              engine inputs / drafts / outputs / unresolved policy (Step 2)
 and writes ONE block into the tool HTML, immediately before the final </body>:
 
     <!-- AGENT-LAYER:BEGIN ... --> <script id="agent-layer"> ... </script> <!-- AGENT-LAYER:END -->
 
-The block is purely additive: it defines window.AgentLayer and nothing else, references no existing function or
-element, and does nothing until something calls it. The tool behaves identically with it present.
+The block is purely additive: it defines window.AgentLayer and window.AgentAudit and nothing else, references no existing
+function or element by CALLING it, writes nothing to storage until the agent layer is actually used, and does nothing
+until something calls it. The tool behaves identically with it present.
+
+`engineSources` in config.json is a list of plain JavaScript IDENTIFIERS (rule tables / engine functions). They are
+validated against a strict pattern here and emitted as static `try { s.push(NAME) } catch` statements - there is no eval and
+no dynamic code. Their source/content is hashed at run time to fingerprint the deterministic engine.
 
     python agent-layer/embed.py            # (re)generate the block in place
     python agent-layer/embed.py --check    # exit 1 if the block in the HTML is stale or hand-edited
     python agent-layer/embed.py --remove   # take the block out again (rollback helper)
 """
-import hashlib
 import io
 import json
 import os
@@ -27,6 +31,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 BEGIN_RE = re.compile(r"<!-- AGENT-LAYER:BEGIN[^>]*-->")
 END = "<!-- AGENT-LAYER:END -->"
+IDENT = re.compile(r"^[A-Za-z_$][A-Za-z0-9_$]{0,60}$")
 
 
 def read(path):
@@ -35,8 +40,15 @@ def read(path):
 
 
 def js_json(obj):
-    """JSON safe to place inside a <script> element: '</' can never terminate the script."""
+    """JSON safe to place inside a <script> element: '</' and '<!--' can never terminate or confuse the script."""
     return json.dumps(obj, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/").replace("<!--", "<\\!--")
+
+
+def module_source(name):
+    src = read(os.path.join(HERE, name)).rstrip()
+    assert "</script" not in src.lower(), f"{name} must not contain a script terminator"
+    assert "AGENT-LAYER:" not in src, f"{name} must not contain the block marker text"
+    return src
 
 
 def build_block(cfg):
@@ -45,15 +57,24 @@ def build_block(cfg):
                        ("outputs", "engine-outputs.schema.json"), ("policy", "unresolved-policy.json")):
         with io.open(os.path.join(HERE, "..", "schemas", fname), encoding="utf-8") as f:
             schemas[key] = json.load(f)
-    module = read(os.path.join(HERE, "validation.js")).rstrip()
-    assert "</script" not in module.lower(), "validation.js must not contain a script terminator"
-    assert "AGENT-LAYER:" not in module, "validation.js must not contain the block marker text"
-    version = re.search(r"var VERSION = '([^']+)'", module).group(1)
-    payload = js_json({"tool": cfg["tool"], "paymentLabel": cfg["paymentLabel"], "schemas": schemas})
+    with io.open(os.path.join(HERE, "audit-schema.json"), encoding="utf-8") as f:
+        audit_schema = json.load(f)
+    validation, audit = module_source("validation.js"), module_source("audit.js")
+    version = re.search(r"var VERSION = '([^']+)'", validation).group(1)
+    sources = cfg.get("engineSources", [])
+    for ident in sources:
+        assert IDENT.match(ident), f"engineSources entry is not a plain identifier: {ident!r}"
+    push = "".join(f"try {{ s.push({i}); }} catch (e) {{ s.push(null); }} " for i in sources)
+    audit_cfg = {"tool": cfg["tool"], "toolVersion": cfg["toolVersion"], "engineVersion": cfg["engineVersion"],
+                 "deployedTag": cfg["deployedTag"], "exportHints": cfg["exportHints"], "schema": audit_schema}
     nl = "\n"
+    boot_validation = f"window.AgentLayer.configure({js_json({'tool': cfg['tool'], 'paymentLabel': cfg['paymentLabel'], 'schemas': schemas})});"
+    boot_audit = (f"var __a = {js_json(audit_cfg)}; __a.validate = window.AgentLayer.validate.instance; "
+                  f"__a.engineSources = function () {{ var s = []; {push}return s; }}; "
+                  f"window.AgentAudit.init(__a); window.AgentAudit.log().bridge(window.AgentLayer);")
     return (f"<!-- AGENT-LAYER:BEGIN v{version} (generated by agent-layer/embed.py; do not edit by hand) -->{nl}"
-            f'<script id="agent-layer">{nl}{module}{nl}'
-            f";(function(){{ try {{ window.AgentLayer.configure({payload}); }} "
+            f'<script id="agent-layer">{nl}{validation}{nl}{audit}{nl}'
+            f";(function(){{ try {{ {boot_validation} {boot_audit} }} "
             f"catch (e) {{ if (window.console) console.error('AgentLayer configuration failed', e); }} }})();{nl}"
             f"</script>{nl}{END}{nl}")
 

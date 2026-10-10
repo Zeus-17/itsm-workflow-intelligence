@@ -27,6 +27,8 @@ def load(name):
 
 
 DOCS = {"drafts": load("agent-drafts.schema.json"), "inputs": load("engine-inputs.schema.json"), "outputs": load("engine-outputs.schema.json")}
+with open(os.path.join(HERE, "..", "audit-schema.json"), encoding="utf-8") as _f:
+    DOCS["audit"] = json.load(_f)
 
 
 def resolve(doc, schema):
@@ -45,6 +47,8 @@ def sample(doc, schema, prefer_computed=True):
     if "oneOf" in schema:
         return sample(doc, schema["oneOf"][0], prefer_computed)
     t = schema.get("type")
+    if isinstance(t, list):  # nullable types: sample the non-null kind
+        t = [x for x in t if x != "null"][0]
     if t == "object":
         out = {}
         for k, sub in schema.get("properties", {}).items():
@@ -58,7 +62,9 @@ def sample(doc, schema, prefer_computed=True):
         return []
     if t == "string":
         if "pattern" in schema:
-            return ""  # the date-or-blank pattern accepts ''
+            for cand in ("", "2026-01-01T00:00:00Z", "2026-01-01"):  # first candidate that satisfies the pattern
+                if re.search(schema["pattern"], cand):
+                    return cand
         return "x" * schema.get("minLength", 1)
     if t == "integer":
         return int(schema.get("minimum", 0))

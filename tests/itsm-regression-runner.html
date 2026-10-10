@@ -280,13 +280,15 @@ async function main(){
   try{
     window.__RESULT__ = await runAll();
     let base = null;
-    try{ const resp = await fetch('itsm-baseline.json', {cache:'no-store'}); if(resp.ok) base = await resp.json(); }catch(e){}
+    try{ const resp = await fetch(new URLSearchParams(location.search).get('base') || 'itsm-baseline.json', {cache:'no-store'}); if(resp.ok) base = await resp.json(); }catch(e){}
     if(!base){
       window.__DIFF__ = null;
       status.textContent = 'Recorded (no baseline file to compare). ' + Object.keys(window.__RESULT__.score).length + ' score fixtures. [tool sha256:' + window.__TOOLSHA__ + ']';
       out.textContent = JSON.stringify(window.__RESULT__, null, 1).slice(0, 3000) + '\n… (full object at window.__RESULT__)';
     } else {
       window.__DIFF__ = diff(base, window.__RESULT__);
+      // ?lenient: used by the rollback drill to run the CURRENT runner against OLD tags - ignore fields that did not exist in the older baseline
+      if(new URLSearchParams(location.search).has('lenient')) window.__DIFF__ = window.__DIFF__.filter(d => d.baseline !== undefined);
       const n = window.__DIFF__.length;
       status.className = n ? 'bad' : 'ok';
       status.textContent = (n ? ('DIFF: ' + n + ' difference(s) from baseline') : 'PASS: identical to baseline') + '  [tool sha256:' + window.__TOOLSHA__ + ']';

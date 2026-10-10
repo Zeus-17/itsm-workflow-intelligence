@@ -1,0 +1,3940 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:zeus17:agent-layer:audit-event:v1",
+ "title": "Agent-layer audit event (shared by audit trail, failsafe log and personal-data decision log)",
+ "$defs": {
+  "ev_session_started": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "session_started"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "reason"
+     ],
+     "properties": {
+      "reason": {
+       "enum": [
+        "first_event_after_load",
+        "reset"
+       ]
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_config_changed": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "config_changed"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "setting",
+      "summary",
+      "notice_version",
+      "acknowledged_by"
+     ],
+     "properties": {
+      "setting": {
+       "enum": [
+        "pii_policy",
+        "payment_terms",
+        "pii_pattern",
+        "provider_lock",
+        "provider_config",
+        "retention",
+        "enhanced_access",
+        "actor"
+       ]
+      },
+      "summary": {
+       "type": "string",
+       "minLength": 1
+      },
+      "notice_version": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "acknowledged_by": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_disclosure_acknowledged": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "disclosure_acknowledged"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "disclosure_version",
+      "provider_id",
+      "provider_label",
+      "acknowledged_by"
+     ],
+     "properties": {
+      "disclosure_version": {
+       "type": "string",
+       "minLength": 1
+      },
+      "provider_id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "provider_label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "acknowledged_by": {
+       "type": "string",
+       "minLength": 1
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_input_received": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "input_received"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "text",
+      "text_hash",
+      "text_state",
+      "pii_categories",
+      "payment_flagged",
+      "truncated"
+     ],
+     "properties": {
+      "text": {
+       "type": "string"
+      },
+      "text_hash": {
+       "type": "string",
+       "minLength": 1
+      },
+      "text_state": {
+       "enum": [
+        "as_entered",
+        "redacted"
+       ]
+      },
+      "pii_categories": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      },
+      "payment_flagged": {
+       "type": "boolean"
+      },
+      "truncated": {
+       "type": "boolean"
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_prefilter_decision": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "prefilter_decision"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "decision",
+      "payment_flagged",
+      "payment_terms",
+      "pii_findings",
+      "warn_confirmed"
+     ],
+     "properties": {
+      "decision": {
+       "enum": [
+        "allow",
+        "warn",
+        "block"
+       ]
+      },
+      "payment_flagged": {
+       "type": "boolean"
+      },
+      "payment_terms": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "pii_findings": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "category",
+         "count",
+         "mode"
+        ],
+        "properties": {
+         "category": {
+          "type": "string",
+          "minLength": 1
+         },
+         "count": {
+          "type": "integer",
+          "minimum": 0
+         },
+         "mode": {
+          "enum": [
+           "block",
+           "warn",
+           "off"
+          ]
+         }
+        }
+       }
+      },
+      "warn_confirmed": {
+       "type": "boolean"
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_clarification_asked": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "clarification_asked"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "field",
+      "text"
+     ],
+     "properties": {
+      "field": {
+       "type": "string",
+       "minLength": 1
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_clarification_answered": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "clarification_answered"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "field",
+      "text"
+     ],
+     "properties": {
+      "field": {
+       "type": "string",
+       "minLength": 1
+      },
+      "text": {
+       "type": "string"
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_agent_output_received": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "agent_output_received"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "fields"
+     ],
+     "properties": {
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "path",
+         "state",
+         "value",
+         "provenance",
+         "reason"
+        ],
+        "properties": {
+         "path": {
+          "type": "string",
+          "minLength": 1
+         },
+         "state": {
+          "enum": [
+           "resolved",
+           "unresolved"
+          ]
+         },
+         "value": {
+          "type": [
+           "string",
+           "null"
+          ]
+         },
+         "provenance": {
+          "type": [
+           "string",
+           "null"
+          ]
+         },
+         "reason": {
+          "type": [
+           "string",
+           "null"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_validation_result": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "validation_result"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "engine",
+      "status",
+      "missing",
+      "caveats",
+      "reason"
+     ],
+     "properties": {
+      "engine": {
+       "type": "string",
+       "minLength": 1
+      },
+      "status": {
+       "enum": [
+        "ready",
+        "cannot_be_determined",
+        "not_assessed",
+        "rejected"
+       ]
+      },
+      "missing": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "field",
+         "reason_code"
+        ],
+        "properties": {
+         "field": {
+          "type": "string",
+          "minLength": 1
+         },
+         "reason_code": {
+          "type": "string",
+          "minLength": 1
+         }
+        }
+       }
+      },
+      "caveats": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "code",
+         "field"
+        ],
+        "properties": {
+         "code": {
+          "type": "string",
+          "minLength": 1
+         },
+         "field": {
+          "type": "string",
+          "minLength": 1
+         }
+        }
+       }
+      },
+      "reason": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_engine_run": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "engine_run"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "engine",
+      "rules_fired",
+      "engine_input",
+      "raw_output"
+     ],
+     "properties": {
+      "engine": {
+       "type": "string",
+       "minLength": 1
+      },
+      "rules_fired": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      },
+      "engine_input": {
+       "type": "string"
+      },
+      "raw_output": {
+       "type": "string"
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_display_rendered": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "display_rendered"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "panel",
+      "text",
+      "matches_engine_output"
+     ],
+     "properties": {
+      "panel": {
+       "enum": [
+        "decision",
+        "assistant",
+        "standard_form",
+        "other"
+       ]
+      },
+      "text": {
+       "type": "string"
+      },
+      "matches_engine_output": {
+       "type": [
+        "boolean",
+        "null"
+       ]
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_provider_call": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "provider_call"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "provider_id",
+      "model",
+      "purpose",
+      "duration_ms",
+      "result"
+     ],
+     "properties": {
+      "provider_id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "purpose": {
+       "enum": [
+        "extract",
+        "explain",
+        "narrate",
+        "self_test",
+        "other"
+       ]
+      },
+      "duration_ms": {
+       "type": [
+        "integer",
+        "null"
+       ],
+       "minimum": 0
+      },
+      "result": {
+       "enum": [
+        "ok",
+        "timeout",
+        "malformed",
+        "error",
+        "blocked_by_guard"
+       ]
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_failsafe_triggered": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "failsafe_triggered"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "trigger",
+      "reason_category",
+      "count",
+      "window_seconds",
+      "state_preserved",
+      "source"
+     ],
+     "properties": {
+      "trigger": {
+       "enum": [
+        "timeout",
+        "malformed",
+        "soft_override",
+        "emergency_revoke",
+        "connectivity"
+       ]
+      },
+      "reason_category": {
+       "type": "string",
+       "minLength": 1
+      },
+      "count": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "window_seconds": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "state_preserved": {
+       "type": "boolean"
+      },
+      "source": {
+       "enum": [
+        "auto",
+        "manual"
+       ]
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_mode_changed": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "mode_changed"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "from_mode",
+      "to_mode",
+      "via",
+      "carried_over_fields",
+      "unresolved_candidates"
+     ],
+     "properties": {
+      "from_mode": {
+       "enum": [
+        "standard",
+        "ai"
+       ]
+      },
+      "to_mode": {
+       "enum": [
+        "standard",
+        "ai"
+       ]
+      },
+      "via": {
+       "enum": [
+        "toggle",
+        "standard_mode_button",
+        "failsafe",
+        "admin_revoke"
+       ]
+      },
+      "carried_over_fields": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "unresolved_candidates": {
+       "type": "integer",
+       "minimum": 0
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_review_flag": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "review_flag"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "flag_id",
+      "kind",
+      "terms"
+     ],
+     "properties": {
+      "flag_id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "kind": {
+       "enum": [
+        "payment_regulatory"
+       ]
+      },
+      "terms": {
+       "type": "integer",
+       "minimum": 0
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_review_acknowledged": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "review_acknowledged"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "flag_id",
+      "acknowledged_by"
+     ],
+     "properties": {
+      "flag_id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "acknowledged_by": {
+       "type": "string",
+       "minLength": 1
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_error": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "error"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "stage",
+      "code",
+      "message"
+     ],
+     "properties": {
+      "stage": {
+       "enum": [
+        "prefilter",
+        "agent_output",
+        "validation",
+        "engine",
+        "display",
+        "storage",
+        "provider",
+        "audit",
+        "other"
+       ]
+      },
+      "code": {
+       "type": "string",
+       "minLength": 1
+      },
+      "message": {
+       "type": "string"
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_retention_action": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "retention_action"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "action",
+      "count",
+      "by",
+      "reason",
+      "target_id"
+     ],
+     "properties": {
+      "action": {
+       "enum": [
+        "purge_expired",
+        "redact",
+        "warning_shown",
+        "export",
+        "configure"
+       ]
+      },
+      "count": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "target_id": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_engine_changed": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "engine_changed"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "previous_fingerprint",
+      "current_fingerprint",
+      "label"
+     ],
+     "properties": {
+      "previous_fingerprint": {
+       "type": [
+        "string",
+        "null"
+       ]
+      },
+      "current_fingerprint": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  },
+  "ev_audit_degraded": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "schema",
+    "id",
+    "seq",
+    "ts",
+    "type",
+    "tool",
+    "tool_version",
+    "engine_version",
+    "engine_fingerprint",
+    "session_id",
+    "interaction_id",
+    "user",
+    "provider",
+    "outcome",
+    "detail",
+    "redaction",
+    "prev_hash",
+    "hash"
+   ],
+   "properties": {
+    "schema": {
+     "const": "audit/v1"
+    },
+    "id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "seq": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "ts": {
+     "type": "string",
+     "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "type": {
+     "const": "audit_degraded"
+    },
+    "tool": {
+     "type": "string",
+     "minLength": 1
+    },
+    "tool_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_version": {
+     "type": "string",
+     "minLength": 1
+    },
+    "engine_fingerprint": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "session_id": {
+     "type": "string",
+     "minLength": 1
+    },
+    "interaction_id": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "user": {
+     "type": [
+      "string",
+      "null"
+     ]
+    },
+    "provider": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "id",
+      "label",
+      "model"
+     ],
+     "properties": {
+      "id": {
+       "type": "string",
+       "minLength": 1
+      },
+      "label": {
+       "type": "string",
+       "minLength": 1
+      },
+      "model": {
+       "type": [
+        "string",
+        "null"
+       ]
+      }
+     }
+    },
+    "outcome": {
+     "enum": [
+      "ok",
+      "allowed",
+      "warned",
+      "blocked",
+      "rejected",
+      "cannot_be_determined",
+      "not_assessed",
+      "fallback",
+      "error",
+      "n_a"
+     ]
+    },
+    "detail": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "reason",
+      "buffered"
+     ],
+     "properties": {
+      "reason": {
+       "enum": [
+        "quota_exceeded",
+        "storage_unavailable",
+        "serialisation_failed"
+       ]
+      },
+      "buffered": {
+       "type": "integer",
+       "minimum": 0
+      }
+     }
+    },
+    "redaction": {
+     "type": [
+      "object",
+      "null"
+     ],
+     "additionalProperties": false,
+     "required": [
+      "at",
+      "by",
+      "reason",
+      "fields"
+     ],
+     "properties": {
+      "at": {
+       "type": "string",
+       "minLength": 1
+      },
+      "by": {
+       "type": "string",
+       "minLength": 1
+      },
+      "reason": {
+       "type": "string",
+       "minLength": 1
+      },
+      "fields": {
+       "type": "array",
+       "items": {
+        "type": "string",
+        "minLength": 1
+       }
+      }
+     }
+    },
+    "prev_hash": {
+     "type": "string",
+     "minLength": 1
+    },
+    "hash": {
+     "type": "string",
+     "minLength": 1
+    }
+   }
+  }
+ }
+}

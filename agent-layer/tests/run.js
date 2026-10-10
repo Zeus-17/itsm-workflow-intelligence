@@ -30,7 +30,7 @@ function throwsMsg(fn, re) { try { fn(); return false; } catch (e) { return re.t
 section('A. shared-file integrity');
 const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, f)).toString('utf8').replace(/\r\n/g, '\n')).digest('hex');
 const lock = {}; read('LOCK.sha256').trim().split(/\r?\n/).forEach((l) => { const [h, n] = l.split(/\s+/); lock[n] = h; });
-for (const f of ['validation.js', 'embed.py', 'tests/run.js', 'tests/gen_diff_cases.py', 'tests/prefilter-cases.json']) {
+for (const f of ['validation.js', 'audit.js', 'audit-schema.json', 'build_audit_schema.py', 'embed.py', 'tests/run.js', 'tests/audit_run.js', 'tests/gen_diff_cases.py', 'tests/prefilter-cases.json']) {
   ok(lock[f] === sha(f), `${f} differs from LOCK.sha256 (the RM and ITSM copies must be identical; run agent-layer/lock.py)`);
 }
 
@@ -48,11 +48,12 @@ ok(AL.prefilter.getPolicy().mode === 'block' && Object.keys(AL.prefilter.getPoli
 
 // ------------------------------------------------------------------ B. validator differential
 section('B. schema validator vs Python jsonschema');
+const auditSchemaDoc = load('audit-schema.json');
 const diff = load('tests', 'diff-cases.json').cases;
 let diffBad = 0;
 for (const c of diff) {
   let got;
-  try { got = AL.validate.against(c.doc, c.def, c.instance).length === 0; } catch (e) { got = 'threw:' + e.message; }
+  try { got = (c.doc === 'audit' ? AL.validate.instance(auditSchemaDoc, c.def, c.instance) : AL.validate.against(c.doc, c.def, c.instance)).length === 0; } catch (e) { got = 'threw:' + e.message; }
   if (got !== c.valid) { diffBad++; ok(false, `validator disagrees on ${c.doc}.${c.def} [${c.label}]: python=${c.valid} js=${got}`); }
 }
 ok(diffBad === 0, 'no disagreement');
@@ -95,6 +96,11 @@ console.log(`   ${cases.length} cases`);
 // ------------------------------------------------------------------ D. pre-filter
 section('D. pre-filter');
 const pf = load('tests', 'prefilter-cases.json');
+// Moving away from Block always needs an attributable acknowledgement of the CURRENT responsibility notice.
+const NOTICE = AL.prefilter.responsibilityNotice();
+const ACK = (over) => Object.assign({ by: 'it.admin', at: '2026-10-10T10:00:00Z', reason: 'Assessed under our DPIA ref 42', noticeVersion: NOTICE.version }, over || {});
+const WARN = { mode: 'warn', acknowledgements: { '*': ACK() } };
+ok(NOTICE.version === 'rn-1' && NOTICE.paragraphs.length >= 4 && /responsib/i.test(NOTICE.paragraphs.join(' ')) && /not legal advice/i.test(NOTICE.paragraphs.join(' ')), 'responsibility notice is versioned and states responsibility + not-legal-advice');
 AL._test.reset();
 for (const c of pf.payment_flagged) {
   const r = AL.prefilter.check(c.text);
@@ -104,7 +110,8 @@ for (const c of pf.payment_flagged) {
   ok(r.payment.label === cfg.paymentLabel && /human review/i.test(r.payment.label), `payment label is the tool-specific, review-only wording: ${c.id}`);
 }
 for (const c of pf.payment_not_flagged) { ok(!AL.prefilter.check(c.text).payment.flagged, `payment must NOT flag: ${c.id}`); }
-AL.prefilter.setPolicy({ mode: 'warn' });
+ok(AL.prefilter.setPolicy({ mode: 'warn' }).ok === false, 'NEW: Warn without an acknowledgement is rejected (any move away from Block needs one)');
+ok(AL.prefilter.setPolicy(WARN).ok, 'Warn with acknowledgement accepted');
 for (const c of pf.pii_flagged) {
   const r = AL.prefilter.check(c.text);
   ok(r.pii.findings.some((f) => f.category === c.category), `PII ${c.category} expected: ${c.id} (got ${r.pii.findings.map((f) => f.category)})`);
@@ -121,7 +128,7 @@ let r = AL.prefilter.check('email me at a.b@example.org');
 ok(r.decision === 'block' && r.clearance === null, 'P1 block: refused, no clearance issued, nothing can be sent');
 ok(AL.prefilter.redact('email me at a.b@example.org', r.pii.findings) === 'email me at [REDACTED:email]', 'redaction replaces the value with a category token');
 ok(!JSON.stringify(r.pii.findings).includes('example.org'), 'findings never contain the matched value');
-ok(AL.prefilter.setPolicy({ mode: 'warn' }).ok, 'switch to warn');
+ok(AL.prefilter.setPolicy(WARN).ok, 'switch to warn (acknowledged)');
 r = AL.prefilter.check('Call 07911 123456 please');
 ok(r.decision === 'warn' && r.clearance && r.clearance.decision === 'warn', 'P2 warn: flagged, clearance issued but unconfirmed');
 ok(throwsMsg(() => AL.guard.assertCleared('Call 07911 123456 please', r.clearance), /not confirmed/), 'P2: sending before explicit confirmation throws');
@@ -130,12 +137,16 @@ ok(AL.guard.assertCleared('Call 07911 123456 please', r.clearance) === true, 'P2
 // P3: Off only with an attributable acknowledgement
 ok(AL.prefilter.setPolicy({ mode: 'off' }).ok === false, 'P3: Off without acknowledgement is rejected');
 ok(AL.prefilter.getPolicy().mode === 'warn', 'rejected policy leaves the previous policy in force (no silent weakening)');
-ok(AL.prefilter.setPolicy({ mode: 'off', acknowledgements: { '*': { by: 'it.admin', at: '2026-10-10T10:00:00Z', reason: 'handled by our DPA' } } }).ok, 'P3: Off with by/at/reason accepted');
+ok(AL.prefilter.setPolicy({ mode: 'off', acknowledgements: { '*': { by: 'it.admin', at: '2026-10-10T10:00:00Z', reason: 'handled by our DPA' } } }).ok === false, 'an acknowledgement WITHOUT the notice version is rejected');
+ok(AL.prefilter.setPolicy({ mode: 'off', acknowledgements: { '*': ACK({ noticeVersion: 'rn-0-old' }) } }).ok === false, 'an acknowledgement of an OLD/unknown notice version is rejected');
+ok(AL.prefilter.setPolicy({ mode: 'off', acknowledgements: { '*': ACK() } }).ok, 'P3: Off with by/at/reason + current notice version accepted');
+ok(AL.events.recent().some((e) => e.type === 'pii_policy_set' && e.details.noticeVersion === 'rn-1' && e.details.acknowledgedBy === 'it.admin'), 'policy event carries the notice version and who acknowledged it');
 r = AL.prefilter.check('account no: 12345678');
 ok(r.decision === 'allow' && r.pii.findings.length === 1 && r.pii.findings[0].mode === 'off', 'P3: Off lets it through but still REPORTS the finding (for the audit trail)');
 ok(AL.events.recent().some((e) => e.type === 'pii_policy_set'), 'policy change emits an event for Step 4 to log');
 // per-category override + unknown category
-ok(AL.prefilter.setPolicy({ mode: 'block', categories: { phone: 'warn' } }).ok, 'per-category override accepted');
+ok(AL.prefilter.setPolicy({ mode: 'block', categories: { phone: 'warn' } }).ok === false, 'per-category Warn also needs the acknowledgement');
+ok(AL.prefilter.setPolicy({ mode: 'block', categories: { phone: 'warn' }, acknowledgements: { phone: ACK() } }).ok, 'per-category override accepted with its acknowledgement');
 ok(AL.prefilter.check('ring 07911 123456').decision === 'warn' && AL.prefilter.check('x@y.org').decision === 'block', 'phone=warn while email stays block');
 ok(AL.prefilter.setPolicy({ mode: 'block', categories: { nonsense: 'off' } }).ok === false, 'unknown category rejected');
 ok(AL.prefilter.setPolicy({ mode: 'block', categories: { email: 'off' } }).ok === false, 'per-category Off also needs acknowledgement');
