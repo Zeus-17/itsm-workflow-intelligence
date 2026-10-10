@@ -1,25 +1,15 @@
 {
   "meta": {
-    "content_version": "2026-06-03",
+    "content_version": "2026-10-10",
     "schema_version": "1",
     "tool_version": "v25",
-    "changelog": "2026-06-03: Corrected DORA Article 18/19 attribution — reporting timelines (4h/72h/1 month) moved to Article 19 entry where they belong; Article 18 entry now correctly describes classification scope only. Updated next_review to Q3 2026. | Initial content layer 2026-01-15: Regulatory guidance validated against FCA Handbook Jan 2026, DORA Articles 17/18/19 (note: RTS under Article 18 pending final publication), UK GDPR/ICO guidance Jan 2026, ITIL 4 current edition.",
+    "changelog": "2026-10-10: DORA citations corrected against Regulation (EU) 2022/2554 (Art. 17 no longer described as requiring human oversight; Art. 19 timings attributed to Delegated Regulation (EU) 2025/301; Art. 28 -> Art. 30 for contractual provisions; Art. 9(4)(f) for patching); removed stale RTS-pending notice as Delegated Regulations (EU) 2024/1772 and 2025/301 are published. | 2026-06-03: Corrected DORA Article 18/19 attribution — reporting timelines (4h/72h/1 month) moved to Article 19 entry where they belong; Article 18 entry now correctly describes classification scope only. Updated next_review to Q3 2026. | Initial content layer 2026-01-15: Regulatory guidance validated against FCA Handbook Jan 2026, DORA Articles 17/18/19 (classification criteria: Delegated Regulation (EU) 2024/1772; report content and time limits: Delegated Regulation (EU) 2025/301), UK GDPR/ICO guidance Jan 2026, ITIL 4 current edition.",
     "next_review": "2026-09-15",
     "maintainer": "Update this file when FCA, EBA, ICO or AXELOS publish material changes. Increment content_version to YYYY-MM-DD of update. Add entry to changelog.",
     "last_checked_at": "2026-10-05",
     "last_check_result": "notices_found"
   },
   "content_warnings": [
-    {
-      "id": "dora_rts_pending",
-      "type": "warn",
-      "title": "DORA Article 18 RTS — pending final publication",
-      "text": "Regulatory Technical Standards governing ICT incident reporting thresholds under DORA Article 18 are pending final publication by EBA/ESMA/EIOPA. Incident classification thresholds shown in this tool are indicative. Verify with your compliance team before making regulatory notifications.",
-      "applies_to": [
-        "dora"
-      ],
-      "expires": "2026-12-31"
-    },
     {
       "id": "eba_dora_20261005",
       "type": "info",
@@ -36,7 +26,7 @@
   ],
   "intel_rules": {
     "security": {
-      "hint": "<strong>Security incident detected.</strong> In ServiceNow, route to your Security Operations team, not standard IT Ops. Consider raising a Security Incident record (sn_si_incident table) separately from the standard incident. Engage your CISO or security lead immediately. DORA Article 17 and FCA SUP 15 require rapid escalation of security incidents in regulated environments. DORA Article 19 requires notification to competent authority for major ICT-related incidents.",
+      "hint": "<strong>Security incident detected.</strong> In ServiceNow, route to your Security Operations team, not standard IT Ops. Consider raising a Security Incident record (sn_si_incident table) separately from the standard incident. Engage your CISO or security lead immediately. In regulated environments, DORA (Article 17(3): defined escalation procedures; Article 19: reporting of major ICT-related incidents) and FCA SUP 15 may require rapid escalation and notification. DORA Article 19 requires notification to competent authority for major ICT-related incidents.",
       "links": "<a href='https://www.servicenow.com/community/security-operations/ct-p/security-ops' target='_blank'>ServiceNow Security Operations ↗</a>"
     },
     "data": {
@@ -44,14 +34,14 @@
       "links": "<a href='https://ico.org.uk/for-organisations/report-a-breach/' target='_blank'>ICO breach reporting ↗</a>"
     },
     "thirdparty": {
-      "hint": "<strong>Third-party/Supplier incident.</strong> In ServiceNow, populate the caused_by field and raise a Supplier Management record if this represents a service level failure. DORA Article 28 requires contractual arrangements with ICT third-party service providers to include incident notification obligations. Ensure your vendor escalation path is active.",
+      "hint": "<strong>Third-party/Supplier incident.</strong> In ServiceNow, populate the caused_by field and raise a Supplier Management record if this represents a service level failure. DORA Article 30 sets out key contractual provisions for ICT third-party service providers, including assistance when an ICT incident occurs (Article 30(2)(f)). Ensure your vendor escalation path is active.",
       "links": "<a href='https://www.servicenow.com/community/itsm-articles/servicenow-incident-workflow-how-incident-management-really-runs/ta-p/3469448' target='_blank'>Supplier incident handling ↗</a>"
     }
   },
   "preflight_descriptions": {
     "payment_regulatory": "This incident description contains payment-related terms. If operating in an FCA/PRA-regulated environment, a notification obligation assessment under FCA SUP 15 is required. Payment Services Regulations 2017 (PSR 2017) may also require notification to the PSR. Consider enabling the regulatory flag and engaging your compliance team immediately.",
     "pii_regulatory": "The description may indicate a personal data incident under UK GDPR. The ICO 72-hour notification window starts at the point of awareness (Article 33). DPO and Legal engagement is required now. If operating in financial services, DORA operational incident reporting may also apply.",
-    "dora_note": "DORA Article 18 RTS thresholds are pending final publication. Verify current reporting thresholds with your compliance team before making any regulatory notifications."
+    "dora_note": "Classification criteria and materiality thresholds for DORA are set out in Commission Delegated Regulation (EU) 2024/1772, and report content and time limits in Delegated Regulation (EU) 2025/301. Verify current thresholds with your compliance team before making any regulatory notifications."
   },
   "regulatory_references": {
     "fca_sup15": {
@@ -61,21 +51,20 @@
       "validated": "2026-01-15"
     },
     "dora_article_17": {
-      "title": "DORA Article 17 — ICT-related incident management",
-      "summary": "Requires financial entities to establish a sound ICT-related incident management process. Incident classification, notification, and escalation procedures must be documented and tested. Human oversight is required — autonomous incident closure without human confirmation is not compliant.",
+      "title": "DORA Article 17 — ICT-related incident management process",
+      "summary": "Requires financial entities to define, establish and implement an ICT-related incident management process to detect, manage and notify ICT-related incidents (Art. 17(1)). All ICT-related incidents must be recorded, with procedures that ensure root causes are identified, documented and addressed (17(2)). The process must include early warning indicators, classification procedures, assigned roles and responsibilities, communication and internal escalation plans, and reporting of major incidents to senior management and the management body (17(3)).",
       "url": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
       "validated": "2026-01-15"
     },
     "dora_article_18": {
       "title": "DORA Article 18 — Classification of ICT-related incidents",
-      "summary": "Establishes the criteria by which ICT-related incidents are classified as major. Classification determines whether Article 19 reporting obligations are triggered. Specific classification thresholds are set out in RTS — pending final publication by EBA/ESMA/EIOPA. Until the RTS are finalised, thresholds shown in this tool are indicative only.",
+      "summary": "Establishes the criteria by which ICT-related incidents are classified as major. Classification determines whether Article 19 reporting obligations are triggered. The detailed classification criteria and materiality thresholds are set out in Commission Delegated Regulation (EU) 2024/1772 (published 25 June 2024). Thresholds shown in this tool are a simplified aid — verify against the Delegated Regulation.",
       "url": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
-      "validated": "2026-06-03",
-      "note": "RTS under Article 18 pending final publication — thresholds indicative only"
+      "validated": "2026-06-03"
     },
     "dora_article_19": {
       "title": "DORA Article 19 — Reporting of major ICT-related incidents",
-      "summary": "Financial entities must report major ICT-related incidents to their competent authority in three stages: initial notification within 4 hours of classification as major (and no later than 24 hours from detection); intermediate report within 72 hours of the initial notification; final report within 1 month of the intermediate report. Reporting applies once an incident is classified as major under Article 18.",
+      "summary": "Financial entities must report major ICT-related incidents to their competent authority (Art. 19(1)) by submitting an initial notification, an intermediate report and a final report (Art. 19(4)). Article 19(4) leaves the time limits to the technical standards: under Commission Delegated Regulation (EU) 2025/301, Article 5, the initial notification is due within 4 hours of classifying the incident as major and no later than 24 hours after becoming aware of it; the intermediate report within 72 hours of the initial notification; and the final report no later than one month after the intermediate report (or latest updated intermediate report). Reporting applies once an incident is classified as major under Article 18.",
       "url": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
       "validated": "2026-06-03"
     },

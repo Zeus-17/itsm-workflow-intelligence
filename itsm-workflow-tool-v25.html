@@ -4332,7 +4332,7 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
     <div class="obs-card-title">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
       Software Currency and Technical Health
-      <span class="tooltip-wrap"><span class="tooltip-icon">?</span><span class="tooltip-box">Software currency failures are one of the most consistently overlooked root causes in incident management. An expired certificate, an unpatched library, a deferred upgrade, or an EOL dependency can be the condition that made an incident possible — or worse than it needed to be.<br><br>DORA Article 9 requires ICT risk management to include patching and update policies. FCA operational resilience expects firms to understand the technical health of important business services.<br><br>Capturing currency status at incident time — not three weeks later in the PIR — makes this visible when it matters.<br><a href="https://www.eba.europa.eu/regulation-and-policy/operational-resilience/guidelines-ict-and-security-risk-management" target="_blank">EBA ICT risk management guidelines ↗</a></span></span>
+      <span class="tooltip-wrap"><span class="tooltip-icon">?</span><span class="tooltip-box">Software currency failures are one of the most consistently overlooked root causes in incident management. An expired certificate, an unpatched library, a deferred upgrade, or an EOL dependency can be the condition that made an incident possible — or worse than it needed to be.<br><br>DORA Article 9(4)(f) requires financial entities to have appropriate and comprehensive documented policies for patches and updates. FCA operational resilience expects firms to understand the technical health of important business services.<br><br>Capturing currency status at incident time — not three weeks later in the PIR — makes this visible when it matters.<br><a href="https://www.eba.europa.eu/regulation-and-policy/operational-resilience/guidelines-ict-and-security-risk-management" target="_blank">EBA ICT risk management guidelines ↗</a></span></span>
     </div>
 
     <!-- KNOWN ISSUES QUICK CHECK -->
@@ -7611,7 +7611,7 @@ function showIntegrationGuide(){
     </div>
 
     <div class="ig-warn">
-      ⚠ Autonomous ITSM automation without human review is not recommended in FCA/PRA regulated environments. DORA Article 17 requires that ICT incident management processes include appropriate human oversight. A human-in-the-loop gate before record creation and before incident closure is the correct design pattern.
+      ⚠ Autonomous ITSM automation without human review is not recommended in FCA/PRA regulated environments. DORA Article 17(3) requires incident management processes to assign roles and responsibilities and to keep senior management and the management body informed of major incidents; it does not prescribe a human-review gate. A human-in-the-loop gate before record creation and before incident closure is nonetheless a sound design pattern for this tool.
     </div>
 
     <div class="ig-section" style="margin-top:12px">
@@ -8427,7 +8427,7 @@ function getIncTypeLine(){
 // ── INTELLIGENCE HINTS ───────────────────────────────────────────
 var intelRules={
   security:{
-    hint:'<strong>Security incident detected.</strong> In ServiceNow, route to your Security Operations team, not standard IT Ops. Consider raising a Security Incident record (sn_si_incident table) separately from the standard incident. Engage your CISO or security lead immediately. DORA and FCA SUP 15 require rapid escalation of security incidents in regulated environments.',
+    hint:'<strong>Security incident detected.</strong> In ServiceNow, route to your Security Operations team, not standard IT Ops. Consider raising a Security Incident record (sn_si_incident table) separately from the standard incident. Engage your CISO or security lead immediately. In regulated environments, DORA (Article 17(3): defined escalation procedures; Article 19: reporting of major ICT-related incidents) and FCA SUP 15 may require rapid escalation and notification.',
     links:'<a href="https://www.servicenow.com/community/security-operations/ct-p/security-ops" target="_blank">ServiceNow Security Operations ↗</a>'
   },
   thirdparty:{
@@ -12986,7 +12986,7 @@ var GLOSSARY_STANDARD = {
   regulatory: [
     {a:'FCA', t:'Financial Conduct Authority', d:'The UK financial services regulator. Responsible for protecting consumers, maintaining market integrity and promoting competition. Operational incidents at regulated firms may require notification under SYSC 13 or SUP 15.'},
     {a:'PRA', t:'Prudential Regulation Authority', d:'Part of the Bank of England. Prudential regulator for banks, building societies, credit unions, insurers and major investment firms. Works alongside the FCA.'},
-    {a:'DORA', t:'Digital Operational Resilience Act (EU)', d:'EU regulation effective January 2025 requiring financial entities to manage ICT risk. Article 9 covers ICT asset management and software currency. Article 17 covers major ICT incident classification and reporting.', dupes:'DORA also means DevOps Research and Assessment (the four engineering metrics). Context determines which applies.'},
+    {a:'DORA', t:'Digital Operational Resilience Act (EU)', d:'EU regulation effective January 2025 requiring financial entities to manage ICT risk. Article 9(4)(e) covers ICT change management and Article 9(4)(f) patch and update policies. Article 17 covers the ICT-related incident management process, Article 18 the classification of incidents and Article 19 the reporting of major ICT-related incidents.', dupes:'DORA also means DevOps Research and Assessment (the four engineering metrics). Context determines which applies.'},
     {a:'ICO', t:'Information Commissioner\'s Office', d:'The UK\'s independent body for data protection and information rights. Personal data breaches must be reported within 72 hours of awareness under GDPR/UK GDPR.'},
     {a:'GDPR', t:'General Data Protection Regulation', d:'EU regulation on data protection and privacy. UK GDPR (post-Brexit) maintains equivalent standards. Article 5(1)(c) requires data minimisation — use only the personal data necessary for the purpose.'},
     {a:'PCI DSS', t:'Payment Card Industry Data Security Standard', d:'Security standard for organisations handling card payment data. Card numbers, CVVs and PINs must never appear in incident records, logs or tickets.'},

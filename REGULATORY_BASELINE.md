@@ -21,11 +21,11 @@ For decisions specific to your organisation, engage your compliance team.
 | **FCA Handbook — SUP 15** | SUP 15.3.1R notification obligations; operational incident reporting thresholds | FCA Handbook as at January 2026 | January 2026 |
 | **FCA PS21/3** | Operational resilience — impact tolerances for important business services | Policy Statement PS21/3, March 2021 | January 2026 |
 | **FCA CP22/25 / SS1/21** | Operational resilience joint statement with PRA | FCA/PRA SS1/21, March 2021 | January 2026 |
-| **DORA Article 9** | ICT risk management framework requirements; CVE tracking obligations | EU Regulation 2022/2554 | January 2026 |
-| **DORA Article 17** | ICT-related incident management process; human oversight requirement | EU Regulation 2022/2554 | January 2026 |
-| **DORA Article 18** | ICT-related incident classification criteria | EU Regulation 2022/2554 — **RTS pending final publication** | January 2026 |
-| **DORA Article 19** | Major ICT-related incident reporting: 4h initial / 72h intermediate / 1 month final | EU Regulation 2022/2554 — **RTS pending final publication** | January 2026 |
-| **DORA Article 28** | ICT third-party service provider contractual obligations | EU Regulation 2022/2554 | January 2026 |
+| **DORA Article 9(4)(e)–(f)** | Protection and prevention: documented ICT change management (changes recorded, tested, assessed, approved, implemented and verified); documented policies for patches and updates | EU Regulation 2022/2554 (verified against EUR-Lex text) | October 2026 |
+| **DORA Article 17** | ICT-related incident management process: record all incidents, root causes identified and addressed, classification procedures, roles and responsibilities, escalation, and major incidents reported to senior management and the management body (17(3)). *No explicit human-oversight or autonomous-closure rule.* | EU Regulation 2022/2554 (verified against EUR-Lex text) | October 2026 |
+| **DORA Article 18** | ICT-related incident classification criteria | EU Regulation 2022/2554; criteria and materiality thresholds in Commission Delegated Regulation (EU) 2024/1772 (OJ 25.6.2024) | October 2026 |
+| **DORA Article 19** | Major ICT-related incident reporting (initial notification, intermediate and final report). Time limits are set by Commission Delegated Regulation (EU) 2025/301, Art. 5: initial within 4h of classification as major and no later than 24h from awareness; intermediate within 72h of the initial; final within one month of the intermediate. | EU Regulation 2022/2554 Art. 19(4); Delegated Regulation (EU) 2025/301 (OJ 20.2.2025) | October 2026 |
+| **DORA Article 30** | Key contractual provisions for ICT third-party service providers, incl. assistance during ICT incidents (30(2)(f)) and notice/reporting obligations for critical or important functions (30(3)(b)). *Previously cited as Article 28 (which is general principles).* | EU Regulation 2022/2554 | October 2026 |
 | **UK GDPR Article 33** | Personal data breach notification to ICO within 72 hours | UK GDPR as retained post-Brexit | January 2026 |
 | **UK GDPR Article 5(1)(c)** | Data minimisation principle — case reference over personal data in incident records | UK GDPR as retained post-Brexit | January 2026 |
 | **ICO Breach Reporting** | 72-hour notification window; DPO engagement guidance | ICO guidance as at January 2026 | January 2026 |
@@ -61,16 +61,7 @@ For decisions specific to your organisation, engage your compliance team.
 
 | Item | Detail | Expected resolution |
 |---|---|---|
-| **DORA Article 18 RTS** | Regulatory Technical Standards governing incident classification thresholds — pending final EBA/ESMA/EIOPA publication. Thresholds shown in the tool are indicative. | Q2–Q4 2026 |
-| **DORA Article 19 RTS** | Regulatory Technical Standards for incident reporting templates — pending final publication. | Q2–Q4 2026 |
-
-When these RTS are finalised, update `itsm-content-v25.json`:
-1. Update the relevant `regulatory_references` entries
-2. Remove the pending warnings from `content_warnings`
-3. Increment `content_version` to the date of the update
-4. Update `changelog` with one line describing the change
-
----
+| *(none for DORA RTS)* | The Article 18 classification RTS (Delegated Regulation (EU) 2024/1772) and the Article 19 reporting RTS (Delegated Regulation (EU) 2025/301) are published; the earlier "pending final publication" notices were removed on 2026-10-10. Re-check for amending acts at each review. | — |
 
 ## Review Cadence
 
