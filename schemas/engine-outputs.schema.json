@@ -1,0 +1,960 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:zeus17:itsm:engine-outputs:v1",
+ "title": "ITSM engine results (computed | cannot_be_determined | not_assessed)",
+ "$defs": {
+  "Provenance": {
+   "enum": [
+    "form",
+    "user_confirmed"
+   ]
+  },
+  "UnresolvedReason": {
+   "enum": [
+    "declined",
+    "unknown_to_user",
+    "not_yet_asked"
+   ]
+  },
+  "Unresolved": {
+   "type": "object",
+   "required": [
+    "state",
+    "reason"
+   ],
+   "properties": {
+    "state": {
+     "const": "unresolved"
+    },
+    "reason": {
+     "$ref": "#/$defs/UnresolvedReason"
+    }
+   },
+   "additionalProperties": false
+  },
+  "Caveat": {
+   "type": "object",
+   "required": [
+    "code",
+    "field"
+   ],
+   "properties": {
+    "code": {
+     "type": "string",
+     "minLength": 1
+    },
+    "field": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "additionalProperties": false
+  },
+  "MissingInput": {
+   "type": "object",
+   "required": [
+    "field",
+    "reason_code"
+   ],
+   "properties": {
+    "field": {
+     "type": "string",
+     "minLength": 1
+    },
+    "reason_code": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "additionalProperties": false
+  },
+  "incident_score": {
+   "oneOf": [
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "output",
+      "caveats"
+     ],
+     "properties": {
+      "engine": {
+       "const": "incident_score"
+      },
+      "status": {
+       "const": "computed"
+      },
+      "output": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "total",
+        "suggested_tier",
+        "is_major",
+        "verdict"
+       ],
+       "properties": {
+        "total": {
+         "type": "integer",
+         "minimum": 0,
+         "maximum": 25,
+         "description": "Maximum is 25 although the tool displays 'x / 24'."
+        },
+        "suggested_tier": {
+         "enum": [
+          "P1",
+          "P2",
+          "P3",
+          "P4"
+         ]
+        },
+        "is_major": {
+         "type": "boolean"
+        },
+        "verdict": {
+         "type": "string",
+         "minLength": 1
+        }
+       }
+      },
+      "caveats": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/Caveat"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "incident_score"
+      },
+      "status": {
+       "const": "cannot_be_determined"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "incident_score"
+      },
+      "status": {
+       "const": "not_assessed"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    }
+   ]
+  },
+  "severity_record": {
+   "oneOf": [
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "output",
+      "caveats"
+     ],
+     "properties": {
+      "engine": {
+       "const": "severity_record"
+      },
+      "status": {
+       "const": "computed"
+      },
+      "output": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "recorded",
+        "severity"
+       ],
+       "properties": {
+        "recorded": {
+         "const": true
+        },
+        "severity": {
+         "enum": [
+          "P1",
+          "P2",
+          "P3",
+          "P4"
+         ]
+        }
+       }
+      },
+      "caveats": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/Caveat"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "severity_record"
+      },
+      "status": {
+       "const": "cannot_be_determined"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "severity_record"
+      },
+      "status": {
+       "const": "not_assessed"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    }
+   ]
+  },
+  "intel_hint": {
+   "oneOf": [
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "output",
+      "caveats"
+     ],
+     "properties": {
+      "engine": {
+       "const": "intel_hint"
+      },
+      "status": {
+       "const": "computed"
+      },
+      "output": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "matched",
+        "complete"
+       ],
+       "properties": {
+        "matched": {
+         "type": "boolean"
+        },
+        "hint_html": {
+         "type": "string"
+        },
+        "complete": {
+         "type": "boolean",
+         "description": "False whenever a fallback or skipped check means 'nothing found' must NOT be read as 'all clear'."
+        }
+       }
+      },
+      "caveats": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/Caveat"
+       }
+      }
+     },
+     "additionalProperties": false,
+     "if": {
+      "required": [
+       "caveats"
+      ],
+      "properties": {
+       "caveats": {
+        "minItems": 1
+       }
+      }
+     },
+     "then": {
+      "properties": {
+       "output": {
+        "properties": {
+         "complete": {
+          "const": false
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "intel_hint"
+      },
+      "status": {
+       "const": "cannot_be_determined"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "intel_hint"
+      },
+      "status": {
+       "const": "not_assessed"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    }
+   ]
+  },
+  "preflight": {
+   "oneOf": [
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "output",
+      "caveats"
+     ],
+     "properties": {
+      "engine": {
+       "const": "preflight"
+      },
+      "status": {
+       "const": "computed"
+      },
+      "output": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "findings",
+        "complete"
+       ],
+       "properties": {
+        "findings": {
+         "type": "array",
+         "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+           "type",
+           "title"
+          ],
+          "properties": {
+           "type": {
+            "enum": [
+             "pf-block",
+             "pf-warn",
+             "pf-info",
+             "pf-good"
+            ]
+           },
+           "title": {
+            "type": "string",
+            "minLength": 1
+           }
+          }
+         }
+        },
+        "complete": {
+         "type": "boolean",
+         "description": "False whenever a fallback or skipped check means 'nothing found' must NOT be read as 'all clear'."
+        }
+       }
+      },
+      "caveats": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/Caveat"
+       }
+      }
+     },
+     "additionalProperties": false,
+     "if": {
+      "required": [
+       "caveats"
+      ],
+      "properties": {
+       "caveats": {
+        "minItems": 1
+       }
+      }
+     },
+     "then": {
+      "properties": {
+       "output": {
+        "properties": {
+         "complete": {
+          "const": false
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "preflight"
+      },
+      "status": {
+       "const": "cannot_be_determined"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "preflight"
+      },
+      "status": {
+       "const": "not_assessed"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    }
+   ]
+  },
+  "change_risk": {
+   "oneOf": [
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "output",
+      "caveats"
+     ],
+     "properties": {
+      "engine": {
+       "const": "change_risk"
+      },
+      "status": {
+       "const": "computed"
+      },
+      "output": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "total",
+        "level"
+       ],
+       "properties": {
+        "total": {
+         "type": "integer",
+         "minimum": 18,
+         "maximum": 120,
+         "description": "Real range is 18-120 (the tool displays 'x/100'). A total of 0 can only arise from unset factors and is not a valid computed result."
+        },
+        "level": {
+         "enum": [
+          "low",
+          "medium",
+          "high"
+         ]
+        }
+       }
+      },
+      "caveats": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/Caveat"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "change_risk"
+      },
+      "status": {
+       "const": "cannot_be_determined"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "change_risk"
+      },
+      "status": {
+       "const": "not_assessed"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    }
+   ]
+  },
+  "routing_suggestion": {
+   "oneOf": [
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "output",
+      "caveats"
+     ],
+     "properties": {
+      "engine": {
+       "const": "routing_suggestion"
+      },
+      "status": {
+       "const": "computed"
+      },
+      "output": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "matched",
+        "complete"
+       ],
+       "properties": {
+        "matched": {
+         "type": "boolean"
+        },
+        "group": {
+         "type": "string",
+         "minLength": 1
+        },
+        "rationale": {
+         "type": "string",
+         "minLength": 1
+        },
+        "complete": {
+         "type": "boolean",
+         "description": "False whenever a fallback or skipped check means 'nothing found' must NOT be read as 'all clear'."
+        }
+       }
+      },
+      "caveats": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/Caveat"
+       }
+      }
+     },
+     "additionalProperties": false,
+     "if": {
+      "required": [
+       "caveats"
+      ],
+      "properties": {
+       "caveats": {
+        "minItems": 1
+       }
+      }
+     },
+     "then": {
+      "properties": {
+       "output": {
+        "properties": {
+         "complete": {
+          "const": false
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "routing_suggestion"
+      },
+      "status": {
+       "const": "cannot_be_determined"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "routing_suggestion"
+      },
+      "status": {
+       "const": "not_assessed"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    }
+   ]
+  },
+  "currency_risk": {
+   "oneOf": [
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "output",
+      "caveats"
+     ],
+     "properties": {
+      "engine": {
+       "const": "currency_risk"
+      },
+      "status": {
+       "const": "computed"
+      },
+      "output": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "risks",
+        "complete"
+       ],
+       "properties": {
+        "risks": {
+         "type": "array",
+         "items": {
+          "type": "string",
+          "minLength": 1
+         }
+        },
+        "complete": {
+         "type": "boolean",
+         "description": "False whenever a fallback or skipped check means 'nothing found' must NOT be read as 'all clear'."
+        }
+       }
+      },
+      "caveats": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/Caveat"
+       }
+      }
+     },
+     "additionalProperties": false,
+     "if": {
+      "required": [
+       "caveats"
+      ],
+      "properties": {
+       "caveats": {
+        "minItems": 1
+       }
+      }
+     },
+     "then": {
+      "properties": {
+       "output": {
+        "properties": {
+         "complete": {
+          "const": false
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "currency_risk"
+      },
+      "status": {
+       "const": "cannot_be_determined"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "currency_risk"
+      },
+      "status": {
+       "const": "not_assessed"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    }
+   ]
+  },
+  "sla_clock": {
+   "oneOf": [
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "output",
+      "caveats"
+     ],
+     "properties": {
+      "engine": {
+       "const": "sla_clock"
+      },
+      "status": {
+       "const": "computed"
+      },
+      "output": {
+       "type": "object",
+       "additionalProperties": false,
+       "required": [
+        "limit_minutes"
+       ],
+       "properties": {
+        "limit_minutes": {
+         "type": "integer",
+         "minimum": 1,
+         "description": "From slaMins (default P1 60, P2 240, P3 1440, P4 4320); editable in settings."
+        }
+       }
+      },
+      "caveats": {
+       "type": "array",
+       "items": {
+        "$ref": "#/$defs/Caveat"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "sla_clock"
+      },
+      "status": {
+       "const": "cannot_be_determined"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "required": [
+      "engine",
+      "status",
+      "missing"
+     ],
+     "properties": {
+      "engine": {
+       "const": "sla_clock"
+      },
+      "status": {
+       "const": "not_assessed"
+      },
+      "missing": {
+       "type": "array",
+       "minItems": 1,
+       "items": {
+        "$ref": "#/$defs/MissingInput"
+       }
+      }
+     },
+     "additionalProperties": false
+    }
+   ]
+  }
+ }
+}

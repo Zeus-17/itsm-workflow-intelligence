@@ -241,5 +241,61 @@
    "pf-info | Resolution time is set but resolution notes are empty",
    "pf-good | Core fields complete — outputs will be paste-ready"
   ]
+ },
+ "changeRisk": {
+  "risk-total-18": "18 | low | Low Risk — expedited review path | Score: 18/100 — Standard CAB or expedited review.",
+  "risk-total-30": "30 | low | Low Risk — expedited review path | Score: 30/100 — Standard CAB or expedited review.",
+  "risk-total-31": "31 | medium | Medium Risk — standard CAB approval required | Score: 31/100 — Full CAB review. Submit RFC at least 5 business days before planned window.",
+  "risk-total-60": "60 | medium | Medium Risk — standard CAB approval required | Score: 60/100 — Full CAB review. Submit RFC at least 5 business days before planned window.",
+  "risk-total-61": "61 | high | High Risk — full CAB + senior approval required | Score: 61/100 — Senior management approval required in addition to CAB.",
+  "risk-total-120": "120 | high | High Risk — full CAB + senior approval required | Score: 120/100 — Senior management approval required in addition to CAB.",
+  "risk-unset-all": "0 | low | Low Risk — expedited review path | Score: 0/100 — Standard CAB or expedited review.",
+  "risk-one-unset": "45 | medium | Medium Risk — standard CAB approval required | Score: 45/100 — Full CAB review. Submit RFC at least 5 business days before planned window."
+ },
+ "routing": {
+  "route-payment": "Payment Operations | Payment-related keywords detected",
+  "route-auth": "Identity and Access Management | Authentication/identity keywords detected",
+  "route-database": "Database Administration | Database keywords detected",
+  "route-network": "Network Operations | Network infrastructure keywords detected",
+  "route-security": "Security Operations | Security keywords detected — route to SecOps not standard IT",
+  "route-cert": "Platform Operations | Certificate/TLS keywords detected",
+  "route-release": "Release Engineering | Deployment keywords detected",
+  "route-multi-rule-highest-count": "API Platform Engineering | API/integration keywords detected",
+  "route-boundary-join": "API Platform Engineering | API/integration keywords detected",
+  "route-data-substring": "Database Administration | Database keywords detected",
+  "route-empty": null,
+  "route-no-keyword": null
+ },
+ "currency": {
+  "cur-none": [],
+  "cur-expired-cert": [
+   "EXPIRED certificate: api.example.com"
+  ],
+  "cur-critical-cert": [
+   "Certificate expiring in 6 days: sso.example.com"
+  ],
+  "cur-ok-cert": [],
+  "cur-vulns": [
+   "2 critical/high severity vulnerabilities unaddressed"
+  ],
+  "cur-eol": [
+   "Component is END OF LIFE — no security patches available"
+  ],
+  "cur-eol-soon": [
+   "Component approaching end of support"
+  ],
+  "cur-support-unknown": [],
+  "cur-old-pentest": [
+   "Last penetration test was N months ago — consider scheduling review"
+  ],
+  "cur-old-patch": [
+   "No patching activity in N months"
+  ]
+ },
+ "sla": {
+  "P1": 60,
+  "P2": 240,
+  "P3": 1440,
+  "P4": 4320
  }
 }

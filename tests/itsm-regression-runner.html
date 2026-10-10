@@ -80,6 +80,50 @@ const PREFLIGHT_FIXTURES = {
   'pf-T16-resolved-no-notes': pf({i_resolved:'2026-01-01T12:00'})
 };
 
+
+/* Change-risk factor options (non-zero = a real answer; 0 means "Select..." i.e. unset). Values from the tool's own <select>s. */
+const RF = {rf_blast:[5,10,20,30], rf_complexity:[5,10,20,25], rf_rollback:[2,8,15,20], rf_testing:[2,8,15,20], rf_history:[2,5,10,15], rf_timing:[2,5,8,10]};
+function changeRiskFixtures(){
+  const keys = Object.keys(RF), out = {};
+  // deterministic cartesian walk: first combination reaching each target total (covers both threshold edges)
+  const targets = [18, 30, 31, 60, 61, 119, 120];
+  const found = {};
+  (function walk(i, acc, total){
+    if(i === keys.length){ if(targets.includes(total) && !found[total]) found[total] = {...acc}; return; }
+    for(const v of RF[keys[i]]) walk(i+1, {...acc, [keys[i]]:v}, total+v);
+  })(0, {}, 0);
+  targets.forEach(t => { if(found[t]) out['risk-total-'+t] = found[t]; });
+  out['risk-unset-all'] = Object.fromEntries(keys.map(k=>[k,0]));          // all "Select..." -> total 0 (understates risk)
+  out['risk-one-unset'] = {...found[60], rf_rollback:0};                  // a single unset factor
+  return out;
+}
+const ROUTING_FIXTURES = {
+  'route-payment':   ['Card declined at checkout', 'Payments API'],
+  'route-auth':      ['Users cannot login via SSO', 'Identity'],
+  'route-database':  ['Replication lag on postgres', 'Orders DB'],
+  'route-network':   ['DNS failures and high latency', 'Edge'],
+  'route-security':  ['Possible phishing campaign', 'Mail'],
+  'route-cert':      ['TLS certificate expired', 'Portal'],
+  'route-release':   ['Rollback after failed deploy', 'Release train'],
+  'route-multi-rule-highest-count': ['api gateway database', ''],               // 'api'+'gateway' (2) beats 'database' (1): highest keyword count wins; ties go to the earlier rule
+  'route-boundary-join':       ['ap', 'i'],                                  // fields are joined WITHOUT a space -> "api"
+  'route-data-substring':      ['Database slow', ''],                        // 'data' (Data Eng.) vs 'database' (DBA): first max wins
+  'route-empty':               ['', ''],
+  'route-no-keyword':          ['Printer jammed', 'Floor 3']
+};
+const CURRENCY_FIXTURES = {
+  'cur-none':            {certs:[], vulns:[], support:'', pentest:'', patched:''},
+  'cur-expired-cert':    {certs:[{name:'api.example.com', status:'expired', daysLeft:-3}], vulns:[], support:'', pentest:'', patched:''},
+  'cur-critical-cert':   {certs:[{name:'sso.example.com', status:'critical', daysLeft:6}], vulns:[], support:'', pentest:'', patched:''},
+  'cur-ok-cert':         {certs:[{name:'www.example.com', status:'ok', daysLeft:200}], vulns:[], support:'', pentest:'', patched:''},
+  'cur-vulns':           {certs:[], vulns:[{severity:'critical'},{severity:'high'},{severity:'low'}], support:'', pentest:'', patched:''},
+  'cur-eol':             {certs:[], vulns:[], support:'eol', pentest:'', patched:''},
+  'cur-eol-soon':        {certs:[], vulns:[], support:'eol_soon', pentest:'', patched:''},
+  'cur-support-unknown': {certs:[], vulns:[], support:'unknown', pentest:'', patched:''},
+  'cur-old-pentest':     {certs:[], vulns:[], support:'', pentest:'2000-01-01', patched:''},
+  'cur-old-patch':       {certs:[], vulns:[], support:'', pentest:'', patched:'2000-01-01'}
+};
+
 /* Snippet collector: every place the source text makes a statement about a numbered
    article of DORA / the content layer. Normalised so line-ending changes do not matter. */
 function articleSnippets(text){
@@ -150,6 +194,46 @@ async function runAll(){
   win.eval("selectedSev = ''");
   if(regBox) regBox.checked = false;
   PF_FIELDS.forEach(k => { const el = doc.getElementById(k); if(el) el.value = ''; });
+
+
+  // --- change risk via the real calcRiskScore() ---
+  R.changeRisk = {};
+  const rfBox = ['riskScoreDisplay','riskScoreNum','riskScoreVerdict','riskScoreLabel'].map(id => doc.getElementById(id));
+  for(const [id, vals] of Object.entries(changeRiskFixtures())){
+    Object.keys(RF).forEach(k => { const el = doc.getElementById(k); if(el) el.value = String(vals[k]); });
+    win.calcRiskScore();
+    R.changeRisk[id] = [ rfBox[1].textContent.trim(), rfBox[0].className.replace('risk-score-display','').trim(), rfBox[2] ? rfBox[2].textContent.trim() : '', rfBox[3] ? rfBox[3].textContent.trim() : '' ].join(' | ');
+  }
+  Object.keys(RF).forEach(k => { const el = doc.getElementById(k); if(el) el.value = '0'; });
+
+  // --- routing via the real suggestRoutingGroup() (built-in rules only; custom rules cleared) ---
+  R.routing = {};
+  const savedCustom = win.eval("typeof customRoutingRules !== 'undefined' ? JSON.stringify(customRoutingRules) : '[]'");
+  win.eval("if(typeof customRoutingRules !== 'undefined') customRoutingRules = []");
+  for(const [id, [o, sv]] of Object.entries(ROUTING_FIXTURES)){
+    const r = win.suggestRoutingGroup(o, sv);
+    R.routing[id] = r ? (r.group + ' | ' + r.rationale) : null;
+  }
+  win.eval("if(typeof customRoutingRules !== 'undefined') customRoutingRules = " + savedCustom);
+
+  // --- currency risk via the real assessCurrencyRisk() (summary writer is intercepted to capture the list) ---
+  R.currency = {};
+  let captured = null;
+  const origSummary = win.updateCurrencyRiskSummary;
+  win.updateCurrencyRiskSummary = (risks) => { captured = risks; };
+  const supEl = doc.getElementById('sc_support_status'), penEl = doc.getElementById('sc_last_pentest'), patEl = doc.getElementById('sc_last_patched');
+  for(const [id, c] of Object.entries(CURRENCY_FIXTURES)){
+    win.eval('certEntries = ' + JSON.stringify(c.certs));
+    win.eval('vulnEntries = ' + JSON.stringify(c.vulns));
+    supEl.value = c.support; penEl.value = c.pentest; patEl.value = c.patched;
+    captured = null; win.assessCurrencyRisk();
+    // month counts depend on today's date: normalise the digits so the baseline is stable day to day
+    R.currency[id] = (captured || []).map(t => t.replace(/\d+ months/, 'N months'));
+  }
+  win.updateCurrencyRiskSummary = origSummary;
+  win.eval('certEntries = []; vulnEntries = []'); supEl.value = ''; penEl.value = ''; patEl.value = '';
+
+  R.sla = win.eval('JSON.parse(JSON.stringify(slaMins))');
 
   // --- DORA statements: tool source + content layer, as text snapshots ---
   const src = await (await fetch('../itsm-workflow-tool-v25.html', {cache:'no-store'})).text();

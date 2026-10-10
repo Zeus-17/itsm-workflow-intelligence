@@ -1,0 +1,410 @@
+{
+ "$id": "urn:zeus17:itsm:unresolved-policy:v1",
+ "description": "For every leaf input of every engine: what happens when the input arrives as 'unresolved'. 'block' = no verdict can be produced (UI shows the distinct 'cannot be determined' state). 'fallback' = a named, conservative value is substituted AND a caveat is attached to the result. Model-inferred values are never an allowed provenance.",
+ "engines": {
+  "incident_score": {
+   "doc": "updateScore()/calcScore() - six factors summed; P4 0-5, P3 6-10, P2 11-16, P1/Major 17+. A SUGGESTION: the tier is chosen by the user, and a score of 17+ also sets the major-incident flag regardless of the chosen tier.",
+   "inputs": {
+    "users": {
+     "on_unresolved": "block",
+     "reason_code": "score_users_unknown",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "No neutral value exists: the form's 0 / 'Unknown' scores as 'no impact', which silently LOWERS the suggested tier. (The form's 'Unknown / not assessed' = 0 is exactly the unresolved state, so it is treated as unresolved, not as an answer.)"
+    },
+    "business": {
+     "on_unresolved": "block",
+     "reason_code": "score_business_unknown",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "No neutral value exists: the form's 0 / 'Unknown' scores as 'no impact', which silently LOWERS the suggested tier."
+    },
+    "workaround": {
+     "on_unresolved": "block",
+     "reason_code": "score_workaround_unknown",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "No neutral value exists: the form's 0 / 'Unknown' scores as 'no impact', which silently LOWERS the suggested tier. (0 means 'a workaround fully resolves impact' - a real answer, not 'don't know'.)"
+    },
+    "duration": {
+     "on_unresolved": "block",
+     "reason_code": "score_duration_unknown",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "No neutral value exists: the form's 0 / 'Unknown' scores as 'no impact', which silently LOWERS the suggested tier."
+    },
+    "regulatory": {
+     "on_unresolved": "block",
+     "reason_code": "score_regulatory_unknown",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "No neutral value exists: the form's 0 / 'Unknown' scores as 'no impact', which silently LOWERS the suggested tier. (0 = 'None identified' is a claim about the world, not an absence of information.)"
+    },
+    "recurring": {
+     "on_unresolved": "block",
+     "reason_code": "score_recurring_unknown",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "No neutral value exists: the form's 0 / 'Unknown' scores as 'no impact', which silently LOWERS the suggested tier."
+    }
+   }
+  },
+  "severity_record": {
+   "doc": "setSev() - RECORDS the tier the user picked. The agent layer may present the engine's suggestion but may never choose or set the tier.",
+   "inputs": {
+    "severity": {
+     "on_unresolved": "block",
+     "reason_code": "severity_not_chosen",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "no",
+     "on_invalid": "reject",
+     "rationale": "The tier is the user's decision. The agent may show the engine's suggestion but can never choose it."
+    }
+   }
+  },
+  "intel_hint": {
+   "doc": "showIntelHint() - one hint per incident type (7 of the 8 types; 'other' and '' show nothing).",
+   "inputs": {
+    "incidentType": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "incident_type_not_classified",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "'Not classified' is a real state in the form and shows no hint; the caveat stops that being read as 'checked, nothing to flag'."
+    }
+   }
+  },
+  "preflight": {
+   "doc": "generatePreflightFindings() - completeness checks, severity-override warning, and payment / personal-data keyword scans over short description + service. Substring keyword matching: 'Refund' and 'Discard' trigger the payment warning.",
+   "inputs": {
+    "shortDescription": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "payment_pii_scan_incomplete",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "Blank text means the payment / personal-data keyword scan has nothing to scan: the absence of a warning would be silent, so the caveat is mandatory."
+    },
+    "observation": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "payment_pii_scan_incomplete",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "Blank text means the payment / personal-data keyword scan has nothing to scan: the absence of a warning would be silent, so the caveat is mandatory."
+    },
+    "service": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "payment_pii_scan_incomplete",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "Blank text means the payment / personal-data keyword scan has nothing to scan: the absence of a warning would be silent, so the caveat is mandatory."
+    },
+    "startedAt": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "preflight_field_treated_as_blank",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "A blank field is exactly what the pre-flight review exists to report, so treating unresolved as blank is conservative (it raises a finding)."
+    },
+    "diagnosis": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "preflight_field_treated_as_blank",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "A blank field is exactly what the pre-flight review exists to report, so treating unresolved as blank is conservative (it raises a finding)."
+    },
+    "assignmentGroup": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "preflight_field_treated_as_blank",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "A blank field is exactly what the pre-flight review exists to report, so treating unresolved as blank is conservative (it raises a finding)."
+    },
+    "ci": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "preflight_field_treated_as_blank",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "A blank field is exactly what the pre-flight review exists to report, so treating unresolved as blank is conservative (it raises a finding)."
+    },
+    "resolvedAt": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "preflight_field_treated_as_blank",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "A blank field is exactly what the pre-flight review exists to report, so treating unresolved as blank is conservative (it raises a finding)."
+    },
+    "resolution": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "preflight_field_treated_as_blank",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "A blank field is exactly what the pre-flight review exists to report, so treating unresolved as blank is conservative (it raises a finding)."
+    },
+    "rootCause": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "preflight_field_treated_as_blank",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "A blank field is exactly what the pre-flight review exists to report, so treating unresolved as blank is conservative (it raises a finding)."
+    },
+    "permanentFix": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "preflight_field_treated_as_blank",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "A blank field is exactly what the pre-flight review exists to report, so treating unresolved as blank is conservative (it raises a finding)."
+    },
+    "severity": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "severity_override_check_skipped",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "No tier means the override warning cannot fire; caveat required."
+    },
+    "triageScore": {
+     "on_unresolved": "fallback",
+     "fallback_value": 0,
+     "caveat_code": "severity_override_check_skipped",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "A score of 0 makes the engine skip the override comparison; caveat required."
+    },
+    "timelineCount": {
+     "on_unresolved": "fallback",
+     "fallback_value": 0,
+     "caveat_code": "timeline_treated_as_empty",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "Conservative: raises the 'timeline is empty' prompt."
+    },
+    "decisionCount": {
+     "on_unresolved": "fallback",
+     "fallback_value": 0,
+     "caveat_code": "decision_log_treated_as_empty",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "Conservative: raises the 'no decisions logged' prompt for P1/P2."
+    },
+    "regulatoryFlagChecked": {
+     "on_unresolved": "fallback",
+     "fallback_value": false,
+     "caveat_code": "regulatory_flag_treated_as_unset",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "Conservative: an unset flag makes the payment / personal-data warnings fire."
+    }
+   }
+  },
+  "change_risk": {
+   "doc": "calcRiskScore() - six factors summed; low <= 30, medium <= 60, high above. With every factor left at 'Select...' the tool shows 'Low Risk - expedited review path'.",
+   "inputs": {
+    "blast": {
+     "on_unresolved": "block",
+     "reason_code": "change_risk_blast_unset",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+    },
+    "complexity": {
+     "on_unresolved": "block",
+     "reason_code": "change_risk_complexity_unset",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+    },
+    "rollback": {
+     "on_unresolved": "block",
+     "reason_code": "change_risk_rollback_unset",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+    },
+    "testing": {
+     "on_unresolved": "block",
+     "reason_code": "change_risk_testing_unset",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+    },
+    "history": {
+     "on_unresolved": "block",
+     "reason_code": "change_risk_history_unset",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+    },
+    "timing": {
+     "on_unresolved": "block",
+     "reason_code": "change_risk_timing_unset",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "The form's 'Select...' (0) adds nothing to the total, so an unset factor LOWERS the risk. With all six unset the tool shows 'Low Risk - expedited review path'. No default is safe."
+    }
+   }
+  },
+  "routing_suggestion": {
+   "doc": "suggestRoutingGroup() - 10 keyword rules (custom rules take priority). Highest keyword count wins, ties go to the earlier rule. The two text fields are joined WITHOUT a space before matching.",
+   "_engine": {
+    "requires_any_of": [
+     {
+      "fields": [
+       "observation",
+       "service"
+      ],
+      "status": "not_assessed",
+      "reason_code": "routing_text_missing"
+     }
+    ]
+   },
+   "inputs": {
+    "observation": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "routing_text_partial",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "The engine routes on whatever text exists; the caveat says the other field was not considered."
+    },
+    "service": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "routing_text_partial",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "As above."
+    }
+   }
+  },
+  "currency_risk": {
+   "doc": "assessCurrencyRisk() - certificate, vulnerability, support-status, penetration-test and patching signals. An empty list is NOT an all-clear when any input was skipped.",
+   "inputs": {
+    "certificates": {
+     "on_unresolved": "fallback",
+     "fallback_value": [],
+     "caveat_code": "certificates_not_assessed",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "No certificate list means no certificate risk can be raised - an all-clear by omission. Allowed only with the mandatory caveat (output forced to complete=false)."
+    },
+    "certificates[].name": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "certificate_unnamed",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "The engine prints 'unnamed' for a blank name."
+    },
+    "certificates[].status": {
+     "on_unresolved": "fallback",
+     "fallback_value": "unknown",
+     "caveat_code": "certificate_status_not_assessed",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "'unknown' raises no risk; caveat forces complete=false."
+    },
+    "certificates[].daysLeft": {
+     "on_unresolved": "block",
+     "reason_code": "certificate_days_left_unknown",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "The 'expiring in N days' text needs a real number."
+    },
+    "vulnerabilities": {
+     "on_unresolved": "fallback",
+     "fallback_value": [],
+     "caveat_code": "vulnerabilities_not_assessed",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "As for certificates: omission is not clearance."
+    },
+    "vulnerabilities[].severity": {
+     "on_unresolved": "block",
+     "reason_code": "vulnerability_severity_unknown",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "NOT conservative to default: only critical/high are counted, so a defaulted low severity could hide one."
+    },
+    "supportStatus": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "support_status_not_checked",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "'Not checked' is a real form state; caveat required."
+    },
+    "lastPentest": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "pentest_date_not_assessed",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "Blank date skips the staleness check; caveat required."
+    },
+    "lastPatched": {
+     "on_unresolved": "fallback",
+     "fallback_value": "",
+     "caveat_code": "patch_date_not_assessed",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "Blank date skips the staleness check; caveat required."
+    }
+   }
+  },
+  "sla_clock": {
+   "doc": "startSLAClock()/slaMins - the SLA limit for the chosen tier. The running clock itself is display-only.",
+   "inputs": {
+    "severity": {
+     "on_unresolved": "block",
+     "reason_code": "sla_severity_missing",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "no",
+     "on_invalid": "reject",
+     "rationale": "Without a tier there is no SLA limit."
+    },
+    "startedAt": {
+     "on_unresolved": "block",
+     "reason_code": "sla_start_missing",
+     "block_status": "cannot_be_determined",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "The tool itself warns that SLA and MTTR are incorrect without a start time; the agent path refuses to produce a limit without one."
+    },
+    "pausedMinutes": {
+     "on_unresolved": "fallback",
+     "fallback_value": 0,
+     "caveat_code": "sla_pause_not_applied",
+     "agent_writable": "yes",
+     "on_invalid": "reject",
+     "rationale": "Pauses are an adjustment on top of a valid clock; caveat tells the user none were applied."
+    }
+   }
+  }
+ }
+}

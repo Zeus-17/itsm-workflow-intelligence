@@ -1,0 +1,1469 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:zeus17:itsm:agent-drafts:v1",
+ "title": "ITSM agent drafts (every leaf explicitly resolved or unresolved)",
+ "$defs": {
+  "Provenance": {
+   "enum": [
+    "form",
+    "user_confirmed"
+   ]
+  },
+  "UnresolvedReason": {
+   "enum": [
+    "declined",
+    "unknown_to_user",
+    "not_yet_asked"
+   ]
+  },
+  "Unresolved": {
+   "type": "object",
+   "required": [
+    "state",
+    "reason"
+   ],
+   "properties": {
+    "state": {
+     "const": "unresolved"
+    },
+    "reason": {
+     "$ref": "#/$defs/UnresolvedReason"
+    }
+   },
+   "additionalProperties": false
+  },
+  "Caveat": {
+   "type": "object",
+   "required": [
+    "code",
+    "field"
+   ],
+   "properties": {
+    "code": {
+     "type": "string",
+     "minLength": 1
+    },
+    "field": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "additionalProperties": false
+  },
+  "MissingInput": {
+   "type": "object",
+   "required": [
+    "field",
+    "reason_code"
+   ],
+   "properties": {
+    "field": {
+     "type": "string",
+     "minLength": 1
+    },
+    "reason_code": {
+     "type": "string",
+     "minLength": 1
+    }
+   },
+   "additionalProperties": false
+  },
+  "incident_score": {
+   "type": "object",
+   "properties": {
+    "users": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          1,
+          2,
+          3,
+          4,
+          5
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ],
+     "description": "Affected users band 1-5. The form's 0 ('Unknown / not assessed') is deliberately NOT valid here: it scores 0 and silently lowers the suggested tier."
+    },
+    "business": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "workaround": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          0,
+          1,
+          2
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "duration": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ],
+     "description": "Option 4 ('Recurring / seen before') overlaps the separate 'recurring' factor; both are counted by the engine."
+    },
+    "regulatory": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          0,
+          2,
+          4,
+          5
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "recurring": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          0,
+          2,
+          4
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "users",
+    "business",
+    "workaround",
+    "duration",
+    "regulatory",
+    "recurring"
+   ]
+  },
+  "severity_record": {
+   "type": "object",
+   "properties": {
+    "severity": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          "P1",
+          "P2",
+          "P3",
+          "P4"
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "severity"
+   ]
+  },
+  "intel_hint": {
+   "type": "object",
+   "properties": {
+    "incidentType": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          "",
+          "application",
+          "infrastructure",
+          "thirdparty",
+          "security",
+          "data",
+          "network",
+          "process",
+          "other"
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "incidentType"
+   ]
+  },
+  "preflight": {
+   "type": "object",
+   "properties": {
+    "shortDescription": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "observation": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "service": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "startedAt": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "diagnosis": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "assignmentGroup": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "ci": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "resolvedAt": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "resolution": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "rootCause": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "permanentFix": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "severity": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          "",
+          "P1",
+          "P2",
+          "P3",
+          "P4"
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "triageScore": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "integer",
+         "minimum": 0,
+         "maximum": 25
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "timelineCount": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "integer",
+         "minimum": 0
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "decisionCount": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "integer",
+         "minimum": 0
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "regulatoryFlagChecked": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "boolean"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "shortDescription",
+    "observation",
+    "service",
+    "startedAt",
+    "diagnosis",
+    "assignmentGroup",
+    "ci",
+    "resolvedAt",
+    "resolution",
+    "rootCause",
+    "permanentFix",
+    "severity",
+    "triageScore",
+    "timelineCount",
+    "decisionCount",
+    "regulatoryFlagChecked"
+   ]
+  },
+  "change_risk": {
+   "type": "object",
+   "properties": {
+    "blast": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          5,
+          10,
+          20,
+          30
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "complexity": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          5,
+          10,
+          20,
+          25
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "rollback": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          2,
+          8,
+          15,
+          20
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "testing": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          2,
+          8,
+          15,
+          20
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "history": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          2,
+          5,
+          10,
+          15
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "timing": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          2,
+          5,
+          8,
+          10
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "blast",
+    "complexity",
+    "rollback",
+    "testing",
+    "history",
+    "timing"
+   ]
+  },
+  "routing_suggestion": {
+   "type": "object",
+   "properties": {
+    "observation": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "service": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "observation",
+    "service"
+   ]
+  },
+  "currency_risk": {
+   "type": "object",
+   "properties": {
+    "certificates": {
+     "oneOf": [
+      {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "properties": {
+         "name": {
+          "oneOf": [
+           {
+            "type": "object",
+            "required": [
+             "state",
+             "value",
+             "provenance"
+            ],
+            "properties": {
+             "state": {
+              "const": "resolved"
+             },
+             "value": {
+              "type": "string"
+             },
+             "provenance": {
+              "$ref": "#/$defs/Provenance"
+             }
+            },
+            "additionalProperties": false
+           },
+           {
+            "$ref": "#/$defs/Unresolved"
+           }
+          ]
+         },
+         "status": {
+          "oneOf": [
+           {
+            "type": "object",
+            "required": [
+             "state",
+             "value",
+             "provenance"
+            ],
+            "properties": {
+             "state": {
+              "const": "resolved"
+             },
+             "value": {
+              "enum": [
+               "unknown",
+               "expired",
+               "critical",
+               "warn",
+               "ok"
+              ]
+             },
+             "provenance": {
+              "$ref": "#/$defs/Provenance"
+             }
+            },
+            "additionalProperties": false
+           },
+           {
+            "$ref": "#/$defs/Unresolved"
+           }
+          ]
+         },
+         "daysLeft": {
+          "oneOf": [
+           {
+            "type": "object",
+            "required": [
+             "state",
+             "value",
+             "provenance"
+            ],
+            "properties": {
+             "state": {
+              "const": "resolved"
+             },
+             "value": {
+              "type": "integer"
+             },
+             "provenance": {
+              "$ref": "#/$defs/Provenance"
+             }
+            },
+            "additionalProperties": false
+           },
+           {
+            "$ref": "#/$defs/Unresolved"
+           }
+          ]
+         }
+        },
+        "additionalProperties": false,
+        "required": [
+         "name",
+         "status",
+         "daysLeft"
+        ]
+       }
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "vulnerabilities": {
+     "oneOf": [
+      {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "properties": {
+         "severity": {
+          "oneOf": [
+           {
+            "type": "object",
+            "required": [
+             "state",
+             "value",
+             "provenance"
+            ],
+            "properties": {
+             "state": {
+              "const": "resolved"
+             },
+             "value": {
+              "enum": [
+               "critical",
+               "high",
+               "medium",
+               "advisory"
+              ]
+             },
+             "provenance": {
+              "$ref": "#/$defs/Provenance"
+             }
+            },
+            "additionalProperties": false
+           },
+           {
+            "$ref": "#/$defs/Unresolved"
+           }
+          ]
+         }
+        },
+        "additionalProperties": false,
+        "required": [
+         "severity"
+        ]
+       }
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "supportStatus": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          "",
+          "active",
+          "lts",
+          "maintenance",
+          "eol_soon",
+          "eol",
+          "unknown"
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ],
+     "description": "'' = Not checked. 'unknown' raises no risk (current behaviour)."
+    },
+    "lastPentest": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string",
+         "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "lastPatched": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string",
+         "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$"
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "certificates",
+    "vulnerabilities",
+    "supportStatus",
+    "lastPentest",
+    "lastPatched"
+   ]
+  },
+  "sla_clock": {
+   "type": "object",
+   "properties": {
+    "severity": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "enum": [
+          "P1",
+          "P2",
+          "P3",
+          "P4"
+         ]
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    },
+    "startedAt": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "string",
+         "minLength": 1
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ],
+     "description": "Incident start time (local date-time)."
+    },
+    "pausedMinutes": {
+     "oneOf": [
+      {
+       "type": "object",
+       "required": [
+        "state",
+        "value",
+        "provenance"
+       ],
+       "properties": {
+        "state": {
+         "const": "resolved"
+        },
+        "value": {
+         "type": "integer",
+         "minimum": 0
+        },
+        "provenance": {
+         "$ref": "#/$defs/Provenance"
+        }
+       },
+       "additionalProperties": false
+      },
+      {
+       "$ref": "#/$defs/Unresolved"
+      }
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "severity",
+    "startedAt",
+    "pausedMinutes"
+   ]
+  }
+ }
+}

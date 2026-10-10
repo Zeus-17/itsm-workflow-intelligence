@@ -1,0 +1,988 @@
+{
+ "cases": [
+  {
+   "id": "score-all-resolved",
+   "engine": "incident_score",
+   "draft": {
+    "users": {
+     "state": "resolved",
+     "value": 3,
+     "provenance": "user_confirmed"
+    },
+    "business": {
+     "state": "resolved",
+     "value": 3,
+     "provenance": "user_confirmed"
+    },
+    "workaround": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "duration": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "regulatory": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    },
+    "recurring": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "ready",
+    "caveats": []
+   }
+  },
+  {
+   "id": "score-users-unknown-blocks",
+   "engine": "incident_score",
+   "draft": {
+    "users": {
+     "state": "unresolved",
+     "reason": "unknown_to_user"
+    },
+    "business": {
+     "state": "resolved",
+     "value": 3,
+     "provenance": "user_confirmed"
+    },
+    "workaround": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "duration": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "regulatory": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    },
+    "recurring": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "cannot_be_determined",
+    "missing": [
+     {
+      "field": "users",
+      "reason_code": "score_users_unknown"
+     }
+    ]
+   }
+  },
+  {
+   "id": "score-form-unknown-zero-is-not-an-answer",
+   "engine": "incident_score",
+   "draft": {
+    "users": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    },
+    "business": {
+     "state": "resolved",
+     "value": 3,
+     "provenance": "user_confirmed"
+    },
+    "workaround": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "duration": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "regulatory": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    },
+    "recurring": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "rejected"
+   }
+  },
+  {
+   "id": "score-regulatory-none-is-a-real-answer",
+   "engine": "incident_score",
+   "draft": {
+    "users": {
+     "state": "resolved",
+     "value": 3,
+     "provenance": "user_confirmed"
+    },
+    "business": {
+     "state": "resolved",
+     "value": 3,
+     "provenance": "user_confirmed"
+    },
+    "workaround": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "duration": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "regulatory": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    },
+    "recurring": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "ready",
+    "caveats": []
+   }
+  },
+  {
+   "id": "score-several-missing-all-reported",
+   "engine": "incident_score",
+   "draft": {
+    "users": {
+     "state": "resolved",
+     "value": 3,
+     "provenance": "user_confirmed"
+    },
+    "business": {
+     "state": "unresolved",
+     "reason": "not_yet_asked"
+    },
+    "workaround": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "duration": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "regulatory": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    },
+    "recurring": {
+     "state": "unresolved",
+     "reason": "declined"
+    }
+   },
+   "expect": {
+    "status": "cannot_be_determined",
+    "missing": [
+     {
+      "field": "business",
+      "reason_code": "score_business_unknown"
+     },
+     {
+      "field": "recurring",
+      "reason_code": "score_recurring_unknown"
+     }
+    ]
+   }
+  },
+  {
+   "id": "score-model-inferred-rejected",
+   "engine": "incident_score",
+   "draft": {
+    "users": {
+     "state": "resolved",
+     "value": 3,
+     "provenance": "user_confirmed"
+    },
+    "business": {
+     "state": "resolved",
+     "value": 4,
+     "provenance": "model_inferred"
+    },
+    "workaround": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "duration": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "regulatory": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    },
+    "recurring": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "rejected"
+   }
+  },
+  {
+   "id": "score-value-out-of-range-rejected",
+   "engine": "incident_score",
+   "draft": {
+    "users": {
+     "state": "resolved",
+     "value": 3,
+     "provenance": "user_confirmed"
+    },
+    "business": {
+     "state": "resolved",
+     "value": 9,
+     "provenance": "user_confirmed"
+    },
+    "workaround": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "duration": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "regulatory": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    },
+    "recurring": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "rejected"
+   }
+  },
+  {
+   "id": "severity-agent-may-not-choose",
+   "engine": "severity_record",
+   "agent_supplied": [
+    "severity"
+   ],
+   "draft": {
+    "severity": {
+     "state": "resolved",
+     "value": "P1",
+     "provenance": "form"
+    }
+   },
+   "expect": {
+    "status": "rejected",
+    "reason": "agent_may_not_write:severity"
+   }
+  },
+  {
+   "id": "severity-unresolved-blocks",
+   "engine": "severity_record",
+   "draft": {
+    "severity": {
+     "state": "unresolved",
+     "reason": "not_yet_asked"
+    }
+   },
+   "expect": {
+    "status": "cannot_be_determined",
+    "missing": [
+     {
+      "field": "severity",
+      "reason_code": "severity_not_chosen"
+     }
+    ]
+   }
+  },
+  {
+   "id": "intel-type-unresolved-caveat",
+   "engine": "intel_hint",
+   "draft": {
+    "incidentType": {
+     "state": "unresolved",
+     "reason": "unknown_to_user"
+    }
+   },
+   "expect": {
+    "status": "ready",
+    "caveats": [
+     {
+      "code": "incident_type_not_classified",
+      "field": "incidentType"
+     }
+    ],
+    "engine_input_contains": {
+     "incidentType": ""
+    }
+   }
+  },
+  {
+   "id": "preflight-service-unresolved-scan-caveat",
+   "engine": "preflight",
+   "draft": {
+    "shortDescription": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "observation": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "service": {
+     "state": "unresolved",
+     "reason": "declined"
+    },
+    "startedAt": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "diagnosis": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "assignmentGroup": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "ci": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "resolvedAt": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "resolution": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "rootCause": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "permanentFix": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "severity": {
+     "state": "resolved",
+     "value": "P2",
+     "provenance": "user_confirmed"
+    },
+    "triageScore": {
+     "state": "resolved",
+     "value": 12,
+     "provenance": "user_confirmed"
+    },
+    "timelineCount": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "decisionCount": {
+     "state": "resolved",
+     "value": 1,
+     "provenance": "user_confirmed"
+    },
+    "regulatoryFlagChecked": {
+     "state": "resolved",
+     "value": false,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "ready",
+    "caveats": [
+     {
+      "code": "payment_pii_scan_incomplete",
+      "field": "service"
+     }
+    ]
+   }
+  },
+  {
+   "id": "preflight-unresolved-regulatory-flag-conservative",
+   "engine": "preflight",
+   "draft": {
+    "shortDescription": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "observation": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "service": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "startedAt": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "diagnosis": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "assignmentGroup": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "ci": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "resolvedAt": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "resolution": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "rootCause": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "permanentFix": {
+     "state": "resolved",
+     "value": "x",
+     "provenance": "user_confirmed"
+    },
+    "severity": {
+     "state": "resolved",
+     "value": "P2",
+     "provenance": "user_confirmed"
+    },
+    "triageScore": {
+     "state": "resolved",
+     "value": 12,
+     "provenance": "user_confirmed"
+    },
+    "timelineCount": {
+     "state": "resolved",
+     "value": 2,
+     "provenance": "user_confirmed"
+    },
+    "decisionCount": {
+     "state": "resolved",
+     "value": 1,
+     "provenance": "user_confirmed"
+    },
+    "regulatoryFlagChecked": {
+     "state": "unresolved",
+     "reason": "not_yet_asked"
+    }
+   },
+   "expect": {
+    "status": "ready",
+    "caveats": [
+     {
+      "code": "regulatory_flag_treated_as_unset",
+      "field": "regulatoryFlagChecked"
+     }
+    ],
+    "engine_input_contains": {
+     "regulatoryFlagChecked": false
+    }
+   }
+  },
+  {
+   "id": "change-risk-factor-unset-blocks",
+   "engine": "change_risk",
+   "draft": {
+    "blast": {
+     "state": "resolved",
+     "value": 10,
+     "provenance": "user_confirmed"
+    },
+    "complexity": {
+     "state": "resolved",
+     "value": 10,
+     "provenance": "user_confirmed"
+    },
+    "rollback": {
+     "state": "unresolved",
+     "reason": "unknown_to_user"
+    },
+    "testing": {
+     "state": "resolved",
+     "value": 8,
+     "provenance": "user_confirmed"
+    },
+    "history": {
+     "state": "resolved",
+     "value": 5,
+     "provenance": "user_confirmed"
+    },
+    "timing": {
+     "state": "resolved",
+     "value": 5,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "cannot_be_determined",
+    "missing": [
+     {
+      "field": "rollback",
+      "reason_code": "change_risk_rollback_unset"
+     }
+    ]
+   }
+  },
+  {
+   "id": "change-risk-form-select-zero-rejected",
+   "engine": "change_risk",
+   "draft": {
+    "blast": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    },
+    "complexity": {
+     "state": "resolved",
+     "value": 10,
+     "provenance": "user_confirmed"
+    },
+    "rollback": {
+     "state": "resolved",
+     "value": 8,
+     "provenance": "user_confirmed"
+    },
+    "testing": {
+     "state": "resolved",
+     "value": 8,
+     "provenance": "user_confirmed"
+    },
+    "history": {
+     "state": "resolved",
+     "value": 5,
+     "provenance": "user_confirmed"
+    },
+    "timing": {
+     "state": "resolved",
+     "value": 5,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "rejected"
+   }
+  },
+  {
+   "id": "change-risk-all-resolved",
+   "engine": "change_risk",
+   "draft": {
+    "blast": {
+     "state": "resolved",
+     "value": 10,
+     "provenance": "user_confirmed"
+    },
+    "complexity": {
+     "state": "resolved",
+     "value": 10,
+     "provenance": "user_confirmed"
+    },
+    "rollback": {
+     "state": "resolved",
+     "value": 8,
+     "provenance": "user_confirmed"
+    },
+    "testing": {
+     "state": "resolved",
+     "value": 8,
+     "provenance": "user_confirmed"
+    },
+    "history": {
+     "state": "resolved",
+     "value": 5,
+     "provenance": "user_confirmed"
+    },
+    "timing": {
+     "state": "resolved",
+     "value": 5,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "ready",
+    "caveats": []
+   }
+  },
+  {
+   "id": "routing-both-text-fields-missing-not-assessed",
+   "engine": "routing_suggestion",
+   "draft": {
+    "observation": {
+     "state": "unresolved",
+     "reason": "not_yet_asked"
+    },
+    "service": {
+     "state": "unresolved",
+     "reason": "not_yet_asked"
+    }
+   },
+   "expect": {
+    "status": "not_assessed",
+    "missing": [
+     {
+      "field": "observation+service",
+      "reason_code": "routing_text_missing"
+     }
+    ]
+   }
+  },
+  {
+   "id": "routing-one-field-caveat",
+   "engine": "routing_suggestion",
+   "draft": {
+    "observation": {
+     "state": "resolved",
+     "value": "Card declined at checkout",
+     "provenance": "user_confirmed"
+    },
+    "service": {
+     "state": "unresolved",
+     "reason": "declined"
+    }
+   },
+   "expect": {
+    "status": "ready",
+    "caveats": [
+     {
+      "code": "routing_text_partial",
+      "field": "service"
+     }
+    ]
+   }
+  },
+  {
+   "id": "currency-vuln-severity-unresolved-blocks",
+   "engine": "currency_risk",
+   "draft": {
+    "certificates": [],
+    "vulnerabilities": [
+     {
+      "severity": {
+       "state": "unresolved",
+       "reason": "unknown_to_user"
+      }
+     }
+    ],
+    "supportStatus": {
+     "state": "resolved",
+     "value": "active",
+     "provenance": "user_confirmed"
+    },
+    "lastPentest": {
+     "state": "resolved",
+     "value": "",
+     "provenance": "user_confirmed"
+    },
+    "lastPatched": {
+     "state": "resolved",
+     "value": "",
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "cannot_be_determined",
+    "missing": [
+     {
+      "field": "vulnerabilities[0].severity",
+      "reason_code": "vulnerability_severity_unknown"
+     }
+    ]
+   }
+  },
+  {
+   "id": "currency-cert-list-unresolved-caveats",
+   "engine": "currency_risk",
+   "draft": {
+    "certificates": {
+     "state": "unresolved",
+     "reason": "not_yet_asked"
+    },
+    "vulnerabilities": [],
+    "supportStatus": {
+     "state": "unresolved",
+     "reason": "declined"
+    },
+    "lastPentest": {
+     "state": "resolved",
+     "value": "2025-01-01",
+     "provenance": "user_confirmed"
+    },
+    "lastPatched": {
+     "state": "resolved",
+     "value": "2025-06-01",
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "ready",
+    "caveats": [
+     {
+      "code": "certificates_not_assessed",
+      "field": "certificates"
+     },
+     {
+      "code": "support_status_not_checked",
+      "field": "supportStatus"
+     }
+    ]
+   }
+  },
+  {
+   "id": "currency-bad-date-rejected",
+   "engine": "currency_risk",
+   "draft": {
+    "certificates": [],
+    "vulnerabilities": [],
+    "supportStatus": {
+     "state": "resolved",
+     "value": "active",
+     "provenance": "user_confirmed"
+    },
+    "lastPentest": {
+     "state": "resolved",
+     "value": "last year",
+     "provenance": "user_confirmed"
+    },
+    "lastPatched": {
+     "state": "resolved",
+     "value": "",
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "rejected"
+   }
+  },
+  {
+   "id": "sla-start-missing-blocks",
+   "engine": "sla_clock",
+   "draft": {
+    "severity": {
+     "state": "resolved",
+     "value": "P1",
+     "provenance": "form"
+    },
+    "startedAt": {
+     "state": "unresolved",
+     "reason": "unknown_to_user"
+    },
+    "pausedMinutes": {
+     "state": "resolved",
+     "value": 0,
+     "provenance": "user_confirmed"
+    }
+   },
+   "expect": {
+    "status": "cannot_be_determined",
+    "missing": [
+     {
+      "field": "startedAt",
+      "reason_code": "sla_start_missing"
+     }
+    ]
+   }
+  },
+  {
+   "id": "sla-pause-unresolved-caveat",
+   "engine": "sla_clock",
+   "draft": {
+    "severity": {
+     "state": "resolved",
+     "value": "P2",
+     "provenance": "form"
+    },
+    "startedAt": {
+     "state": "resolved",
+     "value": "2026-10-10T09:00",
+     "provenance": "user_confirmed"
+    },
+    "pausedMinutes": {
+     "state": "unresolved",
+     "reason": "not_yet_asked"
+    }
+   },
+   "expect": {
+    "status": "ready",
+    "caveats": [
+     {
+      "code": "sla_pause_not_applied",
+      "field": "pausedMinutes"
+     }
+    ]
+   }
+  }
+ ],
+ "enums": {
+  "SCORE_USERS": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "SCORE_BUSINESS": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "SCORE_WORKAROUND": [
+   0,
+   1,
+   2
+  ],
+  "SCORE_DURATION": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "SCORE_REGULATORY": [
+   0,
+   2,
+   4,
+   5
+  ],
+  "SCORE_RECURRING": [
+   0,
+   2,
+   4
+  ],
+  "SEVERITY": [
+   "P1",
+   "P2",
+   "P3",
+   "P4"
+  ],
+  "INCIDENT_TYPE": [
+   "",
+   "application",
+   "infrastructure",
+   "thirdparty",
+   "security",
+   "data",
+   "network",
+   "process",
+   "other"
+  ],
+  "RF_BLAST": [
+   5,
+   10,
+   20,
+   30
+  ],
+  "RF_COMPLEXITY": [
+   5,
+   10,
+   20,
+   25
+  ],
+  "RF_ROLLBACK": [
+   2,
+   8,
+   15,
+   20
+  ],
+  "RF_TESTING": [
+   2,
+   8,
+   15,
+   20
+  ],
+  "RF_HISTORY": [
+   2,
+   5,
+   10,
+   15
+  ],
+  "RF_TIMING": [
+   2,
+   5,
+   8,
+   10
+  ],
+  "SUPPORT_STATUS": [
+   "",
+   "active",
+   "lts",
+   "maintenance",
+   "eol_soon",
+   "eol",
+   "unknown"
+  ],
+  "CERT_STATUS": [
+   "unknown",
+   "expired",
+   "critical",
+   "warn",
+   "ok"
+  ],
+  "VULN_SEVERITY": [
+   "critical",
+   "high",
+   "medium",
+   "advisory"
+  ]
+ }
+}
