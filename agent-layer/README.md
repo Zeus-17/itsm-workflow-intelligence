@@ -117,3 +117,10 @@ AgentEngine.ready()                         // {ok, missing[]}: are the tool tab
 * ITSM currency risk depends on today's date, so the clock is a parameter: `run('currency_risk', input, caveats, {now})`.
 * After the tool's engine or a rule table changes: run `node agent-layer/tests/parity_run.js`. A failure here means the mirror needs the same change
   (or the change was unintended - roll back).
+
+## Continuous checks and browser support (phase K)
+Every push and pull request runs `.github/workflows/ci.yml`:
+* **Node + Python job:** embedded block up to date and inside its size budget, schema package, validation / audit / failsafe / shipped-artifact suites, engine parity (source and as shipped) with its mutation check, property tests, and the rule-quality and HTML-sink measurements.
+* **Real-browser jobs (Chromium, Firefox, WebKit - the Safari engine):** `ci/browser-tests.js` serves the repository and runs the in-repo runner pages in a fresh browser each (engine regression baseline, engine parity, markup-safety probe, escaping snapshot), then opens the tool straight from disk (`file://`, as a downloaded copy is used) and checks the agent layer and engine exports load, `localStorage` and IndexedDB work, and no page errors occur. It also prints every network request the page makes.
+* Run locally: `cd ci && npm ci && node browser-tests.js --browser msedge` (or `chrome`; `chromium` / `firefox` / `webkit` need `npx playwright-core install <browser>` first). Only `playwright-core` is a dependency, pinned in `ci/package-lock.json`; it is test tooling, never shipped.
+* CI never publishes or changes anything; it reports pass / fail.

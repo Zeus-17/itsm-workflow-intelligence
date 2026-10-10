@@ -59,7 +59,15 @@ async function launch() {
 }
 
 const results = [];
-const note = (ok, name, detail, secs) => { results.push({ ok, name }); console.log((ok ? 'PASS ' : 'FAIL ') + name + (secs !== undefined ? '  (' + secs.toFixed(1) + 's)' : '') + (detail ? '\n      ' + String(detail).replace(/\n/g, '\n      ').slice(0, 1500) : '')); };
+// In GitHub Actions a failure also becomes an ANNOTATION on the run (readable without logging in), so the reason is visible from the run summary.
+const CR = String.fromCharCode(13), LF = String.fromCharCode(10);
+const annotate = (name, detail) => {
+  if (!process.env.GITHUB_ACTIONS) return;
+  const title = String(name).split(':').join(' ').split(',').join(' ').split(CR).join(' ').split(LF).join(' ');
+  const body = String(detail || 'failed').slice(0, 900).split('%').join('%25').split(CR).join('%0D').split(LF).join('%0A');
+  console.log('::error title=' + title + '::' + body);
+};
+const note = (ok, name, detail, secs) => { results.push({ ok, name }); if (!ok) annotate(name, detail); console.log((ok ? 'PASS ' : 'FAIL ') + name + (secs !== undefined ? '  (' + secs.toFixed(1) + 's)' : '') + (detail ? '\n      ' + String(detail).replace(/\n/g, '\n      ').slice(0, 1500) : '')); };
 
 async function httpTests(browser, base) {
   for (const [name, rel] of PAGES) {
