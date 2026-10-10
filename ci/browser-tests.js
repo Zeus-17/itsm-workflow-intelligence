@@ -73,23 +73,31 @@ async function httpTests(browser, base) {
   for (const [name, rel] of PAGES) {
     if (QUICK && /snapshot|probe/.test(rel)) continue;
     const ctx = await browser.newContext(), page = await ctx.newPage();
-    const t0 = Date.now();
+    const t0 = Date.now(), seen = [];
+    page.on('pageerror', (e) => seen.push('pageerror: ' + String(e.message).slice(0, 200)));
+    page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') seen.push(m.type() + ': ' + m.text().slice(0, 200)); });
+    page.on('requestfailed', (r) => seen.push('request failed: ' + r.url().replace(/\?.*$/, '') + ' ' + ((r.failure() || {}).errorText || '')));
     try {
       await page.goto(base + '/' + rel, { waitUntil: 'load' });
-      await page.waitForFunction((re) => { const el = document.getElementById('status'); return !!el && new RegExp(re).test(el.textContent); }, DONE.source, { timeout: 300000, polling: 500 });
+      await page.waitForFunction((re) => { const el = document.getElementById('status'); return !!el && new RegExp(re).test(el.textContent); }, DONE.source, { timeout: 120000, polling: 500 });
       const text = (await page.textContent('#status')).trim();
       const ok = /^(PASS|PARITY PASS)/.test(text);
       note(ok, BROWSER + ' / ' + name, ok ? text.slice(0, 160) : text + '\n' + ((await page.textContent('#out').catch(() => '')) || '').slice(0, 900), (Date.now() - t0) / 1000);
-    } catch (e) { note(false, BROWSER + ' / ' + name, String(e.message).slice(0, 400), (Date.now() - t0) / 1000); }
+    } catch (e) {
+      // Diagnostics for a hang: what the runner page said, whether the tool frame loaded, and any errors / failed requests the browser reported.
+      const diag = await page.evaluate(() => { const f = document.getElementById('tool'); let st = ''; try { st = f && f.contentDocument ? f.contentDocument.readyState : 'no frame doc'; } catch (x) { st = 'frame access: ' + x.message; } return 'status="' + ((document.getElementById('status') || {}).textContent || '') + '" frame.readyState=' + st + ' out="' + ((document.getElementById('out') || {}).textContent || '').slice(0, 200) + '"'; }).catch((x) => 'page unreadable: ' + x.message);
+      note(false, BROWSER + ' / ' + name, String(e.message).slice(0, 120) + ' | ' + diag + ' | browser said: ' + (seen.slice(0, 6).join(' ;; ') || 'nothing'), (Date.now() - t0) / 1000);
+    }
     await ctx.close();
   }
 }
 
 async function fileTests(browser) {
   const ctx = await browser.newContext(), page = await ctx.newPage();
-  const errors = [], requests = new Set();
+  const errors = [], requests = new Set(), failed = [];
   page.on('pageerror', (e) => errors.push(String(e.message)));
-  page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('console: ' + m.text()); });
+  page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('console: ' + m.text() + ' [' + String((m.location() || {}).url || '').replace(/\?.*$/, '').slice(0, 120) + ']'); });
+  page.on('requestfailed', (r) => failed.push(r.url().replace(/\?.*$/, '').slice(0, 120) + ' ' + ((r.failure() || {}).errorText || '')));
   page.on('request', (r) => { const u = r.url(); if (!u.startsWith('file:') && !u.startsWith('data:') && !u.startsWith('blob:') && !u.startsWith('about:')) requests.add(r.method() + ' ' + u.replace(/\?.*$/, '')); });
   const t0 = Date.now();
   try {
@@ -121,7 +129,7 @@ async function fileTests(browser) {
     if (!/^\{/.test(info.engineProbe)) bad.push('engine probe failed: ' + info.engineProbe);
     if (info.localStorage !== 'ok') bad.push('localStorage: ' + info.localStorage);
     if (info.indexedDB !== 'ok') bad.push('indexedDB: ' + info.indexedDB);
-    if (errors.length) bad.push('page errors: ' + errors.slice(0, 5).join(' | '));
+    if (errors.length) bad.push('page errors: ' + errors.slice(0, 5).join(' | ') + (failed.length ? ' ;; failed requests: ' + failed.slice(0, 5).join(' | ') : ''));
     note(bad.length === 0, BROWSER + ' / downloaded file (file://) loads and works', bad.length ? bad.join('\n') : JSON.stringify({ title: info.title, engineProbe: info.engineProbe, audit_store: info.auditStorage }), (Date.now() - t0) / 1000);
     console.log('      network requests made by the page while loaded from disk (' + requests.size + '): ' + ([...requests].join('; ') || 'none'));
   } catch (e) { note(false, BROWSER + ' / downloaded file (file://) loads and works', String(e.message).slice(0, 500), (Date.now() - t0) / 1000); }

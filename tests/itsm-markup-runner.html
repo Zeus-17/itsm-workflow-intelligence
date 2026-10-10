@@ -94,7 +94,8 @@ async function main(){
       window.__SNAPDIFF__ = diffs; window.__SNAPCOUNT__ = labels.length; window.__MARKUP__ = {snaps: A};
       status.className = diffs.length ? 'bad' : 'ok';
       status.textContent = diffs.length ? ('SNAPSHOT DIFFERS after ' + diffs.length + ' of ' + labels.length + ' screen builders') : ('PASS: all ' + labels.length + ' screen builders render identically with and without escaping (escHtml present: ' + hasEsc + ')');
-      out.textContent = diffs.join('\n');
+      const ctx = (k)=>{ const a=A[k]||'', b=B[k]||''; let i=0; while(i<a.length && a[i]===b[i]) i++; return k+' @'+i+'\n   with escaping: '+a.slice(Math.max(0,i-60),i+100)+'\n   identity:      '+b.slice(Math.max(0,i-60),i+100); };
+      out.textContent = diffs.slice(0,3).map(ctx).join('\n') + (diffs.length>3 ? '\n+ '+(diffs.length-3)+' more: '+diffs.slice(3).join(', ') : '');
     }
   }catch(err){ status.className='bad'; status.textContent='Runner error: '+err.message; out.textContent=err.stack; window.__MARKUP__={error:err.message}; }  finally { try{ frame.contentWindow.localStorage.clear(); }catch(e){} }   // leave no test data behind in the tool's saved data
 }
