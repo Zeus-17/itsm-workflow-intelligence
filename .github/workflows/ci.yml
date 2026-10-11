@@ -53,9 +53,11 @@ jobs:
           node agent-layer/tests/parity_mutants.js
       - name: Property tests (must-hold invariants)
         run: node agent-layer/tests/invariants_run.js
-      - name: Tool-specific rule tests, when the tool has them (RM defect lifecycle)
+      - name: Tool-specific rule tests, when the tool has them (RM defect lifecycle, "why this result" explanations)
         run: |
-          if [ -f agent-layer/tests/defect_lifecycle_run.js ]; then node agent-layer/tests/defect_lifecycle_run.js; else echo "none for this tool"; fi
+          for t in defect_lifecycle_run explain_run; do
+            if [ -f agent-layer/tests/$t.js ]; then node agent-layer/tests/$t.js || exit 1; else echo "no $t for this tool"; fi
+          done
       - name: Measurements that must keep running (rule quality, HTML sinks)
         run: |
           node agent-layer/tests/rule_quality.js
