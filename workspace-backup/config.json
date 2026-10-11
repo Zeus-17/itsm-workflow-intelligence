@@ -1,0 +1,5 @@
+{
+ "tool": "itsm",
+ "html": "../itsm-workflow-tool-v25.html",
+ "anchorRegex": "^<script>$"
+}

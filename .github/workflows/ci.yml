@@ -34,6 +34,10 @@ jobs:
         run: |
           python agent-layer/embed.py --check
           python agent-layer/check_size.py
+      - name: Workspace backup (W6) block is up to date, and its tests
+        run: |
+          python workspace-backup/embed.py --check
+          node workspace-backup/tests/backup_run.js
       - name: Schema package
         run: python schemas/check_schemas.py
       - name: Validation layer, audit trail, failsafe, shipped artifact

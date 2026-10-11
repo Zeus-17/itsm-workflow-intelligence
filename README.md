@@ -154,3 +154,12 @@ Regulatory guidance is informational only. Not legal or compliance advice. Alway
 
 *Built with [Claude (Anthropic)](https://claude.ai)*  
 *Connect on [LinkedIn](https://www.linkedin.com/in/james-holford-z17/)*
+
+## Backup and restore points
+Everything the tool saves lives in your browser only. Clearing the browser's data, a private window, or a full disk can lose it, so the tool now has:
+* **Export backup** - one plain JSON file with all your data and settings (not encrypted: it contains whatever you typed, so keep it where you keep other work data).
+* **Import backup** - the file is checked first (right tool, readable, only this tool's own items), a preview shows what would change, a **restore point of your current data is saved**, and only then is anything replaced.
+* **Restore points** - copies kept in the browser's IndexedDB: saved automatically before an import, a restore or a destructive action (the newest 6 automatic ones are kept), or by you (kept until you delete them). Restoring one also saves a restore point first, so a restore can itself be undone.
+* **Reminders** - a calm banner when there is work in the browser and no backup for 14 days (snooze 7 days), or when the browser is not keeping anything at all.
+Not included in a backup: the downloaded guidance cache, "what's new" / first-run flags, and the optional AI audit log. Where: RM - Settings, Data; ITSM - Sessions, Backup and restore points.
+Code: `workspace-backup/` (shared module, identical in both repositories and hash-locked; per-tool `adapter.js`); tests `node workspace-backup/tests/backup_run.js` plus the real-browser test in `ci/browser-tests.js`.

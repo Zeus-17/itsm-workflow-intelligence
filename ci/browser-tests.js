@@ -96,6 +96,86 @@ async function httpTests(browser, base) {
   }
 }
 
+/* Workspace backup and restore points (W6) in a real browser: a real download, a real file upload, a real reload and real IndexedDB. */
+async function backupTests(browser, base) {
+  const NAME = BROWSER + ' / workspace backup and restore (download, import, restore point, hostile file, unescaped text)';
+  const ctx = await browser.newContext({ serviceWorkers: 'block', acceptDownloads: true });
+  await ctx.route((u) => !u.href.startsWith(base + '/'), (r) => r.abort());
+  const page = await ctx.newPage(), t0 = Date.now(), bad = [], errors = [];
+  page.on('pageerror', (e) => errors.push(String(e.message)));
+  const tmp = fs.mkdtempSync(path.join(require('os').tmpdir(), 'wb-'));
+  const settle = () => page.waitForTimeout(700);
+  try {
+    const seed = TOOL === 'rm'
+      ? { rm_state_v1: JSON.stringify({ releases: [{ id: 'e2e1', name: 'E2E release', type: 'minor', gates: [], rag: 'green', status: 'planning', environments: {}, envPath: ['DEV'] }], defects: [], dora: {}, settings: {} }), rm_theme: 'dark' }
+      : { itsm_session_E2E: JSON.stringify({ sev: 'P2', savedAt: Date.now() }), itsm_timeline: JSON.stringify([{ t: 'x' }]), itsm_theme: 'dark' };
+    await page.goto(base + '/' + TOOL_HTML, { waitUntil: 'load' });
+    await page.evaluate((entries) => { localStorage.clear(); Object.keys(entries).forEach((k) => localStorage.setItem(k, entries[k])); }, seed);
+    await page.reload({ waitUntil: 'load' }); await settle();
+    const collect = () => page.evaluate(() => WorkspaceBackup.collect());
+    const original = await collect();
+    // the tool itself may add its own saved items while loading (for example empty lists): the seeded items must all be there, and are compared by value below
+    Object.keys(seed).forEach((k) => { if (original[k] !== seed[k] && !(k === 'rm_state_v1')) bad.push('seeded item missing or changed: ' + k); });
+    const differing = (a, b) => Array.from(new Set(Object.keys(a).concat(Object.keys(b)))).filter((k) => a[k] !== b[k]).map((k) => k + ' (' + String(a[k]).slice(0, 40) + ' -> ' + String(b[k]).slice(0, 40) + ')').join('; ');
+
+    // 1. a real download of the backup file, and the reminder bookkeeping
+    const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 15000 }), page.evaluate(() => document.getElementById('wb-export').click())]);
+    const file = path.join(tmp, dl.suggestedFilename()); await dl.saveAs(file);
+    const text = fs.readFileSync(file, 'utf8');
+    const parsed = await page.evaluate((t) => { const r = WorkspaceBackup.parse(t); return { ok: r.ok, errors: r.errors, n: r.entries && Object.keys(r.entries).length }; }, text);
+    if (!parsed.ok || parsed.n !== Object.keys(original).length) bad.push('the downloaded file is not a valid backup: ' + JSON.stringify(parsed));
+    if (!/-workspace-backup-\d{4}-\d\d-\d\d\.json$/.test(dl.suggestedFilename())) bad.push('unexpected file name ' + dl.suggestedFilename());
+    if (!(await page.evaluate((t) => !!localStorage.getItem('wb_' + t + '_last_export'), TOOL))) bad.push('the export time was not recorded');
+
+    // 2. wipe the workspace, import the file through the real file input, confirm in the real dialog
+    await page.evaluate(() => { Object.keys(WorkspaceBackup.collect()).forEach((k) => localStorage.removeItem(k)); });
+    if (Object.keys(await collect()).length) bad.push('the test could not empty the workspace');
+    await page.setInputFiles('#wb-file', file);
+    await page.waitForSelector('#wb-dialog[open] #wb-confirm', { timeout: 8000 });
+    const dlgText = await page.textContent('#wb-dialog');
+    if (!/Replace your data with this backup/.test(dlgText) || !/In the file/.test(dlgText)) bad.push('the import preview did not show: ' + dlgText.slice(0, 120));
+    await Promise.all([page.waitForEvent('load', { timeout: 20000 }), page.click('#wb-confirm')]);
+    await settle();
+    const restored = await collect();
+    if (differing(original, restored)) bad.push('after the import the workspace is not what was exported: ' + differing(original, restored));
+    if (await page.evaluate((t) => sessionStorage.getItem('wb_pending_' + t), TOOL)) bad.push('the parked safety copy was not consumed');
+    const points = await page.evaluate(() => WorkspaceBackup.listRestorePoints().then((a) => a.map((p) => p.reason + '|' + p.auto)));
+    if (!points.some((p) => /^Before importing .*\|true$/.test(p))) bad.push('no automatic restore point was saved before the import: ' + points.join(' ; '));
+
+    // 3. a file that names a key outside the tool is refused and nothing changes
+    const hostile = JSON.parse(text); hostile.entries.agent_revoked_v1 = '0'; hostile.keyCount += 1;
+    const hf = path.join(tmp, 'hostile.json'); fs.writeFileSync(hf, JSON.stringify(hostile));
+    await page.setInputFiles('#wb-file', hf);
+    await page.waitForSelector('#wb-dialog[open]', { timeout: 8000 });
+    const ht = await page.textContent('#wb-dialog');
+    if (!/cannot be loaded/.test(ht) || !/does not belong/.test(ht)) bad.push('the hostile file was not refused: ' + ht.slice(0, 140));
+    await page.evaluate(() => document.getElementById('wb-dialog').close());
+    { const now = await collect(); if (differing(original, now) || (await page.evaluate(() => localStorage.getItem('agent_revoked_v1'))) !== null) bad.push('the hostile file changed something: ' + differing(original, now)); }
+
+    // 4. restore points survive a reload (real IndexedDB) and a restore brings the data back; text typed into a label stays text
+    const PAYLOAD = '<img src=x onerror="window.__xss=1">';
+    await page.evaluate((p) => WorkspaceBackup.createRestorePoint(p, false), PAYLOAD);
+    await page.evaluate(() => { Object.keys(WorkspaceBackup.collect()).forEach((k) => localStorage.removeItem(k)); });
+    await page.reload({ waitUntil: 'load' }); await settle();
+    const panel = await page.evaluate(() => ({ imgs: document.querySelectorAll('#wb-panel img').length, xss: window.__xss || 0, text: document.getElementById('wb-panel').textContent }));
+    if (panel.imgs || panel.xss) bad.push('a restore point label was treated as markup');
+    if (!panel.text.includes(PAYLOAD)) bad.push('the label was not shown as plain text');
+    const rows = await page.evaluate(() => [...document.querySelectorAll('#wb-panel .wb-pt')].map((r) => r.firstElementChild.firstElementChild.textContent));
+    const idx = rows.findIndex((r) => r.includes('onerror'));
+    if (idx < 0) bad.push('the restore point is not listed after a reload');
+    else {
+      await page.evaluate((i) => document.querySelectorAll('#wb-panel .wb-pt')[i].querySelector('button').click(), idx);
+      await page.waitForSelector('#wb-dialog[open] #wb-confirm', { timeout: 8000 });
+      await Promise.all([page.waitForEvent('load', { timeout: 20000 }), page.click('#wb-confirm')]);
+      await settle();
+      { const now = await collect(); if (differing(original, now)) bad.push('restoring the restore point did not bring the data back: ' + differing(original, now)); }
+    }
+    if (errors.length) bad.push('page errors: ' + errors.slice(0, 3).join(' | '));
+  } catch (e) { bad.push('error: ' + String(e.message).slice(0, 300)); }
+  await ctx.close(); fs.rmSync(tmp, { recursive: true, force: true });
+  note(bad.length === 0, NAME, bad.join('\n') || 'export, import, automatic and manual restore points, refusal of a file naming a foreign key, and plain-text labels all behave', (Date.now() - t0) / 1000);
+}
+
 async function fileTests(browser) {
   const ctx = await browser.newContext(), page = await ctx.newPage();
   const errors = [], requests = new Set(), failed = [];
@@ -147,7 +227,7 @@ async function fileTests(browser) {
   console.log('browser: ' + BROWSER + ' ' + browser.version() + '  tool: ' + TOOL + '  repo: ' + REPO);
   let srv = null;
   try {
-    if (ONLY === 'all' || ONLY === 'http') { srv = await serve(); await httpTests(browser, 'http://127.0.0.1:' + srv.address().port); }
+    if (ONLY === 'all' || ONLY === 'http') { srv = await serve(); const origin = 'http://127.0.0.1:' + srv.address().port; await httpTests(browser, origin); await backupTests(browser, origin); }
     if (ONLY === 'all' || ONLY === 'file') await fileTests(browser);
   } finally { await browser.close(); if (srv) srv.close(); }
   const failed = results.filter((r) => !r.ok);
