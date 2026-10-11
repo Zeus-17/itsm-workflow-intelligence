@@ -53,6 +53,7 @@ function declaration(src, name) {
   lines.forEach((l, i) => { if (l.startsWith('function ' + name + '(') || declRe.test(l)) starts.push(i); });
   if (starts.length !== 1) throw new Error('declaration "' + name + '" found ' + starts.length + ' times in the tool (expected exactly 1)');
   const s = starts[0], fn = lines[s].startsWith('function ');
+  if (fn) { const one = lines[s]; if (/\}\s*$/.test(one) && one.split('{').length === one.split('}').length) return one; }   // a function written on one line is complete as it stands
   for (let j = s; j < lines.length; j++) {
     const l = lines[j];
     if (fn ? l === '}' : (/^[\]}];?$/.test(l) || (j === s && /;\s*$/.test(l)))) return lines.slice(s, j + 1).join('\n');
@@ -92,8 +93,8 @@ function makeContext(opts) {
   const ctx = vm.createContext({ console, document: dom.document, Date: FakeDate });
   ctx.window = ctx;
   const src = toolSource();
-  const tableNames = ['intelRules', 'ROUTING_RULES'];
-  const fnNames = ['g', 'escHtml', 'calcScore', 'updateScore', 'showIntelHint', 'calcRiskScore', 'routingKeywordRegExp', 'routingMatches', 'suggestRoutingGroup', 'generatePreflightFindings', 'assessCurrencyRisk', 'updateCurrencyRiskSummary', 'startSLAClock'];
+  const tableNames = ['intelRules', 'ROUTING_RULES', 'INCIDENT_BANDS', 'CHANGE_RISK_BANDS'];
+  const fnNames = ['g', 'escHtml', 'incidentScoreBand', 'changeRiskLevel', 'calcScore', 'updateScore', 'showIntelHint', 'calcRiskScore', 'routingKeywordRegExp', 'routingMatches', 'suggestRoutingGroup', 'generatePreflightFindings', 'assessCurrencyRisk', 'updateCurrencyRiskSummary', 'startSLAClock'];
   const parts = [
     'var selectedSev = ""; var isMajorIncident = false; var __setSev = []; function setSev(s) { __setSev.push(s); } function autosave() {}',
     'var timelineEvents = []; var decisionLog = []; var certEntries = []; var vulnEntries = []; var customRoutingRules = [];',

@@ -26,7 +26,7 @@ const q = new URLSearchParams(location.search), MODE = q.get('mode') || 'probe';
 const wait = (ms)=> new Promise(r=>setTimeout(r,ms));
 const ARRAYS = ['timelineEvents','decisionLog','certEntries','vulnEntries','customRoutingRules','customFields','metricEntries','actionItems','lessons','integrationFieldMaps','knownIssues'];
 // functions that open pickers, load stored sessions or navigate away are not screen builders
-const SKIP = /Picker|^load|Scenario|Template|Toast|Skeleton|Welcome|FirstTime|Quickstart|Session|Shared|Webhook|updateTabTitle|^show(Stage|Timeline|SLA|Integration|MTBF|ContentChangelog)/;
+const SKIP = /Picker|Why|^load|Scenario|Template|Toast|Skeleton|Welcome|FirstTime|Quickstart|Session|Shared|Webhook|updateTabTitle|^show(Stage|Timeline|SLA|Integration|MTBF|ContentChangelog)/;
 const NAMES = /^(render|update|refresh|show|build|populate|generate)/;
 const text = (v)=> MODE === 'probe' ? v : 'Sample text';
 

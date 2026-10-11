@@ -4552,6 +4552,7 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
       <div style="flex:1">
         <div class="score-verdict" id="scoreVerdict">Adjust the factors above to generate a score</div>
         <div class="score-detail" id="scoreDetail">Thresholds: P4 = 0-5, P3 = 6-10, P2 = 11-16, P1/Major = 17+</div>
+        <button type="button" class="btn-session" style="margin-top:6px" onclick="openWhyIncidentScore()" title="Why this score, and what would change it">Why this score?</button>
       </div>
     </div>
   </div>
@@ -5483,6 +5484,7 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
       <div>
         <div class="risk-score-verdict" id="riskScoreVerdict">Complete the risk factors below</div>
         <div class="risk-score-label" id="riskScoreLabel">Score so far: 0 — set all six factors to see the risk level and approval path.</div>
+        <button type="button" class="btn-session" style="margin-top:6px" onclick="openWhyChangeRisk()" title="Why this score, and what would change it">Why this score?</button>
       </div>
     </div>
     <div id="riskFactors">
@@ -6244,6 +6246,15 @@ function setSev(sev){
 }
 
 // ── SCORING ──────────────────────────────────────────────────
+const INCIDENT_BANDS=[
+  {key:'P4',min:0, rank:0,cls:'score-low', verdict:'Low impact — P4 or near miss likely'},
+  {key:'P3',min:6, rank:1,cls:'score-low', verdict:'Moderate impact — P3 likely'},
+  {key:'P2',min:11,rank:2,cls:'score-med', verdict:'High impact — P2 recommended'},
+  {key:'P1',min:17,rank:3,cls:'score-high',verdict:'Critical — P1 / Major Incident threshold reached'}
+];
+function incidentScoreBand(score){ let b=INCIDENT_BANDS[0]; INCIDENT_BANDS.forEach(x=>{ if(score>=x.min) b=x; }); return b; }
+const CHANGE_RISK_BANDS=[{key:'low',min:0,rank:0},{key:'medium',min:31,rank:1},{key:'high',min:61,rank:2}];
+function changeRiskLevel(total){ let b=CHANGE_RISK_BANDS[0]; CHANGE_RISK_BANDS.forEach(x=>{ if(total>=x.min) b=x; }); return b.key; }
 function calcScore(){
   return ['t1_users','t1_business','t1_workaround','t1_duration','t1_regulatory','t1_recurring']
     .reduce((s,f)=>{const el=document.getElementById(f);return s+(parseInt(el?.value)||0);},0);
@@ -6255,10 +6266,8 @@ function updateScore(){
   const detail=document.getElementById('scoreDetail');
   num.textContent=score;
   num.className='score-number';
-  if(score<=5){num.classList.add('score-low');verdict.textContent='Low impact — P4 or near miss likely';}
-  else if(score<=10){num.classList.add('score-low');verdict.textContent='Moderate impact — P3 likely';}
-  else if(score<=16){num.classList.add('score-med');verdict.textContent='High impact — P2 recommended';}
-  else{num.classList.add('score-high');verdict.textContent='Critical — P1 / Major Incident threshold reached';}
+  const band=incidentScoreBand(score);   // W1: the thresholds live in one place, shared with the "why this score" explanation
+  num.classList.add(band.cls);verdict.textContent=band.verdict;
   detail.textContent='Score '+score+' / 25. Thresholds: P4=0-5, P3=6-10, P2=11-16, P1/Major=17+';
   isMajorIncident=score>=17||selectedSev==='P1';
   document.getElementById('majorIncidentAlert').style.display=(score>=17)?'flex':'none';
@@ -6272,6 +6281,100 @@ function updateScore(){
   }
 }
 document.querySelectorAll('#stage1 select').forEach(el=>el.addEventListener('change',updateScore));
+
+// ── W1: WHY THIS SCORE, AND WHAT WOULD CHANGE IT ───────────────
+// Pure core: given the factors and the total the tool shows, list what each factor adds and which single-factor changes would move the band.
+// It refuses to explain a number the tool is not showing (fail closed), and invents no band of its own: bands come from the same tables the screen uses.
+function explainFactors(spec){
+  const sum=spec.factors.reduce((t,f)=>t+f.value,0);
+  if(sum!==spec.total) return {ok:false,reason:'total_mismatch'};
+  const unset=spec.factors.filter(f=>f.unset);
+  const out={ok:true,total:sum,rows:spec.factors.map(f=>({id:f.id,label:f.label,value:f.value,chosen:f.chosen,unset:!!f.unset})),unset:unset.map(f=>f.id),incomplete:false};
+  if(spec.incompleteWhenUnset&&unset.length){
+    // no band is claimed while factors are unset (an unset factor must never read as "low"): only the range the remaining factors could still produce
+    const nz=f=>f.options.map(o=>o.value).filter(v=>v>0);
+    let lo=sum,hi=sum; unset.forEach(f=>{ lo+=Math.min.apply(null,nz(f)); hi+=Math.max.apply(null,nz(f)); });
+    out.incomplete=true; out.range={min:lo,max:hi}; out.band=null; out.changes=[]; out.toUp=null; out.toDown=null; return out;
+  }
+  const band=spec.bandOf(sum); out.band=band;
+  const changes=[];
+  spec.factors.forEach(f=>f.options.forEach(o=>{
+    if(o.value===f.value) return;
+    const t=sum-f.value+o.value, b=spec.bandOf(t);
+    if(b.key!==band.key) changes.push({id:f.id,label:f.label,from:f.chosen,to:o.text,newTotal:t,delta:t-sum,newBand:b.key,dir:b.rank>band.rank?'up':'down'});
+  }));
+  changes.sort((a,b)=>Math.abs(a.delta)-Math.abs(b.delta)||a.label.localeCompare(b.label));
+  out.changes=changes;
+  const higher=spec.bands.find(b=>b.rank===band.rank+1), lower=spec.bands.find(b=>b.rank===band.rank-1);
+  out.toUp=higher?{key:higher.key,points:higher.min-sum}:null;
+  out.toDown=lower?{key:lower.key,points:sum-band.min+1}:null;
+  return out;
+}
+function readFactorSelects(ids,unsetText){
+  return ids.map(id=>{
+    const el=document.getElementById(id); if(!el) return null;
+    const grp=el.closest('.form-group,.risk-factor'), lab=grp?(grp.querySelector('label,.risk-factor-label')||{}):{};
+    const opts=Array.from(el.options).map(o=>({value:parseInt(o.value)||0,text:o.textContent.trim()}));
+    const cur=el.options[el.selectedIndex], value=parseInt(el.value)||0;
+    return {id,label:(lab.textContent||id).replace(/\s*\(.*$/,'').trim(),value,chosen:cur?cur.textContent.trim():'',options:opts,unset:unsetText?(value===0&&cur&&unsetText.test(cur.textContent)):false};
+  }).filter(Boolean);
+}
+const INCIDENT_FACTOR_IDS=['t1_users','t1_business','t1_workaround','t1_duration','t1_regulatory','t1_recurring'];
+const CHANGE_FACTOR_IDS=['rf_blast','rf_complexity','rf_rollback','rf_testing','rf_history','rf_timing'];
+function incidentExplainSpec(){
+  return {total:calcScore(),factors:readFactorSelects(INCIDENT_FACTOR_IDS,null),bandOf:sc=>{const b=incidentScoreBand(sc);return {key:b.key,rank:b.rank,min:b.min};},bands:INCIDENT_BANDS,incompleteWhenUnset:false};
+}
+function changeRiskExplainSpec(){
+  const factors=readFactorSelects(CHANGE_FACTOR_IDS,/^select/i);
+  const total=factors.reduce((t,f)=>t+f.value,0);
+  return {total,factors,bandOf:t=>{const b=CHANGE_RISK_BANDS.find(x=>x.key===changeRiskLevel(t));return {key:b.key,rank:b.rank,min:b.min};},bands:CHANGE_RISK_BANDS,incompleteWhenUnset:true};
+}
+function whyEl(tag,props,kids){ const e=document.createElement(tag); if(props) Object.keys(props).forEach(k=>{ if(k==='text') e.textContent=props[k]; else e.setAttribute(k,props[k]); }); (kids||[]).forEach(c=>{ if(c) e.appendChild(typeof c==='string'?document.createTextNode(c):c); }); return e; }
+function showWhyDialog(title,nodes){
+  let d=document.getElementById('whyDialog');
+  if(!d){ d=whyEl('dialog',{id:'whyDialog','aria-labelledby':'whyTitle',style:'margin:auto;position:fixed;inset:0;height:fit-content;max-height:calc(100% - 32px);overflow:auto;max-width:620px;width:calc(100% - 32px);border:1px solid var(--border2);border-radius:12px;background:var(--surface);color:var(--text);padding:20px;font-family:inherit'}); document.body.appendChild(d); }
+  while(d.firstChild) d.removeChild(d.firstChild);
+  d.appendChild(whyEl('h3',{id:'whyTitle',text:title,style:'margin:0 0 10px;font-size:15px'}));
+  nodes.forEach(n=>d.appendChild(n));
+  d.appendChild(whyEl('div',{style:'text-align:right;margin-top:14px'},[(function(){ const b=whyEl('button',{type:'button',class:'btn btn-primary',text:'Close'}); b.addEventListener('click',()=>d.close()); return b; })()]));
+  if(typeof d.showModal==='function'){ if(!d.open) d.showModal(); } else d.setAttribute('open','');
+}
+function renderWhyScore(ex,opts){
+  const note=(t,st)=>whyEl('p',{text:t,style:'font-size:12px;line-height:1.6;margin:8px 0;color:'+(st||'var(--text2)')});
+  if(!ex.ok) return [note('This score cannot be explained right now (the factors on screen do not add up to the number shown). Nothing has been changed.','var(--red)')];
+  const nodes=[];
+  nodes.push(note(opts.headline(ex),'var(--text)'));
+  const rows=[whyEl('tr',null,[whyEl('th',{text:'Factor',style:'text-align:left;padding:4px 6px'}),whyEl('th',{text:'Chosen',style:'text-align:left;padding:4px 6px'}),whyEl('th',{text:'Adds',style:'text-align:right;padding:4px 6px'})])];
+  ex.rows.forEach(r=>rows.push(whyEl('tr',{style:'border-top:1px solid var(--border)'},[whyEl('td',{text:r.label,style:'padding:5px 6px;vertical-align:top'}),whyEl('td',{text:r.chosen+(r.unset?'  (not set: counts as 0)':''),style:'padding:5px 6px;color:var(--text2)'}),whyEl('td',{text:String(r.value),style:'padding:5px 6px;text-align:right;font-family:var(--mono)'})])));
+  rows.push(whyEl('tr',{style:'border-top:2px solid var(--border2);font-weight:700'},[whyEl('td',{text:'Total',style:'padding:5px 6px'}),whyEl('td',{text:''}),whyEl('td',{text:String(ex.total),style:'padding:5px 6px;text-align:right;font-family:var(--mono)'})]));
+  nodes.push(whyEl('table',{style:'width:100%;border-collapse:collapse;font-size:12px'},rows));
+  if(ex.incomplete){ nodes.push(note(ex.unset.length+' of '+ex.rows.length+' factors are not set, so no level is shown (an unset factor must never read as low). Once they are set the total will be between '+ex.range.min+' and '+ex.range.max+'.','var(--amber)')); }
+  else {
+    if(ex.toUp) nodes.push(note(ex.toUp.points+' more point'+(ex.toUp.points>1?'s':'')+' would reach '+opts.bandWord(ex.toUp.key)+'.'));
+    if(ex.toDown) nodes.push(note(ex.toDown.points+' fewer point'+(ex.toDown.points>1?'s':'')+' would drop to '+opts.bandWord(ex.toDown.key)+'.'));
+    if(ex.changes.length){
+      nodes.push(whyEl('div',{text:'Single changes that would move it to another band (smallest first)',style:'font-size:13px;font-weight:600;margin:12px 0 4px'}));
+      nodes.push(whyEl('ul',{style:'margin:4px 0 0 18px;padding:0;font-size:12px;line-height:1.7;color:var(--text2)'},ex.changes.slice(0,8).map(c=>whyEl('li',{text:c.label.replace(/\?$/,'')+': “'+c.from+'” → “'+c.to+'” gives '+c.newTotal+' ('+(c.delta>0?'+':'')+c.delta+'), '+opts.bandWord(c.newBand)+'.'}))));
+    }
+  }
+  nodes.push(note(opts.footer,'var(--text3)'));
+  return nodes;
+}
+function openWhyIncidentScore(){
+  const ex=explainFactors(incidentExplainSpec());
+  showWhyDialog('Why this impact score',renderWhyScore(ex,{
+    headline:e=>'The impact score is '+e.total+' out of 25, which falls in the '+e.band.key+' range. It is the sum of the six answers below.',
+    bandWord:k=>({P4:'P4 (0 to 5)',P3:'P3 (6 to 10)',P2:'P2 (11 to 16)',P1:'P1 (17 or more)'})[k],
+    footer:'This explains the arithmetic only. The score suggests a severity; you choose the severity, and any override is recorded with your reason.'}));
+}
+function openWhyChangeRisk(){
+  const ex=explainFactors(changeRiskExplainSpec());
+  const word={low:'low (up to 30)',medium:'medium (31 to 60)',high:'high (over 60)'};
+  showWhyDialog('Why this change-risk score',renderWhyScore(ex,{
+    headline:e=>'The change-risk score is '+e.total+' out of 120, which is '+(e.band?e.band.key:'')+'. It is the sum of the six answers below.',
+    bandWord:k=>word[k],
+    footer:'This explains the arithmetic only. The risk level suggests an approval path; the approval itself is a human decision.'}));
+}
 
 // ── SLA CLOCK ────────────────────────────────────────────────
 let slaMins={P1:60,P2:240,P3:1440,P4:4320};
@@ -10493,7 +10596,7 @@ function calcRiskScore(){
     autosave();
     return;
   }
-  var level=total<=30?'low':total<=60?'medium':'high';
+  var level=changeRiskLevel(total);
   var verdicts={low:'Low Risk — expedited review path',medium:'Medium Risk — standard CAB approval required',high:'High Risk — full CAB + senior approval required'};
   var labels={
     low:'Score: '+total+'/120 — Standard CAB or expedited review.',
@@ -18095,6 +18198,7 @@ window.addEventListener('load',()=>{
       </div>
       <div class="changelog-section">
         <div class="changelog-section-title">Accuracy &amp; safety update (October 2026)</div>
+        <div class="changelog-item">“Why this score?” beside the impact score and the change-risk score — shows what each answer adds, how far the total is from the next band either way, and the single answer changes that would move it to another band. For change risk, unset factors still never produce a level</div>
         <div class="changelog-item">Backup and restore points — export everything you have saved as one file, import it back after a preview, and keep restore points in this browser; one is saved automatically before an import, a restore or a clear, so those can be undone. A calm reminder appears when there is work in the browser and no recent backup</div>
         <div class="changelog-item">Assignment-group suggestions now match whole words and join the observation and service name with a space, so “feedback” no longer looks like “db” and “rapid” no longer looks like “api”; more team vocabulary is recognised, and the suggestion shows the words it matched</div>
         <div class="changelog-item">The pre-flight payment and personal-data warnings match whole words too (“Cardiff” and “Discard” no longer look like “card”) and recognise more terms</div>
