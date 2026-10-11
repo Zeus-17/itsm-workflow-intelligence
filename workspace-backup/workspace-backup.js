@@ -16,8 +16,12 @@
  *   - Failure never leaves a half-restored workspace: if writing fails part-way the previous values are put back.
  *   - The backup file is NOT encrypted: it contains whatever was typed. The panel says so.
  *
- * LIMITS (placeholders to be confirmed): keep the newest 6 AUTOMATIC restore points (manual ones are never removed automatically); remind after 14 days;
- *   "remind me later" lasts 7 days; a backup file larger than 4 MB is refused (browser storage is about 5 MB).
+ * RETENTION AND REMINDERS (settings the user can change in the panel; defaults chosen so that records are kept long enough to be used for reviews and evidence)
+ *   - Automatic restore points are kept for 12 months and always at least the newest 20; ones the user saves, or marks "Keep", are never removed automatically.
+ *     Whenever points are removed the user is told, and any point can be downloaded as an ordinary backup file first.
+ *   - The reminder to export comes after 30 days without one ("remind me later" waits 14 days) and always says WHERE the file should go: an organisational record
+ *     (for example Confluence, SharePoint or a shared drive), because a copy inside the browser is not a record. A readable summary can be copied for pasting into a wiki page.
+ *   - A backup file larger than 4 MB is refused: that is a limit of what browser storage can hold (about 5 MB), not a policy choice.
  */
 (function (root, factory) {
   'use strict';
@@ -27,7 +31,11 @@
   'use strict';
 
   var FORMAT = 'workspace-backup', FORMAT_VERSION = 1;
-  var MAX_BYTES = 4000000, KEEP_AUTO = 6, REMIND_DAYS = 14, SNOOZE_DAYS = 7;
+  var MAX_BYTES = 4000000;
+  var DEFAULTS = { keepDays: 365, minKeepAuto: 20, remindDays: 30, snoozeDays: 14 };
+  var KEEP_CHOICES = [[183, '6 months'], [365, '12 months'], [730, '24 months'], [0, 'until I delete them']];
+  var REMIND_CHOICES = [[14, '14 days'], [30, '30 days'], [60, '60 days'], [90, '90 days'], [180, '6 months']];
+  var ARCHIVE_PLACES = 'Confluence, SharePoint or a shared drive';
   var A = null;                                   // adapter (per tool)
   var doc = env.document || null;
   var storage = function () { return env.localStorage; };
@@ -51,6 +59,25 @@
   function fmt(iso) { var t = Date.parse(iso); return isNaN(t) ? '' : new Date(t).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
   function kb(n) { return n < 1024 ? n + ' B' : (n / 1024).toFixed(n < 10240 ? 1 : 0) + ' KB'; }
   function metaKey(name) { return 'wb_' + A.tool + '_' + name; }
+  /** The user's retention and reminder choices, falling back to the defaults for anything missing or unusual. */
+  function settings() {
+    var raw = null; try { raw = JSON.parse(lsGet(metaKey('settings')) || 'null'); } catch (e) { raw = null; }
+    var out = { keepDays: DEFAULTS.keepDays, remindDays: DEFAULTS.remindDays, minKeepAuto: DEFAULTS.minKeepAuto, snoozeDays: DEFAULTS.snoozeDays };
+    if (raw && typeof raw === 'object') {
+      if (KEEP_CHOICES.some(function (c) { return c[0] === raw.keepDays; })) out.keepDays = raw.keepDays;
+      if (REMIND_CHOICES.some(function (c) { return c[0] === raw.remindDays; })) out.remindDays = raw.remindDays;
+    }
+    return out;
+  }
+  function setSettings(patch) {
+    var cur = settings();
+    function valid(choices, v) { return choices.some(function (c) { return c[0] === v; }); }
+    if (patch && typeof patch === 'object') {   // only the listed choices are accepted; anything else leaves the current value alone
+      if (own(patch, 'keepDays') && valid(KEEP_CHOICES, patch.keepDays)) cur.keepDays = patch.keepDays;
+      if (own(patch, 'remindDays') && valid(REMIND_CHOICES, patch.remindDays)) cur.remindDays = patch.remindDays;
+    }
+    lsSet(metaKey('settings'), JSON.stringify({ keepDays: cur.keepDays, remindDays: cur.remindDays })); return settings();
+  }
   function lsGet(k) { try { return storage().getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { storage().setItem(k, v); return true; } catch (e) { return false; } }
 
@@ -167,18 +194,27 @@
   /** Save a restore point of the CURRENT workspace. Resolves to the point, or rejects (then nothing was saved). */
   function createRestorePoint(reason, auto) {
     var entries = collect();
-    var p = { id: newId(), at: nowIso(), reason: String(reason || 'Restore point').slice(0, 160), auto: !!auto, tool: A.tool, version: A.version,
+    var p = { id: newId(), at: nowIso(), reason: String(reason || 'Restore point').slice(0, 160), auto: !!auto, keep: !auto, tool: A.tool, version: A.version,
       summary: A.summarise(entries) || [], bytes: bytesOf(entries), entries: entries };
-    return store.put(p).then(function () { return prune().then(function (n) { p.pruned = n; return p; }); });
+    return store.put(p).then(function () { return prune().then(function (n) {
+      p.pruned = n;
+      if (n) toast(n + ' automatic restore point' + (n === 1 ? ' was' : 's were') + ' removed because ' + (n === 1 ? 'it was' : 'they were') + ' older than your retention setting. Download any you want to keep as a file.', 'info');
+      return p;
+    }); });
   }
   function listRestorePoints() { return store.all().then(function (a) { return a.sort(function (x, y) { return y.at < x.at ? -1 : y.at > x.at ? 1 : 0; }); }); }
-  /** Keep only the newest KEEP_AUTO automatic points; manual points are never removed here. Resolves to how many were removed. */
-  function prune() {
+  /** Remove only AUTOMATIC points that are not marked Keep, are older than the retention setting, and are not among the newest minKeepAuto. Resolves to how many were removed. */
+  function prune(nowMs) {
+    var st = settings(), now = nowMs || Date.now();
+    if (!st.keepDays) return Promise.resolve(0);
     return listRestorePoints().then(function (all) {
-      var autos = all.filter(function (p) { return p.auto; }), drop = autos.slice(KEEP_AUTO);
+      var autos = all.filter(function (p) { return p.auto && !p.keep; });
+      var drop = autos.slice(st.minKeepAuto).filter(function (p) { var t = Date.parse(p.at); return !isNaN(t) && now - t > st.keepDays * 86400000; });
       return Promise.all(drop.map(function (p) { return store.del(p.id); })).then(function () { return drop.length; });
     });
   }
+  /** Mark a point Keep (never removed automatically) or not. */
+  function setKeep(id, keep) { return store.get(id).then(function (p) { if (!p) return false; p.keep = !!keep; return store.put(p).then(function () { return true; }); }); }
 
   /* ------------------------------------------------------------------------------------------------ finishing a restore: reload with a safety net */
   var PENDING = function () { return 'wb_pending_' + A.tool; };
@@ -214,9 +250,10 @@
     var e = entries || collect();
     if (typeof A.hasWork === 'function' && !A.hasWork(e)) return { kind: 'none' };
     var le = lastExport(), t = Date.parse(le), snooze = Date.parse(lsGet(metaKey('snooze')) || '');
-    if (!isNaN(snooze) && now - snooze < SNOOZE_DAYS * 86400000) return { kind: 'none' };
+    var st = settings();
+    if (!isNaN(snooze) && now - snooze < st.snoozeDays * 86400000) return { kind: 'none' };
     if (isNaN(t)) return { kind: 'never' };
-    return now - t > REMIND_DAYS * 86400000 ? { kind: 'overdue', last: le } : { kind: 'none' };
+    return now - t > st.remindDays * 86400000 ? { kind: 'overdue', last: le } : { kind: 'none' };
   }
   function storageWorks() {
     try { var k = 'wb_probe_' + A.tool; storage().setItem(k, '1'); var ok = storage().getItem(k) === '1'; storage().removeItem(k); return ok; } catch (e) { return false; }
@@ -333,6 +370,36 @@
     recordExport(); toast('Backup file saved (' + Object.keys(entries).length + ' items). Keep it somewhere you keep other work data.', 'success'); refresh(); renderBanner();
   }
 
+  function downloadFile(name, text, type) {
+    var blob = new Blob([text], { type: type || 'application/json' });
+    var a = doc.createElement('a'); a.href = env.URL.createObjectURL(blob); a.download = name;
+    doc.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { try { env.URL.revokeObjectURL(a.href); } catch (e) { /* ignore */ } }, 4000);
+  }
+  /** A restore point as an ordinary backup file (importable like any other), for filing in an organisational record. */
+  function downloadPoint(point) {
+    downloadFile(A.fileStem + '-restore-point-' + String(point.at).slice(0, 10) + '.json', JSON.stringify(build(point.entries, point.at), null, 1));
+    toast('Restore point saved as a file. File it where your organisation keeps records (' + ARCHIVE_PLACES + ').', 'success');
+  }
+  /** A readable summary (Markdown) of the current data, for pasting into a wiki page. It is a summary, not a backup. */
+  function summaryText(entries) {
+    var body = typeof A.readable === 'function' ? A.readable(entries) : '';
+    return '# ' + A.toolName + ' - workspace summary\n\nGenerated ' + fmt(nowIso()) + ' from the browser it is saved in. This is a readable summary, not a backup: use Export backup for the full data.\n\n' + body + '\n';
+  }
+  function copySummary() {
+    var text = summaryText(collect());
+    var fallback = function () {
+      var ta = h('textarea', { id: 'wb-summary', readonly: 'readonly', rows: '12', style: 'width:100%;font-family:monospace;font-size:11px;background:var(--surface2,#223);color:var(--text,#eee);border:1px solid var(--border2,#456);border-radius:6px;padding:8px' });
+      ta.value = text;
+      dialog('Summary to copy', [para('Copy this text (Ctrl+C / Cmd+C) and paste it into your wiki page or record. This browser did not allow copying automatically.'), ta], [{ label: 'Close' }]);
+      ta.focus(); ta.select();
+    };
+    try {
+      if (env.navigator && env.navigator.clipboard && env.navigator.clipboard.writeText) env.navigator.clipboard.writeText(text).then(function () { toast('Summary copied. Paste it into ' + ARCHIVE_PLACES + '.', 'success'); }, fallback);
+      else fallback();
+    } catch (e) { fallback(); }
+  }
+
   function restoreFrom(point) {
     confirmReplace({ title: 'Restore this restore point?', intro: 'Restore point from ' + fmt(point.at) + ' (' + String(point.reason).slice(0, 100) + ').', entries: point.entries, partial: false, warnings: [],
       columnLabel: 'Restore point', confirmLabel: 'Restore it', reason: 'Before restoring the restore point from ' + fmt(point.at) });
@@ -367,7 +434,13 @@
         h('button', { class: 'wb-btn', type: 'button', id: 'wb-new-point', text: 'Save a restore point', onclick: manualPoint })
       ]),
       h('div', { class: 'wb-muted', text: le ? 'Last exported: ' + fmt(le) + ' (' + ago(le) + ')' : 'Last exported from this browser: never' }),
+      h('div', { class: 'wb-box', style: 'margin:6px 0', text: 'A copy inside the browser is not a record. File the backup where your organisation keeps records (for example ' + ARCHIVE_PLACES + '), so it can be used for reviews and evidence and is not lost with the browser.' }),
+      h('div', { class: 'wb-row' }, [h('button', { class: 'wb-btn', type: 'button', id: 'wb-copy', text: 'Copy a readable summary (for a wiki page)', onclick: copySummary })]),
       h('div', { class: 'wb-muted', text: 'Included: your data and settings. Not included: downloaded guidance cache, "what\'s new" flags' + (A.extraExcludedNote ? ', ' + A.extraExcludedNote : '') + '. The file is plain JSON and is not encrypted.' }),
+      h('div', { class: 'wb-row' }, [
+        h('label', { class: 'wb-muted', text: 'Keep automatic restore points for ' }, [selectFor(KEEP_CHOICES, settings().keepDays, 'wb-keep-days', function (v) { setSettings({ keepDays: v }); refresh(); })]),
+        h('label', { class: 'wb-muted', text: 'Remind me to export after ' }, [selectFor(REMIND_CHOICES, settings().remindDays, 'wb-remind-days', function (v) { setSettings({ remindDays: v }); renderBanner(); })])
+      ]),
       h('div', { style: 'margin-top:10px;font-weight:600;color:var(--text,#eee)', text: 'Restore points' + (points ? ' (' + points.length + ')' : '') })
     ]));
     if (problem) box.appendChild(h('div', { class: 'wb-box wb-warn', text: 'Restore points are not available in this browser mode (' + problem + '). Backup files still work.' }));
@@ -378,11 +451,23 @@
           h('div', { class: 'wb-muted', text: (p.summary || []).map(function (s) { return s[0] + ': ' + s[1]; }).join('  |  ') + (p.summary && p.summary.length ? '  |  ' : '') + kb(p.bytes || 0) })]),
         h('div', { class: 'wb-row', style: 'margin:0' }, [
           h('button', { class: 'wb-btn', type: 'button', text: 'Restore', onclick: function () { restoreFrom(p); } }),
+          h('button', { class: 'wb-btn', type: 'button', text: 'Download', title: 'Save this restore point as a file', onclick: function () { downloadPoint(p); } }),
+          p.auto ? h('button', { class: 'wb-btn', type: 'button', text: p.keep ? 'Kept' : 'Keep', title: p.keep ? 'Marked Keep: never removed automatically. Click to undo.' : 'Never remove this one automatically', onclick: function () { setKeep(p.id, !p.keep).then(refresh); } }) : null,
           h('button', { class: 'wb-btn danger', type: 'button', text: 'Delete', onclick: function () { store.del(p.id).then(refresh, refresh); } })
         ])
       ]));
     });
-    if (points && points.some(function (p) { return p.auto; })) box.appendChild(h('div', { class: 'wb-muted', text: 'Automatic restore points: the newest ' + KEEP_AUTO + ' are kept. Ones you save yourself are kept until you delete them.' }));
+    if (points && points.some(function (p) { return p.auto; })) {
+      var st = settings();
+      box.appendChild(h('div', { class: 'wb-muted', text: 'Automatic restore points are kept ' + (st.keepDays ? 'for ' + labelOf(KEEP_CHOICES, st.keepDays) + ' (and always the newest ' + st.minKeepAuto + ')' : 'until you delete them') + '; you are told whenever any are removed. Ones you save yourself, or mark Keep, are never removed automatically.' }));
+    }
+  }
+  function labelOf(choices, v) { for (var i = 0; i < choices.length; i++) if (choices[i][0] === v) return choices[i][1]; return String(v); }
+  function selectFor(choices, current, id, onChange) {
+    var sel = h('select', { id: id, style: 'margin-left:4px;padding:3px;border-radius:5px;border:1px solid var(--border2,#456);background:var(--surface2,#223);color:var(--text,#eee)' },
+      choices.map(function (c) { var o = h('option', { value: String(c[0]), text: c[1] }); if (c[0] === current) o.setAttribute('selected', 'selected'); return o; }));
+    sel.addEventListener('change', function () { onChange(Number(sel.value)); });
+    return sel;
   }
   function refresh() { if (!doc || !doc.getElementById('wb-panel')) return Promise.resolve(); return listRestorePoints().then(function (p) { renderPanel(p, ''); }, function (e) { renderPanel(null, String(e && e.message || 'unavailable')); }); }
 
@@ -391,8 +476,8 @@
     var old = doc.getElementById('wb-banner'); if (old) old.remove();
     var st = reminderState(); if (st.kind === 'none') return;
     var msg = st.kind === 'unsaved' ? 'This browser is not keeping anything this tool saves (private window, blocked or full storage). Work will be lost when the tab closes. Export a backup before you finish.'
-      : st.kind === 'never' ? 'Your data is stored only in this browser, and has never been exported. A backup file protects it if the browser data is cleared.'
-        : 'Your last backup was ' + ago(st.last) + '. Your data is stored only in this browser.';
+      : st.kind === 'never' ? 'Your data is stored only in this browser and has never been exported. Export a backup and file it where your organisation keeps records (' + ARCHIVE_PLACES + ') so it is not lost if the browser data is cleared.'
+        : 'Your last backup was ' + ago(st.last) + '. Your data is stored only in this browser: export a fresh backup and file it where your organisation keeps records (' + ARCHIVE_PLACES + ').';
     var b = h('div', { class: 'wb-banner', id: 'wb-banner', role: 'status' }, [h('span', { text: msg }),
       h('button', { class: 'wb-btn primary', type: 'button', text: 'Export a backup', onclick: exportBackup }),
       st.kind === 'unsaved' ? null : h('button', { class: 'wb-btn', type: 'button', text: 'Remind me later', onclick: function () { lsSet(metaKey('snooze'), nowIso()); b.remove(); } })]);
@@ -409,8 +494,8 @@
   }
 
   var api = { configure: configure, collect: collect, build: build, parse: parse, compare: compare, applyEntries: applyEntries, createRestorePoint: createRestorePoint,
-    listRestorePoints: listRestorePoints, prune: prune, finish: finish, applyPending: applyPending, reminderState: reminderState, recordExport: recordExport, storageWorks: storageWorks,
+    listRestorePoints: listRestorePoints, prune: prune, setKeep: setKeep, settings: settings, setSettings: setSettings, downloadPoint: downloadPoint, summaryText: summaryText, copySummary: copySummary, finish: finish, applyPending: applyPending, reminderState: reminderState, recordExport: recordExport, storageWorks: storageWorks,
     useMemoryStore: useMemoryStore, mount: mount, refresh: refresh, importFile: importFile, exportBackup: exportBackup, protect: protect, restoreFrom: restoreFrom,
-    constants: { FORMAT: FORMAT, FORMAT_VERSION: FORMAT_VERSION, MAX_BYTES: MAX_BYTES, KEEP_AUTO: KEEP_AUTO, REMIND_DAYS: REMIND_DAYS, SNOOZE_DAYS: SNOOZE_DAYS }, _included: included };
+    constants: { FORMAT: FORMAT, FORMAT_VERSION: FORMAT_VERSION, MAX_BYTES: MAX_BYTES, DEFAULTS: DEFAULTS, KEEP_CHOICES: KEEP_CHOICES, REMIND_CHOICES: REMIND_CHOICES }, _included: included };
   return api;
 });

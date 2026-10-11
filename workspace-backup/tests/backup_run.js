@@ -134,13 +134,37 @@ ok(!r3b.ok && r3b.rollbackFailed === true && /restore point or backup file/.test
   ok(rp.auto === true && rp.entries[mainKey] === goodState && rp.tool === adapter.tool && rp.bytes > 0 && Array.isArray(rp.summary), 'a restore point holds the exact current items');
   ls4.setItem(P + 'theme', 'changed');
   ok(JSON.parse(J(rp.entries))[P + 'theme'] === 'dark', 'a restore point is a copy: later changes do not alter it');
-  for (let i = 0; i < 9; i++) { await new Promise((res) => setTimeout(res, 2)); await W4.createRestorePoint('auto ' + i, true); }
-  await W4.createRestorePoint('mine', false);
-  const list = await W4.listRestorePoints();
-  const autos = list.filter((p) => p.auto), manual = list.filter((p) => !p.auto);
-  ok(autos.length === W4.constants.KEEP_AUTO && manual.length === 1, 'only the newest ' + W4.constants.KEEP_AUTO + ' automatic restore points are kept; manual ones stay (' + autos.length + '/' + manual.length + ')');
-  ok(list.every((p, i, a) => i === 0 || a[i - 1].at >= p.at), 'restore points are listed newest first');
-  ok(autos.every((p) => /^auto \d|Before/.test(p.reason)) && !autos.some((p) => p.reason === 'auto 0'), 'the oldest automatic ones were the ones dropped');
+  // retention: automatic restore points are kept for 12 months (and always the newest 20); Keep and manual ones are never removed; every removal is counted
+  const D = W4.constants.DEFAULTS;
+  ok(D.keepDays === 365 && D.minKeepAuto === 20 && D.remindDays === 30 && D.snoozeDays === 14, 'defaults: 12 months, newest 20, remind after 30 days, snooze 14 days');
+  const DAY = 86400000, NOW2 = Date.parse('2027-06-01T00:00:00Z');
+  const ms = memoryStore(); W4.useMemoryStore(ms);
+  const put = (id, ageDays, auto, keep) => ms.put({ id, at: new Date(NOW2 - ageDays * DAY).toISOString(), reason: id, auto, keep: !!keep, entries: {}, summary: [], bytes: 1, tool: adapter.tool });
+  for (let i = 0; i < 30; i++) await put('old' + i, 400 + i, true);          // 30 automatic points, all older than 12 months
+  for (let i = 0; i < 5; i++) await put('new' + i, i + 1, true);              // 5 recent automatic points
+  await put('keepme', 900, true, true); await put('mine', 800, false, true);  // marked Keep / saved by the user, very old
+  let removed = await W4.prune(NOW2);
+  let left = (await W4.listRestorePoints()).map((p) => p.id);
+  ok(removed === 15 && left.length === 22, 'only old, unmarked automatic points beyond the newest 20 are removed (removed ' + removed + ', left ' + left.length + ')');
+  ok(left.includes('keepme') && left.includes('mine'), 'Keep and user-saved restore points are never removed automatically');
+  ok(['new0', 'new1', 'new2', 'new3', 'new4', 'old0'].every((id) => left.includes(id)), 'the newest 20 automatic points stay even when they are old');
+  ok(!left.includes('old29') && !left.includes('old16'), 'the oldest ones were the ones removed');
+  ok(await W4.setKeep('old0', true) === true && (await W4.prune(NOW2)) === 0, 'marking a point Keep protects it (and a second prune removes nothing)');
+  ok(await W4.setKeep('does-not-exist', true) === false, 'marking a missing point is reported, not thrown');
+  W4.setSettings({ keepDays: 0 }); for (let i = 0; i < 5; i++) await put('older' + i, 2000 + i, true);
+  ok((await W4.prune(NOW2)) === 0, '"until I delete them" removes nothing, ever');
+  W4.setSettings({ keepDays: 183 });
+  ok((await W4.prune(NOW2)) > 0, 'a shorter retention (6 months) removes more');
+  W4.setSettings({ keepDays: 12345 });
+  ok(W4.settings().keepDays === 183, 'an unusual retention value is ignored (keeps the last valid choice)');
+  ls4.setItem('wb_' + adapter.tool + '_settings', '{bad json');
+  ok(W4.settings().keepDays === 365 && W4.settings().remindDays === 30, 'unreadable settings fall back to the defaults');
+  W4.useMemoryStore(memoryStore());
+  ok(/workspace summary/.test(W4.summaryText({})) && /not a backup/.test(W4.summaryText({})), 'the readable summary says what it is and what it is not');
+  if (typeof adapter.readable === 'function') {
+    const rs = W4.summaryText(adapter.tool === 'rm' ? { rm_state_v1: goodState } : { itsm_session_Test: goodState, itsm_timeline: '[1]' });
+    ok(rs.includes('|---') && !rs.includes('undefined') && !rs.includes('[object'), 'the readable summary is a table with no undefined / [object] text');
+  }
   // finishing a restore: applies, parks a safety copy for the next load, reloads
   const ls5 = fakeStorage(); ls5.setItem(P + 'theme', 'x'); const t5 = make(ls5);
   const fin = t5.W.finish({ [P + 'theme']: 'restored' }, false);
@@ -163,9 +187,14 @@ ok(!r3b.ok && r3b.rollbackFailed === true && /restore point or backup file/.test
   ls8.setItem('wb_' + adapter.tool + '_last_export', '2026-10-15T00:00:00Z');
   ok(t8.W.reminderState(withWork, NOW).kind === 'none', 'exported 5 days ago: no reminder');
   ls8.setItem('wb_' + adapter.tool + '_last_export', '2026-10-01T00:00:00Z');
-  ok(t8.W.reminderState(withWork, NOW).kind === 'overdue', 'exported 19 days ago: reminder');
-  ls8.setItem('wb_' + adapter.tool + '_snooze', '2026-10-17T00:00:00Z');
-  ok(t8.W.reminderState(withWork, NOW).kind === 'none', 'snoozed 3 days ago: quiet');
+  ok(t8.W.reminderState(withWork, NOW).kind === 'none', 'exported 19 days ago: still quiet (the default is 30 days)');
+  ls8.setItem('wb_' + adapter.tool + '_last_export', '2026-09-10T00:00:00Z');
+  ok(t8.W.reminderState(withWork, NOW).kind === 'overdue', 'exported 40 days ago: reminder');
+  t8.W.setSettings({ remindDays: 90 });
+  ok(t8.W.reminderState(withWork, NOW).kind === 'none', 'the user can lengthen the reminder (90 days: quiet at 40 days)');
+  t8.W.setSettings({ remindDays: 30 });
+  ls8.setItem('wb_' + adapter.tool + '_snooze', '2026-10-10T00:00:00Z');
+  ok(t8.W.reminderState(withWork, NOW).kind === 'none', 'snoozed 10 days ago: quiet (the snooze is 14 days)');
   ls8.setItem('wb_' + adapter.tool + '_snooze', '2026-10-01T00:00:00Z');
   ok(t8.W.reminderState(withWork, NOW).kind === 'overdue', 'snooze over: reminder again');
   const broken = { length: 0, key: () => null, getItem: () => { throw new Error('blocked'); }, setItem: () => { throw new Error('blocked'); }, removeItem: () => { throw new Error('blocked'); } };

@@ -170,10 +170,48 @@ async function backupTests(browser, base) {
       await settle();
       { const now = await collect(); if (differing(original, now)) bad.push('restoring the restore point did not bring the data back: ' + differing(original, now)); }
     }
+    // 5. a restore point can be downloaded as an ordinary backup file (for filing in a wiki or record); the readable summary can be copied; the settings stick
+    const [dl2] = await Promise.all([page.waitForEvent('download', { timeout: 15000 }), page.evaluate(() => { const b = [...document.querySelectorAll('#wb-panel .wb-pt button')].find((x) => x.textContent === 'Download'); if (b) b.click(); else throw new Error('no Download button on a restore point'); })]);
+    const f2 = path.join(tmp, dl2.suggestedFilename()); await dl2.saveAs(f2);
+    if (!/-restore-point-\d{4}-\d\d-\d\d\.json$/.test(dl2.suggestedFilename())) bad.push('unexpected restore point file name ' + dl2.suggestedFilename());
+    const ok2 = await page.evaluate((t) => WorkspaceBackup.parse(t).ok, fs.readFileSync(f2, 'utf8'));
+    if (!ok2) bad.push('a downloaded restore point is not a valid backup file');
+    await page.evaluate(() => document.getElementById('wb-copy').click());
+    await page.waitForFunction(() => !!document.getElementById('wb-summary') || /Summary copied/.test(document.body.textContent), null, { timeout: 8000 }).catch(() => bad.push('copying the summary neither copied nor showed the text to copy'));
+    const sumText = await page.evaluate(() => { const t = document.getElementById('wb-summary'); return t ? t.value : null; });
+    if (sumText !== null && (!/workspace summary/.test(sumText) || /undefined/.test(sumText))) bad.push('the summary text is wrong: ' + sumText.slice(0, 100));
+    await page.evaluate(() => { const d = document.getElementById('wb-dialog'); if (d && d.open) d.close(); });
+    await page.evaluate(() => { const s = document.getElementById('wb-keep-days'); s.value = '0'; s.dispatchEvent(new Event('change')); });
+    if ((await page.evaluate(() => WorkspaceBackup.settings().keepDays)) !== 0) bad.push('the retention setting did not stick');
+    await page.reload({ waitUntil: 'load' }); await settle();
+    if ((await page.evaluate(() => WorkspaceBackup.settings().keepDays)) !== 0) bad.push('the retention setting did not survive a reload');
+    await page.evaluate(() => WorkspaceBackup.setSettings({ keepDays: 365 }));
+
+    // 6. close to the browser's storage limit: an import that cannot fit is refused cleanly and the data is exactly as it was
+    const before6 = await collect();
+    // fill the origin's storage EXACTLY (large pieces first, then smaller ones), then free 30,000 characters: far less than the 60,000 the import needs
+    const headroom = await page.evaluate(() => {
+      const fill = (size, prefix) => { const c = 'x'.repeat(size); let n = 0; try { for (;; n++) localStorage.setItem(prefix + n, c); } catch (e) { /* full at this size */ } return n; };
+      fill(100000, 'zz_a_'); fill(10000, 'zz_b_'); fill(1000, 'zz_c_'); fill(100, 'zz_d_'); fill(1, 'zz_e_');
+      localStorage.removeItem('zz_a_0'); localStorage.setItem('zz_tail', 'x'.repeat(70000));
+      let can = 0; try { localStorage.setItem('zz_probe', 'y'.repeat(60000)); can = 1; localStorage.removeItem('zz_probe'); } catch (e) { /* expected */ }
+      return can;
+    });
+    if (headroom) bad.push('test set-up: the storage was not full enough to prove the point');
+    const big = JSON.parse(text); const pre = TOOL === 'rm' ? 'rm_' : 'itsm_'; big.entries[pre + 'zz_big'] = 'y'.repeat(60000); big.keyCount += 1;
+    const bf = path.join(tmp, 'big.json'); fs.writeFileSync(bf, JSON.stringify(big));
+    await page.setInputFiles('#wb-file', bf);
+    await page.waitForSelector('#wb-dialog[open] #wb-confirm', { timeout: 8000 });
+    await page.click('#wb-confirm');
+    await page.waitForFunction(() => { const e = document.getElementById('wb-err'); return e && e.style.display === 'block'; }, null, { timeout: 15000 }).catch(() => bad.push('no message when the data would not fit'));
+    const errText = await page.evaluate(() => (document.getElementById('wb-err') || {}).textContent || '');
+    if (!/would not store|Nothing was changed/.test(errText)) bad.push('unclear message when the data would not fit: ' + errText.slice(0, 120));
+    await page.evaluate(() => { const d = document.getElementById('wb-dialog'); if (d && d.open) d.close(); Object.keys(localStorage).filter((k) => k.indexOf('zz_') === 0).forEach((k) => localStorage.removeItem(k)); });
+    { const now = await collect(); if (differing(before6, now)) bad.push('a refused import changed the data: ' + differing(before6, now)); }
     if (errors.length) bad.push('page errors: ' + errors.slice(0, 3).join(' | '));
   } catch (e) { bad.push('error: ' + String(e.message).slice(0, 300)); }
   await ctx.close(); fs.rmSync(tmp, { recursive: true, force: true });
-  note(bad.length === 0, NAME, bad.join('\n') || 'export, import, automatic and manual restore points, refusal of a file naming a foreign key, and plain-text labels all behave', (Date.now() - t0) / 1000);
+  note(bad.length === 0, NAME, bad.join('\n') || 'export, import, restore points (download, keep, settings), the copyable summary, refusal of a file naming a foreign key, an import that cannot fit a full browser store, and plain-text labels all behave', (Date.now() - t0) / 1000);
 }
 
 async function fileTests(browser) {
