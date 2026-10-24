@@ -5375,8 +5375,10 @@ window.ITSMTool.loadWebhookPayload(ghPayload, 'github_actions');</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn-session" onclick="advanceChangeLifecycle()">Advance to next stage ›</button>
       <button class="btn-session" onclick="resetChangeLifecycle()">Reset</button>
+      <button class="btn-session" onclick="openApprovalRecord()" title="Record who approved the change and why, or open the approval record">Approval record</button>
       <span style="font-size:11px;color:var(--text2);align-self:center" id="clStatusNote">Status: Draft — complete the form and advance through stages as the change progresses.</span>
     </div>
+    <div id="crApprovalBadge" style="margin-top:6px" aria-live="polite"></div>
   </div>
 
   <!-- CHANGE OVERVIEW -->
@@ -6566,6 +6568,7 @@ function autosave(){
       try{if(typeof saveReassignState!=='undefined')saveReassignState();}catch(e){}
       try{saveCurrencyState();}catch(e){}
       try{if(typeof checkBackupNudge==='function')checkBackupNudge();}catch(e){}
+      try{renderApprovalBadge();}catch(e){}
       const s=document.getElementById('saveStatus');
       if(s){s.textContent='Saved '+new Date().toLocaleTimeString('en-GB');s.classList.add('saved');}
     }catch(e){console.warn('Autosave failed:',e);}
@@ -10654,6 +10657,7 @@ function renderChangeLifecycle(){
   });
   var noteEl=document.getElementById('clStatusNote');
   if(noteEl)noteEl.textContent='Status: '+clLabels[changeLifecycleStep]+' — '+clNotes[changeLifecycleStep];
+  try{renderApprovalBadge();}catch(e){}
   autosave();
 }
 
@@ -10663,7 +10667,7 @@ function renderChangeLifecycle(){
 var CHANGE_STATE_RF=['rf_blast','rf_complexity','rf_rollback','rf_testing','rf_history','rf_timing'];
 var CHANGE_STATE_SCR=['scr_rf_blast','scr_rf_complexity','scr_rf_rollback','scr_rf_testing','scr_rf_history','scr_rf_timing'];
 function getChangeState(){
-  var s={v:1,lifecycleStep:changeLifecycleStep,rf:{},scr:{}};
+  var s={v:1,lifecycleStep:changeLifecycleStep,rf:{},scr:{},approval:changeApproval,approvalHistory:changeApprovalHistory};
   CHANGE_STATE_RF.forEach(function(id){var el=document.getElementById(id);if(el)s.rf[id]=el.value;});
   CHANGE_STATE_SCR.forEach(function(id){var el=document.getElementById(id);if(el)s.scr[id]=el.value;});
   return s;
@@ -10695,8 +10699,11 @@ function applyChangeState(s){
     if(!/^(0|5|10|15|20)$/.test(v))return;
     el.value=v;syncScrButtons(id);applied=true;
   });
+  if(own(s,'approval')){var ap=s.approval===null?null:sanitizeApproval(s.approval);if(s.approval===null||ap){changeApproval=ap;applied=true;}}
+  if(own(s,'approvalHistory')&&Array.isArray(s.approvalHistory)){changeApprovalHistory=s.approvalHistory.map(sanitizeApproval).filter(Boolean).slice(-50);applied=true;}
   var step=parseInt(s.lifecycleStep,10);
   if(!isNaN(step)&&step>=0&&step<clSteps.length){changeLifecycleStep=step;renderChangeLifecycle();applied=true;}
+  try{renderApprovalBadge();}catch(e){}
   try{calcRiskScore();}catch(e){}
   try{if(typeof calcStandaloneCRRisk==='function')calcStandaloneCRRisk();}catch(e){}
   return applied;
@@ -10705,7 +10712,147 @@ function resetChangeState(){
   var rf={},scr={};
   CHANGE_STATE_RF.forEach(function(id){rf[id]='0';});
   CHANGE_STATE_SCR.forEach(function(id){scr[id]='0';});
-  applyChangeState({rf:rf,scr:scr,lifecycleStep:0});
+  applyChangeState({rf:rf,scr:scr,lifecycleStep:0,approval:null,approvalHistory:[]});
+}
+
+// ── N1: CHANGE APPROVAL RECORD WITH VALID-UNTIL, ROLLBACK PATH AND A "MAY BE OUT OF DATE" PROMPT (2026-10-24) ──
+// At the Approved step the approver records who approved, why, until when and the rollback path. A snapshot of what the change-risk
+// scoring looked at is kept with it. Later the tool compares that snapshot with the form now and says what changed. It is a prompt to
+// look again: it NEVER changes the recorded approval, the lifecycle step or any score. Nothing here uses AI. Mirrors RM's N1.
+var changeApproval=null, changeApprovalHistory=[];
+var APPROVAL_LEVEL_RANK={low:0,medium:1,high:2};
+var APPROVAL_FREEZE_WORDS={no:'no freeze period',yes:'a freeze period applies',exempt:'a freeze applies and an exemption is needed'};
+var APPROVAL_TYPE_WORDS={normal:'Normal',standard:'Standard',emergency:'Emergency'};
+/** Snapshot of what the change-risk scoring looks at. Pure: builds a new object from its inputs. */
+function approvalSnapshotFrom(inp,toolVersion,nowIso){
+  var factors={},total=0,unset=0,list=(inp&&Array.isArray(inp.factors))?inp.factors:[];
+  list.forEach(function(f){var v=Number(f.value)||0;factors[f.id]={value:v,chosen:String(f.chosen||''),label:String(f.label||f.id),unset:!!f.unset};total+=v;if(f.unset)unset++;});
+  var incomplete=unset>0||list.length===0;
+  return {version:1,takenAt:nowIso||'',toolVersion:toolVersion||'',factors:factors,total:total,incomplete:incomplete,level:incomplete?null:changeRiskLevel(total),
+    type:String(inp&&inp.type||''),freeze:String(inp&&inp.freeze||''),window:String(inp&&inp.window||''),rollbackPlan:!!(inp&&inp.rollbackPlan)};
+}
+/** What differs between the snapshot taken when the approval was recorded and the form now. Pure: reads its inputs, changes nothing. */
+function approvalDrift(rec,inp,nowMs){
+  if(!rec)return {recorded:false};
+  var out={recorded:true,expired:false,expiresAt:rec.expiresAt||'',noSnapshot:!rec.snapshot,changes:[],adverse:0,improved:0,outOfDate:false};
+  if(rec.expiresAt){var t=Date.parse(rec.expiresAt);if(!isNaN(t)&&nowMs>t)out.expired=true;}
+  var was=rec.snapshot;
+  if(was){
+    var now=approvalSnapshotFrom(inp,'','');
+    var add=function(kind,text,effect){out.changes.push({kind:kind,text:text,effect:effect});if(effect==='adverse')out.adverse++;else if(effect==='improved')out.improved++;};
+    Object.keys(was.factors||{}).forEach(function(id){
+      var a=was.factors[id],b=now.factors[id],name=a.label||id;
+      if(!b){add('factor_missing',name+' is no longer on the form','adverse');return;}
+      if(!a.unset&&b.unset){add('factor_cleared',name+' is no longer answered (was “'+a.chosen+'”)','adverse');return;}
+      if(a.unset&&!b.unset){add('factor_answered',name+' is now answered: “'+b.chosen+'” ('+b.value+')','neutral');return;}
+      if(b.value>a.value)add('factor_raised',name+' raised from “'+a.chosen+'” ('+a.value+') to “'+b.chosen+'” ('+b.value+')','adverse');
+      else if(b.value<a.value)add('factor_lowered',name+' lowered from “'+a.chosen+'” ('+a.value+') to “'+b.chosen+'” ('+b.value+')','improved');
+    });
+    if(!was.incomplete&&now.incomplete)add('level_unknown','The risk level can no longer be worked out: not every factor is answered','adverse');
+    else if(was.incomplete&&!now.incomplete)add('level_known','The risk level can now be worked out: '+now.level+' ('+now.total+')','neutral');
+    else if(!was.incomplete&&now.level!==was.level){var up=APPROVAL_LEVEL_RANK[now.level]>APPROVAL_LEVEL_RANK[was.level];add('level','Risk level changed from '+was.level+' to '+now.level+' ('+was.total+' → '+now.total+')',up?'adverse':'improved');}
+    if(was.freeze!==now.freeze){var fr=function(x){return (x==='yes'||x==='exempt')?1:0;},fw=function(x){return APPROVAL_FREEZE_WORDS[x]||'not set';};
+      add('freeze','Freeze changed from '+fw(was.freeze)+' to '+fw(now.freeze),fr(now.freeze)>fr(was.freeze)?'adverse':(fr(now.freeze)<fr(was.freeze)?'improved':'neutral'));}
+    if(was.rollbackPlan&&!now.rollbackPlan)add('rollback_removed','The rollback plan is now empty','adverse');
+    else if(!was.rollbackPlan&&now.rollbackPlan)add('rollback_added','A rollback plan has been added','improved');
+    if(was.type!==now.type){var tw=function(x){return APPROVAL_TYPE_WORDS[x]||'not set';};add('type','Change type changed from '+tw(was.type)+' to '+tw(now.type)+': the approval was given for the change as it was then typed','adverse');}
+    if(was.window!==now.window)add('window','Change window changed from “'+(was.window||'not set')+'” to “'+(now.window||'not set')+'”','neutral');
+  }
+  // an approval is worried by things getting worse, and is always worth a look once it has expired
+  out.outOfDate=out.expired||out.adverse>0;
+  return out;
+}
+/** What the change-risk scoring looks at right now, read from the form. */
+function changeApprovalInputs(){
+  return {factors:readFactorSelects(CHANGE_FACTOR_IDS,/^select/i).map(function(f){return {id:f.id,label:f.label,value:f.value,chosen:f.chosen,unset:f.unset};}),
+    type:g('cr_type'),freeze:g('cr_freeze'),window:g('cr_window'),rollbackPlan:g('cr_backout')!==''};
+}
+function sanitizeApproval(o){
+  if(!o||typeof o!=='object'||Array.isArray(o))return null;
+  var s=function(v,n){return v==null?'':String(v).slice(0,n||2000);};
+  var by=s(o.approvedBy,200).trim(); if(!by)return null;
+  var snap=(o.snapshot&&typeof o.snapshot==='object'&&!Array.isArray(o.snapshot)&&o.snapshot.factors&&typeof o.snapshot.factors==='object')?o.snapshot:null;
+  var recs=Array.isArray(o.reconfirmations)?o.reconfirmations.slice(-50).filter(function(r){return r&&typeof r==='object'&&s(r.by,200).trim();}).map(function(r){return {by:s(r.by,200),at:s(r.at,40),note:s(r.note,500),changesSeen:Array.isArray(r.changesSeen)?r.changesSeen.slice(0,50).map(function(c){return s(c,300);}):[]};}):[];
+  var a={approvedBy:by,approvedAt:s(o.approvedAt,40),rationale:s(o.rationale),expiresAt:s(o.expiresAt,40),rollback:s(o.rollback),snapshot:snap,recorded:s(o.recorded,40),reconfirmations:recs};
+  if(o.supersededAt)a.supersededAt=s(o.supersededAt,40);
+  return a;
+}
+function approvalWhen(v){return v?String(v).replace('T',' ').slice(0,16):'';}
+function renderApprovalBadge(){
+  var el=document.getElementById('crApprovalBadge'); if(!el)return;
+  while(el.firstChild)el.removeChild(el.firstChild);
+  var link=function(text,style){var a=whyEl('a',{href:'#',text:text,style:'font-size:11px;text-decoration:none;'+style,title:'Open the approval record'});a.addEventListener('click',function(e){e.preventDefault();openApprovalRecord();});return a;};
+  if(!changeApproval){
+    if(changeLifecycleStep>=3){var a=whyEl('a',{href:'#',text:'Approved, but no approval is recorded yet: record who approved it and why',style:'font-size:11px;text-decoration:none;color:var(--text2)'});a.addEventListener('click',function(e){e.preventDefault();openApprovalForm();});el.appendChild(a);}
+    return;
+  }
+  var dr=approvalDrift(changeApproval,changeApprovalInputs(),Date.now()),d=changeApproval;
+  if(dr.expired)el.appendChild(link('⏰ Approval expired '+approvalWhen(dr.expiresAt),'color:var(--red);font-weight:600;'));
+  else if(dr.outOfDate)el.appendChild(link('⚠ Approval may be out of date: see what changed','color:var(--amber);font-weight:600;'));
+  else el.appendChild(link('Approval recorded by '+d.approvedBy+(d.approvedAt?' · '+String(d.approvedAt).slice(0,10):''),'color:var(--text3);'));
+}
+function approvalField(label,input){return whyEl('div',{class:'form-group',style:'margin:8px 0'},[whyEl('label',{text:label,style:'display:block;font-size:12px;margin-bottom:3px'}),input]);}
+function openApprovalForm(){
+  var nowLocal=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+  var inp=changeApprovalInputs(),snap=approvalSnapshotFrom(inp,'',''),nodes=[];
+  var by=whyEl('input',{type:'text',id:'apr-by',placeholder:'Name / role',style:'width:100%'}); by.value=g('cr_cm_approver');
+  var at=whyEl('input',{type:'datetime-local',id:'apr-at'}); at.value=nowLocal;
+  var why=whyEl('textarea',{id:'apr-why',rows:'3',placeholder:'Why it was approved, and any conditions',style:'width:100%'});
+  var exp=whyEl('input',{type:'datetime-local',id:'apr-exp'});
+  var rb=whyEl('textarea',{id:'apr-rb',rows:'2',placeholder:'Where the rollback plan is and who triggers it',style:'width:100%'}); rb.value=g('cr_backout').slice(0,400);
+  nodes.push(whyEl('p',{text:'Record who approved this change and why. What the change-risk scoring looks at is saved with it. If that changes later, the change will say "may be out of date" and show what changed. The approval itself is never changed for you.',style:'font-size:12px;line-height:1.6;color:var(--text2);margin:0 0 6px'}));
+  if(snap.incomplete)nodes.push(whyEl('p',{text:'Note: not every change-risk factor is answered, so the risk level is not known yet. You can still record the approval.',style:'font-size:12px;color:var(--amber);margin:4px 0'}));
+  nodes.push(approvalField('Approved by',by),approvalField('Approved at',at),approvalField('Rationale and conditions',why),approvalField('Valid until (optional, leave blank if it holds until the change is done)',exp),approvalField('Rollback path',rb));
+  var btn=whyEl('button',{type:'button',class:'btn btn-primary',id:'apr-record',text:'Record approval'});
+  btn.addEventListener('click',function(){ if(recordChangeApproval(by.value,at.value,why.value,exp.value,rb.value)){var dlg=document.getElementById('whyDialog');if(dlg&&dlg.close)dlg.close();} });
+  nodes.push(whyEl('div',{style:'margin-top:10px'},[btn]));
+  showWhyDialog('Record the change approval',nodes);
+}
+function recordChangeApproval(by,at,why,exp,rb){
+  by=String(by||'').trim();
+  if(!by){showToast('Please enter who approved the change.','warn',2500);return false;}
+  var nowIso=new Date().toISOString();
+  if(changeApproval){changeApprovalHistory.push(Object.assign({},changeApproval,{supersededAt:nowIso}));}   // an earlier approval is kept in a history, never overwritten
+  changeApproval={approvedBy:by.slice(0,200),approvedAt:String(at||nowIso).slice(0,40),rationale:String(why||'').slice(0,2000),expiresAt:String(exp||'').slice(0,40),rollback:String(rb||'').trim().slice(0,2000),
+    snapshot:approvalSnapshotFrom(changeApprovalInputs(),ITSM_TOOL_VERSION,nowIso),recorded:nowIso,reconfirmations:[]};
+  autosave(); renderApprovalBadge();
+  showToast('Approval recorded by '+by+'.','success',3500);
+  return true;
+}
+function openApprovalRecord(){
+  var d=changeApproval; if(!d){openApprovalForm();return;}
+  var dr=approvalDrift(d,changeApprovalInputs(),Date.now()),nodes=[];
+  var p=function(t,c){return whyEl('p',{text:t,style:'font-size:12px;line-height:1.6;margin:8px 0;color:'+(c||'var(--text2)')});};
+  nodes.push(p('Approved by '+d.approvedBy+(d.approvedAt?' on '+approvalWhen(d.approvedAt):'')+'.','var(--text)'));
+  var rows=[['Rationale',d.rationale],['Valid until',approvalWhen(d.expiresAt)],['Rollback path',d.rollback]].map(function(r){return whyEl('tr',null,[whyEl('td',{text:r[0],style:'color:var(--text3);padding:3px 10px 3px 0;vertical-align:top;white-space:nowrap'}),whyEl('td',{text:r[1]||'not recorded',style:'padding:3px 0'})]);});
+  nodes.push(whyEl('table',{style:'font-size:12px;border-collapse:collapse'},rows));
+  if(dr.noSnapshot)nodes.push(p('This approval has nothing to compare with. Confirm it still stands, or record it again, to start tracking.','var(--text2)'));
+  else if(!dr.changes.length)nodes.push(p('Nothing the change-risk scoring looks at has changed since this was recorded.'));
+  else{nodes.push(whyEl('div',{text:'Since this approval was recorded',style:'font-size:13px;font-weight:600;margin:12px 0 4px'}));
+    nodes.push(whyEl('ul',{style:'margin:4px 0 0 18px;padding:0;font-size:12px;line-height:1.7'},dr.changes.map(function(c){return whyEl('li',{text:c.text+(c.effect==='adverse'?' (worse)':c.effect==='improved'?' (better)':'')});})));}
+  if(dr.expired)nodes.push(p('This approval was only valid until '+approvalWhen(dr.expiresAt)+'.','var(--red)'));
+  if(d.reconfirmations.length)nodes.push(p('Confirmed as still standing: '+d.reconfirmations.map(function(r){return r.by+' ('+String(r.at).slice(0,10)+(r.note?': '+r.note:'')+')';}).join('; ')));
+  if(changeApprovalHistory.length)nodes.push(p('Earlier approvals: '+changeApprovalHistory.map(function(x){return x.approvedBy+' ('+String(x.approvedAt||'').slice(0,10)+')';}).join('; ')));
+  nodes.push(p('This is a prompt to look again, not a change: nothing here alters the recorded approval, the lifecycle step or any score. Changes are listed only for what the change-risk scoring looks at (the six factors, risk level, change type, freeze, window and rollback plan).','var(--text3)'));
+  var by=whyEl('input',{type:'text',id:'apr-confirm-by',placeholder:'Name / role',style:'width:100%'}),exp=whyEl('input',{type:'datetime-local',id:'apr-confirm-exp'}),note=whyEl('input',{type:'text',id:'apr-confirm-note',placeholder:'e.g. raised blast radius reviewed with the CAB chair',style:'width:100%'});
+  nodes.push(approvalField('Confirm it still stands: your name',by),approvalField('New valid-until (optional)',exp),approvalField('Note (what you checked)',note));
+  var keep=whyEl('button',{type:'button',class:'btn btn-primary',id:'apr-still-stands',text:'It still stands'}),again=whyEl('button',{type:'button',class:'btn btn-secondary',id:'apr-rerecord',text:'Record a new approval',style:'margin-left:8px'});
+  keep.addEventListener('click',function(){ if(reconfirmChangeApproval(by.value,exp.value,note.value)){var dlg=document.getElementById('whyDialog');if(dlg&&dlg.close)dlg.close();} });
+  again.addEventListener('click',function(){openApprovalForm();});
+  nodes.push(whyEl('div',{style:'margin-top:10px'},[keep,again]));
+  showWhyDialog('Change approval record',nodes);
+}
+function reconfirmChangeApproval(by,exp,note){
+  var d=changeApproval; if(!d)return false;
+  by=String(by||'').trim();
+  if(!by){showToast('Please enter your name to confirm the approval still stands.','warn',3000);return false;}
+  var dr=approvalDrift(d,changeApprovalInputs(),Date.now()),nowIso=new Date().toISOString();
+  d.reconfirmations.push({by:by.slice(0,200),at:nowIso,note:String(note||'').trim().slice(0,500),changesSeen:dr.changes.map(function(c){return c.text;})});
+  if(exp)d.expiresAt=String(exp).slice(0,40);
+  d.snapshot=approvalSnapshotFrom(changeApprovalInputs(),ITSM_TOOL_VERSION,nowIso);   // the comparison now starts from today's form; what was seen is kept in the confirmation
+  autosave(); renderApprovalBadge();
+  showToast('Recorded: '+by+' confirmed the approval still stands.','success',3500);
+  return true;
 }
 
 function validateAndGoTo7(){

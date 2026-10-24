@@ -286,6 +286,88 @@ async function changeStateTests(browser, base) {
   await ctx.close();
 }
 
+async function approvalTests(browser, base) {
+  // ITSM only (N1): record a change approval, see "may be out of date" when a risk factor is raised, confirm it still stands,
+  // survive a reload, keep earlier approvals, flag expiry, clear on reset; names with markup stay plain text; never changes the lifecycle or score.
+  if (TOOL !== 'itsm') return;
+  const NAME = BROWSER + ' / change approval record (N1): record, drift, still stands, reload, history, expiry, reset';
+  const ctx = await browser.newContext({ serviceWorkers: 'block' });
+  await ctx.route((u) => !u.href.startsWith(base + '/'), (r) => r.abort());
+  const page = await ctx.newPage(), t0 = Date.now(), bad = [], errors = [];
+  page.on('pageerror', (e) => errors.push(String(e.message)));
+  const badge = () => page.evaluate(() => { const b = document.getElementById('crApprovalBadge'); return { text: b ? b.textContent : null, tags: b ? b.querySelectorAll('b,img,script').length : -1 }; });
+  const dialogText = () => page.evaluate(() => { const d = document.getElementById('whyDialog'); return d && d.open ? d.textContent : ''; });
+  const closeDialog = () => page.evaluate(() => { const d = document.getElementById('whyDialog'); if (d && d.open) d.close(); });
+  try {
+    await page.goto(base + '/' + TOOL_HTML, { waitUntil: 'load' });
+    await page.evaluate(() => localStorage.clear()); await page.reload({ waitUntil: 'load' }); await page.waitForTimeout(500);
+    const setup = await page.evaluate(() => {
+      CHANGE_FACTOR_IDS.forEach((id) => { const el = document.getElementById(id); el.value = el.options[2].value; el.dispatchEvent(new Event('change')); });
+      document.getElementById('cr_type').value = 'normal'; document.getElementById('cr_freeze').value = 'no';
+      document.getElementById('cr_backout').value = 'Step R1: redeploy previous build'; document.getElementById('cr_window').value = 'Sat 01:00-05:00';
+      resetChangeLifecycle(); advanceChangeLifecycle(); advanceChangeLifecycle(); advanceChangeLifecycle();
+      return { step: changeLifecycleStep, score: document.getElementById('riskScoreNum').textContent };
+    });
+    let b = await badge();
+    if (!/no approval is recorded yet/.test(b.text || '')) bad.push('at Approved with no record, the badge should invite recording one: ' + b.text);
+    // refused without a name
+    await page.evaluate(() => openApprovalForm()); await page.waitForTimeout(200);
+    await page.evaluate(() => { document.getElementById('apr-by').value = ''; document.getElementById('apr-record').click(); });
+    if (await page.evaluate(() => changeApproval !== null)) bad.push('an approval was recorded without a name');
+    // recorded with a name that contains markup
+    const NAMEX = '<b>CAB</b> <img src=x onerror=window.__pwned=1>';
+    await page.evaluate((n) => { document.getElementById('apr-by').value = n; document.getElementById('apr-exp').value = '2099-01-01T00:00'; document.getElementById('apr-record').click(); }, NAMEX);
+    await page.waitForTimeout(300);
+    const recd = await page.evaluate(() => ({ by: changeApproval && changeApproval.approvedBy, rb: changeApproval && changeApproval.rollback, snapTotal: changeApproval && changeApproval.snapshot.total, step: changeLifecycleStep, score: document.getElementById('riskScoreNum').textContent, pwned: !!window.__pwned }));
+    if (recd.by !== NAMEX) bad.push('approver name not kept exactly: ' + recd.by);
+    if (!/redeploy previous build/.test(recd.rb || '')) bad.push('rollback path was not pre-filled from the backout plan: ' + recd.rb);
+    if (recd.step !== setup.step || recd.score !== setup.score) bad.push('recording the approval changed the lifecycle or score: ' + JSON.stringify([setup, recd]));
+    b = await badge();
+    if (!/^Approval recorded by /.test(b.text || '') || b.tags !== 0 || recd.pwned) bad.push('badge after recording is wrong or rendered markup: ' + JSON.stringify(b) + ' pwned=' + recd.pwned);
+    // raise a factor: the approval may be out of date, and the record says what changed
+    await page.evaluate(() => { const el = document.getElementById('rf_blast'); el.value = el.options[4].value; el.dispatchEvent(new Event('change')); });
+    await page.waitForTimeout(1900);
+    b = await badge();
+    if (!/may be out of date/.test(b.text || '')) bad.push('raising a factor did not flag the approval: ' + b.text);
+    const after = await page.evaluate(() => ({ step: changeLifecycleStep, by: changeApproval.approvedBy }));
+    if (after.step !== 3 || after.by !== NAMEX) bad.push('the drift check changed the approval or lifecycle: ' + JSON.stringify(after));
+    await page.evaluate(() => openApprovalRecord()); await page.waitForTimeout(200);
+    const rec = await dialogText();
+    if (!/raised from/.test(rec) || !/\(worse\)/.test(rec)) bad.push('the record does not say what changed: ' + rec.slice(0, 200));
+    // "it still stands" needs a name, then resets the comparison
+    await page.evaluate(() => { document.getElementById('apr-confirm-by').value = ''; document.getElementById('apr-still-stands').click(); });
+    if (await page.evaluate(() => changeApproval.reconfirmations.length) !== 0) bad.push('"it still stands" was accepted without a name');
+    await page.evaluate(() => { document.getElementById('apr-confirm-by').value = 'Change manager'; document.getElementById('apr-confirm-note').value = 'blast radius reviewed'; document.getElementById('apr-still-stands').click(); });
+    await page.waitForTimeout(300);
+    b = await badge();
+    const conf = await page.evaluate(() => changeApproval.reconfirmations[0]);
+    if (!/^Approval recorded by /.test(b.text || '') || !conf || conf.by !== 'Change manager' || !conf.changesSeen.some((t) => /raised from/.test(t))) bad.push('"it still stands" did not record who looked and what they saw, or did not reset: ' + JSON.stringify([b.text, conf]));
+    // survives a reload
+    await page.waitForTimeout(1800);
+    await page.reload({ waitUntil: 'load' }); await page.waitForTimeout(500);
+    await page.evaluate(() => restoreSession()); await page.waitForTimeout(400);
+    const rl = await page.evaluate(() => ({ by: changeApproval && changeApproval.approvedBy, conf: changeApproval && changeApproval.reconfirmations.length }));
+    b = await badge();
+    if (rl.by !== NAMEX || rl.conf !== 1 || !/^Approval recorded by /.test(b.text || '')) bad.push('the approval did not survive a reload: ' + JSON.stringify([rl, b.text]));
+    // a new approval keeps the earlier one in a history; an expired one is flagged
+    await page.evaluate(() => recordChangeApproval('Deputy chair', '2026-01-01T09:00', 're-approved', '2000-01-01T00:00', 'rb'));
+    await page.waitForTimeout(200);
+    const hist = await page.evaluate(() => changeApprovalHistory.map((x) => x.approvedBy));
+    b = await badge();
+    if (hist.length !== 1 || hist[0] !== NAMEX) bad.push('the earlier approval was not kept in the history: ' + JSON.stringify(hist));
+    if (!/Approval expired/.test(b.text || '')) bad.push('an expired approval was not flagged: ' + b.text);
+    // reset clears it
+    await page.evaluate(() => executeResetAll()); await page.waitForTimeout(300);
+    const cleared = await page.evaluate(() => ({ a: changeApproval, h: changeApprovalHistory.length }));
+    b = await badge();
+    if (cleared.a !== null || cleared.h !== 0 || (b.text || '') !== '') bad.push('reset did not clear the approval: ' + JSON.stringify([cleared, b.text]));
+    await closeDialog();
+    if (errors.length) bad.push('page errors: ' + errors.slice(0, 5).join(' | '));
+    note(bad.length === 0, NAME, bad.join('\n'), (Date.now() - t0) / 1000);
+  } catch (e) { note(false, NAME, String(e.message).slice(0, 800), (Date.now() - t0) / 1000); }
+  await ctx.close();
+}
+
 async function fileTests(browser) {
   const ctx = await browser.newContext(), page = await ctx.newPage();
   const errors = [], requests = new Set(), failed = [];
@@ -337,7 +419,7 @@ async function fileTests(browser) {
   console.log('browser: ' + BROWSER + ' ' + browser.version() + '  tool: ' + TOOL + '  repo: ' + REPO);
   let srv = null;
   try {
-    if (ONLY === 'all' || ONLY === 'http') { srv = await serve(); const origin = 'http://127.0.0.1:' + srv.address().port; await httpTests(browser, origin); await backupTests(browser, origin); await changeStateTests(browser, origin); }
+    if (ONLY === 'all' || ONLY === 'http') { srv = await serve(); const origin = 'http://127.0.0.1:' + srv.address().port; await httpTests(browser, origin); await backupTests(browser, origin); await changeStateTests(browser, origin); await approvalTests(browser, origin); }
     if (ONLY === 'all' || ONLY === 'file') await fileTests(browser);
   } finally { await browser.close(); if (srv) srv.close(); }
   const failed = results.filter((r) => !r.ok);
