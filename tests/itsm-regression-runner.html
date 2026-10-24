@@ -248,7 +248,12 @@ async function runAll(){
     const refs = cj.regulatory_references || {};
     R.doraContent.refs = Object.fromEntries(Object.entries(refs).filter(([k])=>/dora/i.test(k)));
     R.doraContent.dora_note = (cj.ai_hints_extra && cj.ai_hints_extra.dora_note) || null;
-    R.doraContent.warnings = (cj.content_warnings||[]).filter(w=>/dora/i.test(JSON.stringify(w))).map(w=>({id:w.id,title:w.title,text:w.text}));
+    // The weekly regulatory content monitor replaces its auto-generated news warning (id eba_dora_YYYYMMDD) every week,
+    // so its headline is not compared word for word: its title, the standard caveat and the DORA authority still are.
+    const MONITOR_ID = /^eba_dora_\d{8}$/, CAVEAT = /Review for relevance to your EU DORA obligations\. Always verify at the authoritative source\.$/;
+    R.doraContent.warnings = (cj.content_warnings||[]).filter(w=>/dora/i.test(JSON.stringify(w))).map(w=>MONITOR_ID.test(w.id||'')
+      ? {id:'eba_dora_<weekly monitor>', title:w.title, text:CAVEAT.test(w.text||'') ? '<news headline> + standard caveat' : 'CAVEAT MISSING: '+w.text, authority:w.authority}
+      : {id:w.id,title:w.title,text:w.text});
     R.doraContent.articleSnippets = articleSnippets(JSON.stringify(cj));
     R.doraContent.contentVersion = cj.meta && cj.meta.content_version;
   }catch(e){ R.doraContent.error = e.message; }

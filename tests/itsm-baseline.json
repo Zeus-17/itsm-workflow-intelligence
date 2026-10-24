@@ -165,9 +165,10 @@
   "dora_note": null,
   "warnings": [
    {
-    "id": "eba_dora_20261005",
+    "id": "eba_dora_<weekly monitor>",
     "title": "EBA — EU DORA and operational resilience — new publication detected",
-    "text": "​The EBA publishes its 2027 Work Programme. Review for relevance to your EU DORA obligations. Always verify at the authoritative source."
+    "text": "<news headline> + standard caveat",
+    "authority": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj"
    }
   ],
   "articleSnippets": [

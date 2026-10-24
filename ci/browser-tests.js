@@ -214,6 +214,78 @@ async function backupTests(browser, base) {
   note(bad.length === 0, NAME, bad.join('\n') || 'export, import, restore points (download, keep, settings), the copyable summary, refusal of a file naming a foreign key, an import that cannot fit a full browser store, and plain-text labels all behave', (Date.now() - t0) / 1000);
 }
 
+async function changeStateTests(browser, base) {
+  // ITSM only: the change form's six risk factors (Stage 5 and the standalone form) and the lifecycle step must survive
+  // autosave + restore, named sessions, "restore last", session export -> reset -> import; bad values are refused; old saves still load.
+  if (TOOL !== 'itsm') return;
+  const NAME = BROWSER + ' / change form persists (risk factors, standalone factors, lifecycle step)';
+  const ctx = await browser.newContext({ serviceWorkers: 'block', acceptDownloads: true });
+  await ctx.route((u) => !u.href.startsWith(base + '/'), (r) => r.abort());
+  const page = await ctx.newPage(), t0 = Date.now(), bad = [], errors = [];
+  page.on('pageerror', (e) => errors.push(String(e.message)));
+  page.on('dialog', (d) => d.type() === 'prompt' ? d.accept('E2E change session') : d.dismiss());
+  const tmp = fs.mkdtempSync(path.join(require('os').tmpdir(), 'cs-'));
+  const state = () => page.evaluate(() => ({ cs: getChangeState(), active: CHANGE_STATE_SCR.map((id) => Array.from(document.querySelectorAll('.rf-btn.active')).filter((b) => (b.getAttribute('onclick') || '').indexOf("'" + id + "'") >= 0).map((b) => b.getAttribute('onclick').split(',')[1]).join('/')), dot: (document.getElementById('cl_approve') || {}).className, num: (document.getElementById('riskScoreNum') || {}).textContent }));
+  try {
+    await page.goto(base + '/' + TOOL_HTML, { waitUntil: 'load' });
+    await page.evaluate(() => localStorage.clear()); await page.reload({ waitUntil: 'load' }); await page.waitForTimeout(500);
+    // answer the six Stage 5 factors with the second real option of each, two standalone factors, and advance the lifecycle to "Approved"
+    const want = await page.evaluate(() => {
+      const rf = {}; let total = 0;
+      CHANGE_STATE_RF.forEach((id) => { const el = document.getElementById(id); el.value = el.options[2].value; el.dispatchEvent(new Event('change')); rf[id] = el.value; total += parseInt(el.value, 10); });
+      const click = (id, v) => Array.from(document.querySelectorAll('.rf-btn')).find((b) => b.getAttribute('onclick') === "setRiskFactor('" + id + "'," + v + ",this)").click();
+      click('scr_rf_testing', 15); click('scr_rf_timing', 5);
+      resetChangeLifecycle(); advanceChangeLifecycle(); advanceChangeLifecycle(); advanceChangeLifecycle();
+      return { rf, total, step: changeLifecycleStep };
+    });
+    if (want.step !== 3) bad.push('could not advance the lifecycle to Approved (step ' + want.step + ')');
+    const check = async (label) => {
+      const s = await state();
+      Object.keys(want.rf).forEach((id) => { if (s.cs.rf[id] !== want.rf[id]) bad.push(label + ': ' + id + ' is ' + s.cs.rf[id] + ', expected ' + want.rf[id]); });
+      if (s.cs.scr.scr_rf_testing !== '15' || s.cs.scr.scr_rf_timing !== '5' || s.cs.scr.scr_rf_blast !== '0') bad.push(label + ': standalone factors wrong ' + JSON.stringify(s.cs.scr));
+      if (s.active.join(' ') !== '0 0 0 15 0 5') bad.push(label + ': highlighted standalone buttons wrong (' + s.active.join(' ') + ')');
+      if (s.cs.lifecycleStep !== 3 || !/current/.test(s.dot || '')) bad.push(label + ': lifecycle not at Approved (step ' + s.cs.lifecycleStep + ', dot "' + s.dot + '")');
+      if (String(want.total) !== String(s.num)) bad.push(label + ': risk score shows ' + s.num + ', expected ' + want.total);
+    };
+    // 1. autosave writes it; a fresh page restores it
+    await page.waitForTimeout(2200);
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('itsm_session') || '{}').changeState || null);
+    if (!saved || saved.lifecycleStep !== 3) bad.push('autosave did not store the change state: ' + JSON.stringify(saved));
+    await page.reload({ waitUntil: 'load' }); await page.waitForTimeout(500);
+    await page.evaluate(() => restoreSession()); await page.waitForTimeout(300); await check('restore session');
+    // 2. restore last
+    await page.reload({ waitUntil: 'load' }); await page.waitForTimeout(500);
+    await page.evaluate(() => restoreLastSession()); await page.waitForTimeout(300); await check('restore last');
+    // 3. named session: save, reset everything, load it back
+    await page.evaluate(() => saveNamedSession()); await page.waitForTimeout(300);
+    await page.evaluate(() => executeResetAll()); await page.waitForTimeout(300);
+    const cleared = await state();
+    if (cleared.cs.lifecycleStep !== 0 || Object.values(cleared.cs.scr).some((v) => v !== '0') || cleared.active.join(' ') !== '0 0 0 0 0 0') bad.push('reset did not clear the change form: ' + JSON.stringify(cleared));
+    await page.evaluate(() => { const key = getAllSessions()[0]; loadSessionByKey(typeof key === 'string' ? key : key.key); }); await page.waitForTimeout(400); await check('named session');
+    // 4. session file: export, reset, import through the real file picker
+    const [dl] = await Promise.all([page.waitForEvent('download', { timeout: 15000 }), page.evaluate(() => exportSessionJSON())]);
+    const file = path.join(tmp, dl.suggestedFilename()); await dl.saveAs(file);
+    if (!JSON.parse(fs.readFileSync(file, 'utf8')).changeState) bad.push('the exported session file has no changeState');
+    await page.evaluate(() => executeResetAll()); await page.waitForTimeout(300);
+    const [fc] = await Promise.all([page.waitForEvent('filechooser', { timeout: 10000 }), page.evaluate(() => importSessionJSON())]);
+    await fc.setFiles(file); await page.waitForTimeout(800); await check('session file import');
+    // 5. bad values are refused and change nothing
+    const before = await state();
+    const refused = await page.evaluate(() => applyChangeState({ rf: { rf_blast: '999', rf_timing: '<img src=x onerror=alert(1)>' }, scr: { scr_rf_blast: '7', scr_rf_history: 'javascript:1' }, lifecycleStep: 42 }));
+    const after = await state();
+    if (refused !== false || JSON.stringify(after) !== JSON.stringify(before)) bad.push('bad values were not refused cleanly: ' + JSON.stringify({ refused, before, after }));
+    // 6. a save made before this feature (no changeState) still restores, without inventing a change state
+    await page.evaluate(() => { executeResetAll(); localStorage.setItem('itsm_session', JSON.stringify({ sev: 'P3', i_shortdesc: 'Old save' })); }); await page.waitForTimeout(1800);
+    await page.evaluate(() => localStorage.setItem('itsm_session', JSON.stringify({ sev: 'P3', i_shortdesc: 'Old save' })));
+    await page.evaluate(() => restoreSession()); await page.waitForTimeout(300);
+    const old = await page.evaluate(() => ({ step: changeLifecycleStep, desc: document.getElementById('i_shortdesc').value }));
+    if (old.step !== 0 || old.desc !== 'Old save') bad.push('an old save did not restore cleanly: ' + JSON.stringify(old));
+    if (errors.length) bad.push('page errors: ' + errors.slice(0, 5).join(' | '));
+    note(bad.length === 0, NAME, bad.join('\n'), (Date.now() - t0) / 1000);
+  } catch (e) { note(false, NAME, String(e.message).slice(0, 800), (Date.now() - t0) / 1000); }
+  await ctx.close();
+}
+
 async function fileTests(browser) {
   const ctx = await browser.newContext(), page = await ctx.newPage();
   const errors = [], requests = new Set(), failed = [];
@@ -265,7 +337,7 @@ async function fileTests(browser) {
   console.log('browser: ' + BROWSER + ' ' + browser.version() + '  tool: ' + TOOL + '  repo: ' + REPO);
   let srv = null;
   try {
-    if (ONLY === 'all' || ONLY === 'http') { srv = await serve(); const origin = 'http://127.0.0.1:' + srv.address().port; await httpTests(browser, origin); await backupTests(browser, origin); }
+    if (ONLY === 'all' || ONLY === 'http') { srv = await serve(); const origin = 'http://127.0.0.1:' + srv.address().port; await httpTests(browser, origin); await backupTests(browser, origin); await changeStateTests(browser, origin); }
     if (ONLY === 'all' || ONLY === 'file') await fileTests(browser);
   } finally { await browser.close(); if (srv) srv.close(); }
   const failed = results.filter((r) => !r.ok);

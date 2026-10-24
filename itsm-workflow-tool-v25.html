@@ -6558,6 +6558,7 @@ function autosave(){
       fields.forEach(f=>{const el=document.getElementById(f);if(el)data[f]=el.value;});
       ['sla_breach','sla_notify','sla_regulatory','pr_recurring','pr_nopermfix','pr_major','pr_risk','pr_proactive']
         .forEach(f=>{const el=document.getElementById(f);if(el)data[f]=el.checked;});
+      try{data.changeState=getChangeState();}catch(e){}
       localStorage.setItem('itsm_session',JSON.stringify(data));
       // Save timeline separately
       try{if(typeof timelineEvents!=='undefined')localStorage.setItem('itsm_timeline',JSON.stringify(timelineEvents));}catch(e){}
@@ -6589,6 +6590,7 @@ function restoreSession(){
     if(data.bhStart){document.getElementById('bh_start').value=data.bhStart;bhStart=data.bhStart;}
     if(data.bhEnd){document.getElementById('bh_end').value=data.bhEnd;bhEnd=data.bhEnd;}
     if(data.rcaMethod)setRCAMethod(data.rcaMethod);
+    if(data.changeState){try{applyChangeState(data.changeState);}catch(e){}}
     if(data.slaPreset){if(data.slaPreset==='custom'&&data.slaP1){document.getElementById('sla_p1').value=data.slaP1;document.getElementById('sla_p2').value=data.slaP2;document.getElementById('sla_p3').value=data.slaP3;document.getElementById('sla_p4').value=data.slaP4;updateSLAFromInputs();}else if(data.slaPreset){applyPreset(data.slaPreset);}}
     updateScore();calcMTTR();
     restoreObsContext();
@@ -7486,6 +7488,7 @@ function saveNamedSession(){
     fields.forEach(f=>{const el=document.getElementById(f);if(el)data[f]=el.value;});
     ['sla_breach','sla_notify','sla_regulatory','pr_recurring','pr_nopermfix','pr_major','pr_risk','pr_proactive']
       .forEach(f=>{const el=document.getElementById(f);if(el)data[f]=el.checked;});
+    try{data.changeState=getChangeState();}catch(e){}
     localStorage.setItem(key,JSON.stringify(data));
         // Save obs context
     try{localStorage.setItem('itsm_obs_context',JSON.stringify({platform:obsPlatform,metrics:metricEntries,shOutcomes:shOutcomes}));}catch(e){}
@@ -7537,6 +7540,7 @@ function loadSelectedSession(){
     if(data.bhStart){const el=document.getElementById('bh_start');if(el)el.value=data.bhStart;bhStart=data.bhStart;}
     if(data.bhEnd){const el=document.getElementById('bh_end');if(el)el.value=data.bhEnd;bhEnd=data.bhEnd;}
     if(data.rcaMethod)setRCAMethod(data.rcaMethod);
+    if(data.changeState){try{applyChangeState(data.changeState);}catch(e){}}
     // Restore tech context tags
     ['tc_comp','tc_dep'].forEach(prefix=>{
       const dataEl=document.getElementById(prefix+'_data');
@@ -7578,6 +7582,7 @@ function clearAllNoConfirm(){
     else el.value='';
   });
   document.querySelectorAll('select').forEach(el=>{el.selectedIndex=0;});
+  try{resetChangeState();}catch(e){} // risk factors to 0, standalone buttons in step, lifecycle back to Draft
   selectedSev='';isMajorIncident=false;
   ['P1','P2','P3','P4'].forEach(s=>{const el=document.getElementById('sev'+s);if(el)el.classList.remove('selected');});
   ['majorIncidentAlert','nearMissAlert','recurringAlert'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
@@ -10652,6 +10657,57 @@ function renderChangeLifecycle(){
   autosave();
 }
 
+// ── CHANGE FORM PERSISTENCE (2026-10-24, prerequisite for the N1 approval record) ──
+// The six change-risk factors (Stage 5 and the standalone change form) and the lifecycle step were
+// not saved with the session. These helpers only read and re-apply form state; no engine is changed.
+var CHANGE_STATE_RF=['rf_blast','rf_complexity','rf_rollback','rf_testing','rf_history','rf_timing'];
+var CHANGE_STATE_SCR=['scr_rf_blast','scr_rf_complexity','scr_rf_rollback','scr_rf_testing','scr_rf_history','scr_rf_timing'];
+function getChangeState(){
+  var s={v:1,lifecycleStep:changeLifecycleStep,rf:{},scr:{}};
+  CHANGE_STATE_RF.forEach(function(id){var el=document.getElementById(id);if(el)s.rf[id]=el.value;});
+  CHANGE_STATE_SCR.forEach(function(id){var el=document.getElementById(id);if(el)s.scr[id]=el.value;});
+  return s;
+}
+function syncScrButtons(id){
+  var el=document.getElementById(id);if(!el)return;
+  var v=String(el.value||'0');
+  document.querySelectorAll('.rf-btn').forEach(function(b){
+    var oc=b.getAttribute('onclick')||'';
+    if(oc.indexOf("'"+id+"'")<0)return;
+    b.classList.toggle('active',oc.indexOf("'"+id+"',"+v+",")>=0);
+  });
+}
+function applyChangeState(s){
+  if(!s||typeof s!=='object')return false;
+  var own=function(o,k){return o&&typeof o==='object'&&Object.prototype.hasOwnProperty.call(o,k);};
+  var applied=false;
+  CHANGE_STATE_RF.forEach(function(id){
+    if(!own(s.rf,id))return;
+    var el=document.getElementById(id);if(!el)return;
+    var v=String(s.rf[id]==null?'':s.rf[id]);
+    if(el.tagName==='SELECT'&&!Array.prototype.some.call(el.options,function(o){return o.value===v;}))return; // only values the form offers
+    el.value=v;applied=true;
+  });
+  CHANGE_STATE_SCR.forEach(function(id){
+    if(!own(s.scr,id))return;
+    var el=document.getElementById(id);if(!el)return;
+    var v=String(s.scr[id]==null?'':s.scr[id]);
+    if(!/^(0|5|10|15|20)$/.test(v))return;
+    el.value=v;syncScrButtons(id);applied=true;
+  });
+  var step=parseInt(s.lifecycleStep,10);
+  if(!isNaN(step)&&step>=0&&step<clSteps.length){changeLifecycleStep=step;renderChangeLifecycle();applied=true;}
+  try{calcRiskScore();}catch(e){}
+  try{if(typeof calcStandaloneCRRisk==='function')calcStandaloneCRRisk();}catch(e){}
+  return applied;
+}
+function resetChangeState(){
+  var rf={},scr={};
+  CHANGE_STATE_RF.forEach(function(id){rf[id]='0';});
+  CHANGE_STATE_SCR.forEach(function(id){scr[id]='0';});
+  applyChangeState({rf:rf,scr:scr,lifecycleStep:0});
+}
+
 function validateAndGoTo7(){
   var errors=[];
   var required=[
@@ -13451,6 +13507,7 @@ function restoreLastSession(){
     });
     if(data.sev)setSev(data.sev);
     if(data.isMajor)setMajor(data.isMajor);
+    if(data.changeState){try{applyChangeState(data.changeState);}catch(e){}}
     updateScore();
     if(typeof calcMTTR==='function')calcMTTR();
     if(typeof renderTimeline==='function')renderTimeline();
@@ -16098,6 +16155,8 @@ function exportSessionJSON(){
     try{var ki=localStorage.getItem('itsm_ki');if(ki)sessionData.knownIssues=JSON.parse(ki);}catch(e){}
     // Custom fields
     try{var cf=localStorage.getItem('itsm_custom_fields');if(cf)sessionData.customFields=JSON.parse(cf);}catch(e){}
+    // Change form state (risk factors and lifecycle step)
+    try{sessionData.changeState=getChangeState();}catch(e){}
 
     var blob=new Blob([JSON.stringify(sessionData,null,2)],{type:'application/json'});
     var url=URL.createObjectURL(blob);
@@ -16130,6 +16189,8 @@ function importSessionJSON(){
           var el=document.getElementById(id);
           if(el){el.value=data.incidentData[id];restored++;}
         });
+        // Restore change form state (risk factors and lifecycle step)
+        if(data.changeState){try{if(applyChangeState(data.changeState))restored++;}catch(e){}}
         // Restore reporting state
         if(data.reportingState&&typeof reportingState!=='undefined'){
           try{
@@ -16194,6 +16255,7 @@ function executeResetAll(){
   if(typeof updateDots==='function')updateDots();
   var slaEl=document.getElementById('slaTime');if(slaEl)slaEl.textContent='--:--';
   var pauseBar=document.getElementById('slaPauseBar');if(pauseBar)pauseBar.style.display='none';
+  try{resetChangeState();}catch(e){} // a new incident starts its change at Draft with no risk answers
   autosave();
   var panel=document.getElementById('resetConfirmPanel');if(panel)panel.remove();
   showToast('All fields cleared. Ready for a new incident.','success',3000);
