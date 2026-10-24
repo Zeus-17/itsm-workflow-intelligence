@@ -1,3 +1,5 @@
 
 # CI tooling dependencies
 ci/node_modules/
+
+__pycache__/
